@@ -10,7 +10,7 @@
   "module": "index.js",
   "scripts": {
     "server": "http-server . -p 8002 -o http://127.0.0.1:8002/playground/index.html",
-    "postinstall": "gulp build-debug-infos && gulp build-declarations",
+    "postinstall": "gulp build-debug-infos && gulp build-declarations && npm run fetch-ral",
     "build": "gulp build",
     "build:dev": "gulp build-h5-source",
     "build:min": "gulp build-h5-minified",
@@ -42,7 +42,6 @@
     "commander": "^2.20.3",
     "dat.gui": "^0.7.5",
     "del": "^6.0.0",
-    "download": "^8.0.0",
     "eslint": "^7.2.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
@@ -51,6 +50,7 @@
     "gulp": "^4.0.2",
     "http-server": "^0.12.3",
     "jest": "^26.6.3",
+    "jest-matcher-deep-close-to": "^2.0.1",
     "path": "^0.12.7",
     "spectorjs": "^0.9.15",
     "stats.js": "^0.17.0",
@@ -62,10 +62,10 @@
     "yargs": "^12.0.5"
   },
   "dependencies": {
-    "@cocos/ammo": "1.1.1",
+    "@cocos/ammo": "1.1.8",
     "@cocos/box2d": "1.0.1",
-    "@cocos/cannon": "1.2.3",
+    "@cocos/cannon": "1.2.8",
     "@cocos/dragonbones-js": "^1.0.1",
-    "@cocos/physx": "1.0.2"
+    "@cocos/physx": "1.0.7"
   }
 }
