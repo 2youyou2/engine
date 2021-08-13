@@ -81,6 +81,7 @@ export class GbufferStage extends RenderStage {
     private _batchedQueue: RenderBatchedQueue;
     private _instancedQueue: RenderInstancedQueue;
     private _phaseID = getPhaseID('deferred');
+    private _overdrawID = getPhaseID('overdraw');
 
     constructor () {
         super();
@@ -127,6 +128,9 @@ export class GbufferStage extends RenderStage {
                 const passes = subModel.passes;
                 for (p = 0; p < passes.length; ++p) {
                     const pass = passes[p];
+                    if (pipeline.renderOverdraw && pass.phase !== this._overdrawID) {
+                        continue;
+                    }
                     if (pass.phase !== this._phaseID) continue;
                     const batchingScheme = pass.batchingScheme;
                     if (batchingScheme === BatchingSchemes.INSTANCING) {

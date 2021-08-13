@@ -76,6 +76,7 @@ export class LightingStage extends RenderStage {
     private renderQueues: RenderQueueDesc[] = [];
     private _phaseID = getPhaseID('default');
     private _defPhaseID = getPhaseID('deferred');
+    private _overdrawID = getPhaseID('overdraw');
     private _renderQueues: RenderQueue[] = [];
 
     public static initInfo: IRenderStageInfo = {
@@ -293,8 +294,16 @@ export class LightingStage extends RenderStage {
                 const passes = subModel.passes;
                 for (p = 0; p < passes.length; ++p) {
                     const pass = passes[p];
+                    if (pipeline.renderOverdraw) {
+                        if (pass.phase !== this._overdrawID) {
+                            continue;
+                        }
+                    }
                     // TODO: need fallback of ulit and gizmo material.
-                    if (pass.phase !== this._phaseID && pass.phase !== this._defPhaseID) continue;
+                    else if (pass.phase !== this._phaseID && pass.phase !== this._defPhaseID) {
+                        continue;
+                    }
+                    
                     for (k = 0; k < this._renderQueues.length; k++) {
                         this._renderQueues[k].insertRenderPass(ro, m, p);
                     }

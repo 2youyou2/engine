@@ -70,6 +70,11 @@ export class PostprocessStage extends RenderStage {
     private _renderArea = new Rect();
     private _uiPhase: UIPhase;
 
+    private _renderScale = 1;
+    setRenderScale (v: number) {
+        this._renderScale = v;
+    }
+
     constructor () {
         super();
         this._uiPhase = new UIPhase();
@@ -104,7 +109,7 @@ export class PostprocessStage extends RenderStage {
         this._renderArea.height = vp.height * camera.height * sceneData.shadingScale;
 
         const framebuffer = camera.window!.framebuffer;
-        const renderPass = framebuffer.colorTextures[0] ? framebuffer.renderPass : pipeline.getRenderPass(camera.clearFlag);
+        let renderPass = framebuffer.colorTextures[0] ? framebuffer.renderPass : pipeline.getRenderPass(camera.clearFlag);
 
         if (camera.clearFlag & ClearFlagBit.COLOR) {
             colors[0].x = camera.clearColor.x;
@@ -113,6 +118,11 @@ export class PostprocessStage extends RenderStage {
         }
 
         colors[0].w = camera.clearColor.w;
+
+        // if (this._renderScale !== 1) {
+        //     this._renderArea.width *= this._renderScale;
+        //     this._renderArea.height *= this._renderScale;
+        // }
 
         cmdBuff.beginRenderPass(renderPass, framebuffer, this._renderArea,
             colors, camera.clearDepth, camera.clearStencil);
@@ -137,6 +147,16 @@ export class PostprocessStage extends RenderStage {
             cmdBuff.bindInputAssembler(inputAssembler);
             cmdBuff.draw(inputAssembler);
         }
+
+        // if (this._renderScale !== 1) {
+        //     cmdBuff.endRenderPass();
+
+        //     this._renderArea.width /= this._renderScale;
+        //     this._renderArea.height /= this._renderScale;
+
+        //     renderPass = pipeline.getRenderPass(0);
+        //     cmdBuff.beginRenderPass(renderPass, framebuffer, this._renderArea, colors, camera.clearDepth, camera.clearStencil);
+        // }
 
         this._uiPhase.render(camera, renderPass);
 

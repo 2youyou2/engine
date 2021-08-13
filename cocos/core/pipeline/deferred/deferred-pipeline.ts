@@ -94,6 +94,8 @@ export class DeferredPipeline extends RenderPipeline {
     private _height = 0;
     private _lastUsedRenderArea: Rect = new Rect();
 
+    renderOverdraw = false;
+
     @type([RenderTextureConfig])
     @serializable
     @displayOrder(2)
