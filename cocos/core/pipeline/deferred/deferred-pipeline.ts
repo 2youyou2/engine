@@ -91,6 +91,8 @@ export class DeferredPipeline extends RenderPipeline {
     private _height = 0;
     private _lastUsedRenderArea: Rect = new Rect();
 
+    renderOverdraw = false;
+
     @type([RenderTextureConfig])
     @serializable
     @displayOrder(2)
@@ -519,11 +521,12 @@ export class DeferredPipeline extends RenderPipeline {
             data.gbufferRenderTargets.push(device.createTexture(new TextureInfo(
                 TextureType.TEX2D,
                 TextureUsageBit.COLOR_ATTACHMENT | TextureUsageBit.SAMPLED,
-                i % 3 ? Format.RGBA16F : Format.RGBA8, // positions & normals need more precision
+                i % 3 ? Format.RGBA32F : Format.RGBA8, // positions & normals need more precision
                 this._width,
                 this._height,
             )));
         }
+        
         data.depthTex = device.createTexture(new TextureInfo(
             TextureType.TEX2D,
             TextureUsageBit.DEPTH_STENCIL_ATTACHMENT,

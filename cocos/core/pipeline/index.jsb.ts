@@ -35,6 +35,9 @@ import { Asset } from '../assets/asset';
 import { Swapchain } from '../gfx';
 import { Model } from '../renderer/scene';
 
+import * as pipeline from './define';
+export { pipeline };
+
 nr.getPhaseID = getPhaseID;
 
 export const RenderPipeline = nr.RenderPipeline;

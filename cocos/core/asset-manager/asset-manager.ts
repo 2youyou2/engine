@@ -57,7 +57,8 @@ import {
     Request,
     references,
     IJsonAssetOptions,
-    assets, BuiltinBundleName, bundles, fetchPipeline, files, parsed, pipeline, transformPipeline } from './shared';
+    assets, BuiltinBundleName, bundles, fetchPipeline, files, parsed, pipeline, transformPipeline
+} from './shared';
 
 import Task from './task';
 import { combine, parse } from './url-transformer';
@@ -289,7 +290,7 @@ export class AssetManager {
     private _files = files;
 
     private _parsed = parsed;
-    private _parsePipeline = BUILD ? null : new Pipeline('parse existing json', [this.loadPipe]);
+    private _parsePipeline = new Pipeline('parse existing json', [this.loadPipe]);
 
     /**
      * @en
@@ -484,7 +485,7 @@ export class AssetManager {
         requests: Request,
         options: IOptions | null,
         onProgress: ProgressCallback | null,
-        onComplete: CompleteCallbackWithData<RequestItem[]>|null): void;
+        onComplete: CompleteCallbackWithData<RequestItem[]> | null): void;
     public preloadAny (requests: Request, onProgress: ProgressCallback | null, onComplete: CompleteCallbackWithData<RequestItem[]> | null): void;
     public preloadAny (requests: Request, options: IOptions | null, onComplete?: CompleteCallbackWithData<RequestItem[]> | null): void;
     public preloadAny (requests: Request, onComplete?: CompleteCallbackWithData<RequestItem[]> | null): void;
@@ -666,7 +667,7 @@ export class AssetManager {
         onProgress?: ProgressCallback | CompleteCallbackWithData<T> | null,
         onComplete?: CompleteCallbackWithData<T> | null,
     ) {
-        if (BUILD) { throw new Error('Only valid in Editor'); }
+        // if (BUILD) { throw new Error('Only valid in Editor'); }
 
         const { options: opts, onProgress: onProg, onComplete: onComp } = parseParameters<CompleteCallbackWithData<T>>(options, onProgress, onComplete);
 

@@ -30,12 +30,6 @@
     },
     "moduleOverrides": [
         {
-            "test": "context.mode === 'BUILD'",
-            "isVirtualModule": false,
-            "overrides": {
-            }
-        },
-        {
             "test": "context.platform === 'NATIVE'",
             "isVirtualModule": false,
             "overrides": {

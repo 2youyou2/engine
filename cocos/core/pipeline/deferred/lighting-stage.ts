@@ -74,6 +74,8 @@ export class LightingStage extends RenderStage {
     @displayOrder(2)
     private renderQueues: RenderQueueDesc[] = [];
     private _phaseID = getPhaseID('default');
+
+    private _overdrawID = getPhaseID('overdraw');
     private _renderQueues: RenderQueue[] = [];
 
     public static initInfo: IRenderStageInfo = {
@@ -261,6 +263,7 @@ export class LightingStage extends RenderStage {
         cmdBuff.bindDescriptorSet(SetIndex.GLOBAL, pipeline.descriptorSet);
 
         // Lighting
+
         const lightingMat = (sceneData as DeferredPipelineSceneData).deferredLightingMaterial;
         const pass = lightingMat.passes[0];
         const shader = pass.getShaderVariant();
@@ -297,7 +300,16 @@ export class LightingStage extends RenderStage {
                 const passes = subModel.passes;
                 for (p = 0; p < passes.length; ++p) {
                     const pass = passes[p];
-                    if (pass.phase !== this._phaseID) continue;
+
+                    if (pipeline.renderOverdraw) {
+                        if (pass.phase !== this._overdrawID) {
+                            continue;
+                        }
+                    }
+                    else if (pass.phase !== this._phaseID) {
+                        continue;
+                    }
+                    
                     for (k = 0; k < this._renderQueues.length; k++) {
                         this._renderQueues[k].insertRenderPass(ro, m, p);
                     }

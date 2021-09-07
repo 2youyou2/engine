@@ -218,9 +218,9 @@ export function sceneCulling (pipeline: RenderPipeline, camera: Camera) {
         }
     }
 
-    if (skybox.enabled && skybox.model && (camera.clearFlag & SKYBOX_FLAG)) {
-        renderObjects.push(getRenderObject(skybox.model, camera));
-    }
+    // if (skybox.enabled && skybox.model && (camera.clearFlag & SKYBOX_FLAG)) {
+    //     renderObjects.push(getRenderObject(skybox.model, camera));
+    // }
 
     const models = scene.models;
     const visibility = camera.visibility;

@@ -68,6 +68,11 @@ export class PostprocessStage extends RenderStage {
     private _renderArea = new Rect();
     private _uiPhase: UIPhase;
 
+    private _renderScale = 1;
+    setRenderScale (v: number) {
+        this._renderScale = v;
+    }
+
     constructor () {
         super();
         this._uiPhase = new UIPhase();
@@ -114,6 +119,11 @@ export class PostprocessStage extends RenderStage {
         colors[0].w = camera.clearColor.w;
         const deferredData = pipeline.getDeferredRenderData();
 
+        // if (this._renderScale !== 1) {
+        //     this._renderArea.width *= this._renderScale;
+        //     this._renderArea.height *= this._renderScale;
+        // }
+
         cmdBuff.beginRenderPass(renderPass, framebuffer, this._renderArea,
             colors, camera.clearDepth, camera.clearStencil);
 
@@ -124,9 +134,9 @@ export class PostprocessStage extends RenderStage {
         const pass = builtinPostProcess.passes[0];
         const shader = pass.getShaderVariant();
 
-        pass.descriptorSet.bindTexture(0, deferredData.lightingRenderTargets[0]);
-        pass.descriptorSet.bindSampler(0, deferredData.sampler);
-        pass.descriptorSet.update();
+        // pass.descriptorSet.bindTexture(0, deferredData.lightingRenderTargets[0]);
+        // pass.descriptorSet.bindSampler(0, deferredData.sampler);
+        // pass.descriptorSet.update();
 
         cmdBuff.bindDescriptorSet(SetIndex.MATERIAL, pass.descriptorSet);
 
@@ -142,6 +152,16 @@ export class PostprocessStage extends RenderStage {
             cmdBuff.bindInputAssembler(inputAssembler);
             cmdBuff.draw(inputAssembler);
         }
+
+        // if (this._renderScale !== 1) {
+        //     cmdBuff.endRenderPass();
+
+        //     this._renderArea.width /= this._renderScale;
+        //     this._renderArea.height /= this._renderScale;
+
+        //     renderPass = pipeline.getRenderPass(0);
+        //     cmdBuff.beginRenderPass(renderPass, framebuffer, this._renderArea, colors, camera.clearDepth, camera.clearStencil);
+        // }
 
         this._uiPhase.render(camera, renderPass);
 
