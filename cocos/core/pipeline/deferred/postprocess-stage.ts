@@ -134,9 +134,12 @@ export class PostprocessStage extends RenderStage {
         const pass = builtinPostProcess.passes[0];
         const shader = pass.getShaderVariant();
 
-        // pass.descriptorSet.bindTexture(0, deferredData.lightingRenderTargets[0]);
-        // pass.descriptorSet.bindSampler(0, deferredData.sampler);
-        // pass.descriptorSet.update();
+        if (!deferredData.taaResult) {
+            pass.descriptorSet.bindTexture(0, deferredData.lightingRenderTargets[0]);
+            pass.descriptorSet.bindSampler(0, deferredData.sampler);
+        }
+        
+        pass.descriptorSet.update();
 
         cmdBuff.bindDescriptorSet(SetIndex.MATERIAL, pass.descriptorSet);
 

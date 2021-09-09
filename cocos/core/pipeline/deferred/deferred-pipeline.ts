@@ -71,6 +71,8 @@ export class DeferredRenderData {
     lightingRenderTargets: Texture[] = [];
     depthTex: Texture = null!;
     sampler: Sampler = null!;
+
+    taaResult: Texture = null!;
 }
 
 /**
