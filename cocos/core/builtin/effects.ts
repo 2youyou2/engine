@@ -9,9 +9,9 @@ export const effects = [
     "shaders": [
       {
         "name": "billboard|vert:vs_main|tinted-fs:add",
-        "hash": 308883658,
+        "hash": 1723894312,
         "builtins": {
-          "statistics": { "CC_EFFECT_USED_VERTEX_UNIFORM_VECTORS": 50, "CC_EFFECT_USED_FRAGMENT_UNIFORM_VECTORS": 38 },
+          "statistics": { "CC_EFFECT_USED_VERTEX_UNIFORM_VECTORS": 51, "CC_EFFECT_USED_FRAGMENT_UNIFORM_VECTORS": 38 },
           "globals": { "buffers": [], "blocks": [{ "name": "CCGlobal", "defines": [] }, { "name": "CCCamera", "defines": [] }], "samplerTextures": [], "images": [] },
           "locals": { "buffers": [], "blocks": [{ "name": "CCLocal", "defines": [] }], "samplerTextures": [], "images": [] }
         },
@@ -23,7 +23,8 @@ export const effects = [
           {"name": "Constants", "defines": [], "binding": 0, "stageFlags": 1, "members": [
             { "name": "mainTiling_Offset", "type": 16, "count": 1 },
             { "name": "frameTile_velLenScale", "type": 16, "count": 1 },
-            { "name": "scale", "type": 16, "count": 1 }
+            { "name": "scale", "type": 16, "count": 1 },
+            { "name": "nodeRotation", "type": 16, "count": 1 }
           ]},
           {"name": "builtin", "defines": [], "binding": 1, "stageFlags": 1, "members": [
             { "name": "cc_size_rotation", "type": 16, "count": 1 }
@@ -104,9 +105,9 @@ export const effects = [
     "shaders": [
       {
         "name": "particle-gpu|particle-vs-gpu:gpvs_main|tinted-fs:add",
-        "hash": 3001336778,
+        "hash": 3399671947,
         "builtins": {
-          "statistics": { "CC_EFFECT_USED_VERTEX_UNIFORM_VECTORS": 60, "CC_EFFECT_USED_FRAGMENT_UNIFORM_VECTORS": 38 },
+          "statistics": { "CC_EFFECT_USED_VERTEX_UNIFORM_VECTORS": 61, "CC_EFFECT_USED_FRAGMENT_UNIFORM_VECTORS": 38 },
           "globals": { "buffers": [], "blocks": [{ "name": "CCGlobal", "defines": [] }, { "name": "CCCamera", "defines": [] }], "samplerTextures": [], "images": [] },
           "locals": { "buffers": [], "blocks": [{ "name": "CCLocal", "defines": [] }], "samplerTextures": [], "images": [] }
         },
@@ -126,7 +127,8 @@ export const effects = [
           {"name": "Constants", "defines": [], "binding": 0, "stageFlags": 1, "members": [
             { "name": "mainTiling_Offset", "type": 16, "count": 1 },
             { "name": "frameTile_velLenScale", "type": 16, "count": 1 },
-            { "name": "scale", "type": 16, "count": 1 }
+            { "name": "scale", "type": 16, "count": 1 },
+            { "name": "nodeRotation", "type": 16, "count": 1 }
           ]},
           {"name": "SampleConstants", "defines": [], "binding": 1, "stageFlags": 1, "members": [
             { "name": "u_sampleInfo", "type": 16, "count": 1 }
@@ -192,9 +194,9 @@ export const effects = [
     "shaders": [
       {
         "name": "particle-trail|particle-trail:vs_main|tinted-fs:add",
-        "hash": 2637621064,
+        "hash": 2460630641,
         "builtins": {
-          "statistics": { "CC_EFFECT_USED_VERTEX_UNIFORM_VECTORS": 49, "CC_EFFECT_USED_FRAGMENT_UNIFORM_VECTORS": 38 },
+          "statistics": { "CC_EFFECT_USED_VERTEX_UNIFORM_VECTORS": 50, "CC_EFFECT_USED_FRAGMENT_UNIFORM_VECTORS": 38 },
           "globals": { "buffers": [], "blocks": [{ "name": "CCGlobal", "defines": [] }, { "name": "CCCamera", "defines": [] }], "samplerTextures": [], "images": [] },
           "locals": { "buffers": [], "blocks": [{ "name": "CCLocal", "defines": [] }], "samplerTextures": [], "images": [] }
         },
@@ -209,7 +211,8 @@ export const effects = [
           {"name": "Constants", "defines": [], "binding": 0, "stageFlags": 1, "members": [
             { "name": "mainTiling_Offset", "type": 16, "count": 1 },
             { "name": "frameTile_velLenScale", "type": 16, "count": 1 },
-            { "name": "scale", "type": 16, "count": 1 }
+            { "name": "scale", "type": 16, "count": 1 },
+            { "name": "nodeRotation", "type": 16, "count": 1 }
           ]},
           {"name": "FragConstants", "defines": [], "binding": 1, "stageFlags": 16, "members": [
             { "name": "tintColor", "type": 16, "count": 1 }
@@ -237,15 +240,16 @@ export const effects = [
     "shaders": [
       {
         "name": "particle|particle-vs-legacy:lpvs_main|tinted-fs:add",
-        "hash": 1675533382,
+        "hash": 3017610583,
         "builtins": {
-          "statistics": { "CC_EFFECT_USED_VERTEX_UNIFORM_VECTORS": 49, "CC_EFFECT_USED_FRAGMENT_UNIFORM_VECTORS": 38 },
+          "statistics": { "CC_EFFECT_USED_VERTEX_UNIFORM_VECTORS": 50, "CC_EFFECT_USED_FRAGMENT_UNIFORM_VECTORS": 38 },
           "globals": { "buffers": [], "blocks": [{ "name": "CCGlobal", "defines": [] }, { "name": "CCCamera", "defines": [] }], "samplerTextures": [], "images": [] },
           "locals": { "buffers": [], "blocks": [{ "name": "CCLocal", "defines": [] }], "samplerTextures": [], "images": [] }
         },
         "defines": [
           { "name": "CC_RENDER_MODE", "type": "number", "range": [0, 4] },
           { "name": "CC_USE_WORLD_SPACE", "type": "boolean" },
+          { "name": "ROTATION_OVER_TIME_MODULE_ENABLE", "type": "boolean" },
           { "name": "CC_USE_HDR", "type": "boolean" }
         ],
         "buffers": [],
@@ -253,7 +257,8 @@ export const effects = [
           {"name": "Constants", "defines": [], "binding": 0, "stageFlags": 1, "members": [
             { "name": "mainTiling_Offset", "type": 16, "count": 1 },
             { "name": "frameTile_velLenScale", "type": 16, "count": 1 },
-            { "name": "scale", "type": 16, "count": 1 }
+            { "name": "scale", "type": 16, "count": 1 },
+            { "name": "nodeRotation", "type": 16, "count": 1 }
           ]},
           {"name": "FragConstants", "defines": [], "binding": 1, "stageFlags": 16, "members": [
             { "name": "tintColor", "type": 16, "count": 1 }
@@ -656,7 +661,7 @@ export const effects = [
     "shaders": [
       {
         "name": "deferred-lighting|lighting-vs|lighting-fs",
-        "hash": 3555385669,
+        "hash": 469252423,
         "builtins": {
           "statistics": { "CC_EFFECT_USED_VERTEX_UNIFORM_VECTORS": 37, "CC_EFFECT_USED_FRAGMENT_UNIFORM_VECTORS": 56 },
           "globals": { "buffers": [], "blocks": [{ "name": "CCGlobal", "defines": [] }, { "name": "CCCamera", "defines": [] }, { "name": "CCShadow", "defines": [] }], "samplerTextures": [{ "name": "cc_shadowMap", "defines": ["CC_RECEIVE_SHADOW"] }, { "name": "cc_spotLightingMap", "defines": ["CC_RECEIVE_SHADOW"] }, { "name": "cc_environment", "defines": ["CC_USE_IBL"] }], "images": [] },
