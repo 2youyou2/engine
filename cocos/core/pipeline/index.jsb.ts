@@ -226,7 +226,7 @@ export class DeferredPipeline extends nr.DeferredPipeline {
   }
 
   set profiler (value: Model) {
-    this.setProfiler(value.native);
+    this.setProfiler(value && value.native);
   }
 
   destroy () {
