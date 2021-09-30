@@ -40,6 +40,7 @@ import { IRenderStageInfo, RenderStage } from '../render-stage';
 import { CommonStagePriority } from './enum';
 import { BLOOM_COMBINEPASS_INDEX, BLOOM_DOWNSAMPLEPASS_INDEX, BLOOM_PREFILTERPASS_INDEX, BLOOM_UPSAMPLEPASS_INDEX, CommonPipelineSceneData }
     from './common-pipeline-scene-data';
+import { gfx } from 'exports/base';
 
 const colors: Color[] = [new Color(0, 0, 0, 1)];
 
@@ -52,6 +53,9 @@ class UBOBloom {
     public static readonly COUNT = UBOBloom.TEXTURE_SIZE_OFFSET + 4;
     public static readonly SIZE = UBOBloom.COUNT * 4;
 }
+
+const textureSize = new Float32Array(UBOBloom.COUNT);
+let bloomUBO: gfx.Buffer | undefined
 
 /**
  * @en The bloom post-process stage
@@ -70,6 +74,9 @@ export class BloomStage extends RenderStage {
     @displayOrder(3)
     private _bloomMaterial: Material | null = null;
 
+    threshold = 1;
+    intensity = 0.8;
+
     private _renderArea = new Rect();
     private _uiPhase: UIPhase;
 
@@ -87,6 +94,13 @@ export class BloomStage extends RenderStage {
         super.activate(pipeline, flow);
         this._uiPhase.activate(pipeline);
         if (this._bloomMaterial) { (pipeline.pipelineSceneData as CommonPipelineSceneData).bloomMaterial = this._bloomMaterial; }
+
+        bloomUBO = pipeline.device.createBuffer(new BufferInfo(
+            BufferUsageBit.UNIFORM | BufferUsageBit.TRANSFER_DST,
+            MemoryUsageBit.HOST | MemoryUsageBit.DEVICE,
+            UBOBloom.SIZE,
+            UBOBloom.SIZE,
+        ));
     }
 
     public destroy () {
@@ -107,6 +121,15 @@ export class BloomStage extends RenderStage {
             colors[0].z = camera.clearColor.z;
         }
         colors[0].w = camera.clearColor.w;
+        
+        textureSize[UBOBloom.TEXTURE_SIZE_OFFSET + 2] = this.threshold;
+        textureSize[UBOBloom.TEXTURE_SIZE_OFFSET + 3] = this.intensity;
+
+        if (bloomUBO) {
+            bloomUBO.update(textureSize);
+            const cmdBuff = pipeline.commandBuffers[0];
+            cmdBuff.updateBuffer(bloomUBO, textureSize);
+        }
 
         this._prefilterPass(camera, pipeline, builtinBloomProcess.passes[BLOOM_PREFILTERPASS_INDEX]);
         this._downsamplePass(camera, pipeline, builtinBloomProcess.passes[BLOOM_DOWNSAMPLEPASS_INDEX]);
@@ -127,8 +150,12 @@ export class BloomStage extends RenderStage {
 
         cmdBuff.bindDescriptorSet(SetIndex.GLOBAL, pipeline.descriptorSet);
 
-        pass.descriptorSet.bindTexture(0, renderData.outputRenderTargets[0]);
-        pass.descriptorSet.bindSampler(0, bloomData.sampler);
+        if (bloomUBO) {
+            pass.descriptorSet.bindBuffer(0, bloomUBO);
+        }
+
+        pass.descriptorSet.bindTexture(1, (renderData as any).taaResult || renderData.outputRenderTargets[0]);
+        pass.descriptorSet.bindSampler(1, bloomData.sampler);
         pass.descriptorSet.update();
         cmdBuff.bindDescriptorSet(SetIndex.MATERIAL, pass.descriptorSet);
 
@@ -157,7 +184,6 @@ export class BloomStage extends RenderStage {
 
         const bloomData = pipeline.getPipelineRenderData().bloom!;
 
-        const textureSize = new Float32Array(UBOBloom.COUNT);
         const shader = pass.getShaderVariant();
 
         for (let i = 0; i < bloomData.filterPassNum; ++i) {
@@ -209,7 +235,6 @@ export class BloomStage extends RenderStage {
         this._renderArea.height >>= bloomData.filterPassNum + 1;
         const cmdBuff = pipeline.commandBuffers[0];
 
-        const textureSize = new Float32Array(UBOBloom.COUNT);
         const shader = pass.getShaderVariant();
 
         for (let i = 0; i < bloomData.filterPassNum; ++i) {
@@ -265,10 +290,14 @@ export class BloomStage extends RenderStage {
 
         cmdBuff.bindDescriptorSet(SetIndex.GLOBAL, pipeline.descriptorSet);
 
-        pass.descriptorSet.bindTexture(0, deferredData.outputRenderTargets[0]!);
-        pass.descriptorSet.bindTexture(1, bloomData.upsampleTexs[bloomData.filterPassNum - 1]);
-        pass.descriptorSet.bindSampler(0, bloomData.sampler);
+        if (bloomUBO) {
+            pass.descriptorSet.bindBuffer(0, bloomUBO);
+        }
+
+        pass.descriptorSet.bindTexture(1, (deferredData as any).taaResult || deferredData.outputRenderTargets[0]);
+        pass.descriptorSet.bindTexture(2, bloomData.upsampleTexs[bloomData.filterPassNum - 1]);
         pass.descriptorSet.bindSampler(1, bloomData.sampler);
+        pass.descriptorSet.bindSampler(2, bloomData.sampler);
         pass.descriptorSet.update();
         cmdBuff.bindDescriptorSet(SetIndex.MATERIAL, pass.descriptorSet);
 

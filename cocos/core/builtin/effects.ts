@@ -747,9 +747,9 @@ export const effects = [
     "shaders": [
       {
         "name": "bloom|bloom-vs|prefilter-fs",
-        "hash": 2372596343,
+        "hash": 1207731240,
         "builtins": {
-          "statistics": { "CC_EFFECT_USED_VERTEX_UNIFORM_VECTORS": 147, "CC_EFFECT_USED_FRAGMENT_UNIFORM_VECTORS": 39 },
+          "statistics": { "CC_EFFECT_USED_VERTEX_UNIFORM_VECTORS": 147, "CC_EFFECT_USED_FRAGMENT_UNIFORM_VECTORS": 40 },
           "globals": { "blocks": [{ "name": "CCGlobal", "defines": [] }, { "name": "CCCamera", "defines": [] }], "samplerTextures": [], "buffers": [], "images": [] },
           "locals": { "blocks": [{ "name": "CCMorph", "defines": ["CC_USE_MORPH"] }, { "name": "CCSkinningTexture", "defines": ["CC_USE_SKINNING", "CC_USE_BAKED_ANIMATION"] }, { "name": "CCSkinningAnimation", "defines": ["CC_USE_SKINNING", "CC_USE_BAKED_ANIMATION"] }, { "name": "CCSkinning", "defines": ["CC_USE_SKINNING", "!CC_USE_BAKED_ANIMATION"] }], "samplerTextures": [{ "name": "cc_PositionDisplacements", "defines": ["CC_USE_MORPH", "CC_MORPH_TARGET_HAS_POSITION"] }, { "name": "cc_NormalDisplacements", "defines": ["CC_USE_MORPH", "CC_MORPH_TARGET_HAS_NORMAL"] }, { "name": "cc_TangentDisplacements", "defines": ["CC_USE_MORPH", "CC_MORPH_TARGET_HAS_TANGENT"] }, { "name": "cc_jointTexture", "defines": ["CC_USE_SKINNING", "CC_USE_BAKED_ANIMATION"] }], "buffers": [], "images": [] }
         },
@@ -774,9 +774,13 @@ export const effects = [
           { "name": "a_weights", "defines": ["CC_USE_SKINNING"], "format": 44, "location": 5 },
           { "name": "a_jointAnimInfo", "defines": ["CC_USE_SKINNING", "CC_USE_BAKED_ANIMATION", "USE_INSTANCING"], "format": 44, "isInstanced": true, "location": 7 }
         ],
-        "blocks": [],
+        "blocks": [
+          {"name": "BloomUBO", "defines": [], "binding": 0, "stageFlags": 16, "members": [
+            { "name": "textureSize", "type": 16, "count": 1 }
+          ]}
+        ],
         "samplerTextures": [
-          { "name": "outputResultMap", "type": 28, "count": 1, "defines": [], "stageFlags": 16, "binding": 0 }
+          { "name": "outputResultMap", "type": 28, "count": 1, "defines": [], "stageFlags": 16, "binding": 1 }
         ],
         "buffers": [],
         "images": [],
@@ -786,7 +790,7 @@ export const effects = [
       },
       {
         "name": "bloom|bloom-vs|downsample-fs",
-        "hash": 2774644899,
+        "hash": 123346054,
         "builtins": {
           "statistics": { "CC_EFFECT_USED_VERTEX_UNIFORM_VECTORS": 147, "CC_EFFECT_USED_FRAGMENT_UNIFORM_VECTORS": 40 },
           "globals": { "blocks": [{ "name": "CCGlobal", "defines": [] }, { "name": "CCCamera", "defines": [] }], "samplerTextures": [], "buffers": [], "images": [] },
@@ -829,7 +833,7 @@ export const effects = [
       },
       {
         "name": "bloom|bloom-vs|upsample-fs",
-        "hash": 3146738086,
+        "hash": 2245879590,
         "builtins": {
           "statistics": { "CC_EFFECT_USED_VERTEX_UNIFORM_VECTORS": 147, "CC_EFFECT_USED_FRAGMENT_UNIFORM_VECTORS": 40 },
           "globals": { "blocks": [{ "name": "CCGlobal", "defines": [] }, { "name": "CCCamera", "defines": [] }], "samplerTextures": [], "buffers": [], "images": [] },
@@ -872,9 +876,9 @@ export const effects = [
       },
       {
         "name": "bloom|bloom-vs|combine-fs",
-        "hash": 1000071333,
+        "hash": 3312557926,
         "builtins": {
-          "statistics": { "CC_EFFECT_USED_VERTEX_UNIFORM_VECTORS": 147, "CC_EFFECT_USED_FRAGMENT_UNIFORM_VECTORS": 39 },
+          "statistics": { "CC_EFFECT_USED_VERTEX_UNIFORM_VECTORS": 147, "CC_EFFECT_USED_FRAGMENT_UNIFORM_VECTORS": 40 },
           "globals": { "blocks": [{ "name": "CCGlobal", "defines": [] }, { "name": "CCCamera", "defines": [] }], "samplerTextures": [], "buffers": [], "images": [] },
           "locals": { "blocks": [{ "name": "CCMorph", "defines": ["CC_USE_MORPH"] }, { "name": "CCSkinningTexture", "defines": ["CC_USE_SKINNING", "CC_USE_BAKED_ANIMATION"] }, { "name": "CCSkinningAnimation", "defines": ["CC_USE_SKINNING", "CC_USE_BAKED_ANIMATION"] }, { "name": "CCSkinning", "defines": ["CC_USE_SKINNING", "!CC_USE_BAKED_ANIMATION"] }], "samplerTextures": [{ "name": "cc_PositionDisplacements", "defines": ["CC_USE_MORPH", "CC_MORPH_TARGET_HAS_POSITION"] }, { "name": "cc_NormalDisplacements", "defines": ["CC_USE_MORPH", "CC_MORPH_TARGET_HAS_NORMAL"] }, { "name": "cc_TangentDisplacements", "defines": ["CC_USE_MORPH", "CC_MORPH_TARGET_HAS_TANGENT"] }, { "name": "cc_jointTexture", "defines": ["CC_USE_SKINNING", "CC_USE_BAKED_ANIMATION"] }], "buffers": [], "images": [] }
         },
@@ -899,10 +903,14 @@ export const effects = [
           { "name": "a_weights", "defines": ["CC_USE_SKINNING"], "format": 44, "location": 5 },
           { "name": "a_jointAnimInfo", "defines": ["CC_USE_SKINNING", "CC_USE_BAKED_ANIMATION", "USE_INSTANCING"], "format": 44, "isInstanced": true, "location": 7 }
         ],
-        "blocks": [],
+        "blocks": [
+          {"name": "BloomUBO", "defines": [], "binding": 0, "stageFlags": 16, "members": [
+            { "name": "textureSize", "type": 16, "count": 1 }
+          ]}
+        ],
         "samplerTextures": [
-          { "name": "outputResultMap", "type": 28, "count": 1, "defines": [], "stageFlags": 16, "binding": 0 },
-          { "name": "bloomTexture", "type": 28, "count": 1, "defines": [], "stageFlags": 16, "binding": 1 }
+          { "name": "outputResultMap", "type": 28, "count": 1, "defines": [], "stageFlags": 16, "binding": 1 },
+          { "name": "bloomTexture", "type": 28, "count": 1, "defines": [], "stageFlags": 16, "binding": 2 }
         ],
         "buffers": [],
         "images": [],

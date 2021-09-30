@@ -60,7 +60,7 @@ export class DeferredRenderData extends PipelineRenderData {
     gbufferFrameBuffer: Framebuffer = null!;
     gbufferRenderTargets: Texture[] = [];
 
-    taaResult: Texture = null!;
+    taaResult: Texture | null = null;
 }
 
 /**

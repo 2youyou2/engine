@@ -141,14 +141,14 @@ export class PostProcessStage extends RenderStage {
         const shader = pass.getShaderVariant();
 
         const deferredData = (pipeline as DeferredPipeline).getPipelineRenderData();
-        // if (!deferredData.taaResult) {
-        //     pass.descriptorSet.bindTexture(0, deferredData.outputRenderTargets[0]);
-        //     pass.descriptorSet.bindSampler(0, renderData.sampler);
-        // }
         
         if (pipeline.bloomEnable) {
             pass.descriptorSet.bindTexture(0, renderData.bloom!.combineTex);
-        } else {
+        }
+        else if (deferredData.taaResult) {
+            pass.descriptorSet.bindTexture(0, deferredData.taaResult);
+        } 
+        else {
             pass.descriptorSet.bindTexture(0, renderData.outputRenderTargets[0]);
         }
         pass.descriptorSet.bindSampler(0, renderData.sampler);
