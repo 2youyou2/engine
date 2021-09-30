@@ -194,38 +194,19 @@ export class RenderWindow {
      * @param height The new height.
      */
     public resize (width: number, height: number) {
-        this._width = width;
-        this._height = height;
-
         if (this._swapchain) {
             this._swapchain.resize(width, height, orientationMap[screenAdapter.orientation]);
+            this._width = this._swapchain.width;
+            this._height = this._swapchain.height;
         } else {
-            if (this._depthStencilTexture) {
-                const dsTexInfo = new TextureInfo(
-                    this._depthStencilTexture.type,
-                    this._depthStencilTexture.usage,
-                    this._depthStencilTexture.format,
-                    width,
-                    height,
-                );
-                this._depthStencilTexture.destroy();
-                this._depthStencilTexture.initialize(dsTexInfo);
-            }
-
             for (let i = 0; i < this._colorTextures.length; i++) {
-                const colorTex = this._colorTextures[i];
-                if (colorTex) {
-                    const colorTexInfo = new TextureInfo(
-                        colorTex.type,
-                        colorTex.usage,
-                        colorTex.format,
-                        width,
-                        height,
-                    );
-                    colorTex.destroy();
-                    colorTex.initialize(colorTexInfo);
-                }
+                this._colorTextures[i].resize(width, height);
             }
+            if (this._depthStencilTexture) {
+                this._depthStencilTexture.resize(width, height);
+            }
+            this._width = width;
+            this._height = height;
         }
 
         if (this.framebuffer) {
