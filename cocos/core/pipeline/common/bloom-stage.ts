@@ -108,6 +108,11 @@ export class BloomStage extends RenderStage {
 
     public render (camera: Camera) {
         const pipeline = this._pipeline;
+        
+        if (!pipeline.bloomEnable) {
+            return;
+        }
+        
         if (!camera.window?.swapchain && !pipeline.macros.CC_PIPELINE_TYPE) {
             return;
         }

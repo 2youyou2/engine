@@ -56,7 +56,7 @@ CCProgram prefilter-fs %{
   in vec2 v_uv;
 
   layout(binding = 0) uniform BloomUBO {
-    mediump vec4 textureSize;
+    mediump vec4 texSize;
   };
 
   layout(binding = 1) uniform sampler2D outputResultMap;
@@ -70,7 +70,7 @@ CCProgram prefilter-fs %{
   void main() {
     vec3 color = texture(outputResultMap, v_uv).xyz;
 
-    if (luminance(SRGBToLinear(color)) > textureSize.z) {
+    if (luminance(color) > texSize.z) {
       fragColor = vec4(color, 1.0);
     } else {
       fragColor = vec4(0.0, 0.0, 0.0, 1.0);
@@ -85,7 +85,7 @@ CCProgram downsample-fs %{
   in vec2 v_uv;
 
   uniform BloomUBO {
-    mediump vec4 textureSize;
+    mediump vec4 texSize;
   };
   uniform sampler2D bloomTexture;
 
@@ -114,7 +114,7 @@ CCProgram downsample-fs %{
 
   void main()
   {
-    vec3 result = downsample(v_uv, 1.0 / textureSize.xy).rgb;
+    vec3 result = downsample(v_uv, 1.0 / texSize.xy).rgb;
 
     fragColor = vec4(result, 1.0);
   }
@@ -127,7 +127,7 @@ CCProgram upsample-fs %{
   in vec2 v_uv;
 
   uniform BloomUBO {
-    mediump vec4 textureSize;
+    mediump vec4 texSize;
   };
   uniform sampler2D bloomTexture;
 
@@ -156,7 +156,7 @@ CCProgram upsample-fs %{
   }
 
   void main() {
-    vec3 result = upsample(v_uv, 0.5 / textureSize.xy).rgb;
+    vec3 result = upsample(v_uv, 0.5 / texSize.xy).rgb;
 
     fragColor = vec4(result, 1.0);
   }
@@ -169,7 +169,7 @@ CCProgram combine-fs %{
   in vec2 v_uv;
 
   layout(binding = 0) uniform BloomUBO {
-    mediump vec4 textureSize;
+    mediump vec4 texSize;
   };
 
   layout(binding = 1) uniform sampler2D outputResultMap;
@@ -180,7 +180,7 @@ CCProgram combine-fs %{
   void main() {
     vec4 hdrColor = texture(outputResultMap, v_uv);
     vec3 bloomColor = texture(bloomTexture, v_uv).rgb;
-    vec3 result = hdrColor.rgb + bloomColor * textureSize.w * hdrColor.a;
+    vec3 result = hdrColor.rgb + bloomColor * texSize.w * hdrColor.a;
 
     fragColor = vec4(result, hdrColor.a);
   }
