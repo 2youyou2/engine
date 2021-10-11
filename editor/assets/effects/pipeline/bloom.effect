@@ -115,7 +115,6 @@ CCProgram downsample-fs %{
   void main()
   {
     vec3 result = downsample(v_uv, 1.0 / texSize.xy).rgb;
-
     fragColor = vec4(result, 1.0);
   }
 }%
@@ -157,7 +156,6 @@ CCProgram upsample-fs %{
 
   void main() {
     vec3 result = upsample(v_uv, 0.5 / texSize.xy).rgb;
-
     fragColor = vec4(result, 1.0);
   }
 }%
