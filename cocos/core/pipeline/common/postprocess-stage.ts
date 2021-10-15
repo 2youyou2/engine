@@ -148,6 +148,7 @@ export class PostProcessStage extends RenderStage {
         }
         else if (deferredData.taaResult) {
             pass.descriptorSet.bindTexture(0, deferredData.taaResult);
+            deferredData.taaResult = null;
         } 
         else {
             pass.descriptorSet.bindTexture(0, renderData.outputRenderTargets[0]);
