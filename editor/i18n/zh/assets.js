@@ -283,6 +283,7 @@ module.exports = {
             animationBakeRate: {
                 name: '动画烘焙速率',
                 title: '指定动画烘焙速率，单位为帧每秒（FPS）',
+                auto: '自动',
             },
             promoteSingleRootNode: {
                 name: '提升单一根结点',
@@ -308,6 +309,9 @@ module.exports = {
         material: {
             'fail-to-load-custom-inspector': 'material: 自定义 effect {effect} 的 inspector 加载失败',
             'illegal-inspector-url': "Inspector的路径不合法",
+        },
+        animationGraph: {
+            edit: '打开动画图面板进行编辑',
         },
         multipleWarning: '不支持此类型资源的多选编辑',
     },

@@ -72,8 +72,6 @@ export class DeferredPipeline extends RenderPipeline {
     private _gbufferRenderPass: RenderPass | null = null;
     private _lightingRenderPass: RenderPass | null = null;
 
-    renderOverdraw = false;
-
     @type([RenderTextureConfig])
     @serializable
     @displayOrder(2)
@@ -114,30 +112,6 @@ export class DeferredPipeline extends RenderPipeline {
         }
 
         return true;
-    }
-
-    public render (cameras: Camera[]) {
-        if (cameras.length === 0) {
-            return;
-        }
-
-        this._commandBuffers[0].begin();
-        this._ensureEnoughSize(cameras);
-        for (let i = 0; i < cameras.length; i++) {
-            const camera = cameras[i];
-            if (camera.scene) {
-                sceneCulling(this, camera);
-                // TODO: merge these two UBO
-                this._pipelineUBO.updateGlobalUBO(camera.window!);
-                this._pipelineUBO.updateCameraUBO(camera);
-
-                for (let j = 0; j < this._flows.length; j++) {
-                    this._flows[j].render(camera);
-                }
-            }
-        }
-        this._commandBuffers[0].end();
-        this._device.queue.submit(this._commandBuffers);
     }
 
     public destroy () {
@@ -287,7 +261,7 @@ export class DeferredPipeline extends RenderPipeline {
         this._pipelineRenderData = null;
     }
 
-    private _ensureEnoughSize (cameras: Camera[]) {
+    protected _ensureEnoughSize (cameras: Camera[]) {
         let newWidth = this._width;
         let newHeight = this._height;
         for (let i = 0; i < cameras.length; ++i) {
@@ -317,7 +291,6 @@ export class DeferredPipeline extends RenderPipeline {
                 this._height,
             )));
         }
-
         data.outputDepth = device.createTexture(new TextureInfo(
             TextureType.TEX2D,
             TextureUsageBit.DEPTH_STENCIL_ATTACHMENT,

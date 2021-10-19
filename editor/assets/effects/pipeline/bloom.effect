@@ -9,18 +9,31 @@ CCEffect %{
       depthStencilState:
         depthTest: false
         depthWrite: false
-    - vert: bloom-vs
-      frag: downsample-fs
-      phase: bloom-downsample
-      depthStencilState:
-        depthTest: false
-        depthWrite: false
-    - vert: bloom-vs
-      frag: upsample-fs
-      phase: bloom-upsample
-      depthStencilState:
-        depthTest: false
-        depthWrite: false
+    # Supports up to MAX_BLOOM_FILTER_PASS_NUM upsample/downsample passes
+    - &downsample
+        vert: bloom-vs
+        frag: downsample-fs
+        phase: bloom-downsample
+        depthStencilState:
+          depthTest: false
+          depthWrite: false
+    - *downsample
+    - *downsample
+    - *downsample
+    - *downsample
+    - *downsample
+    - &upsample
+        vert: bloom-vs
+        frag: upsample-fs
+        phase: bloom-upsample
+        depthStencilState:
+          depthTest: false
+          depthWrite: false
+    - *upsample
+    - *upsample
+    - *upsample
+    - *upsample
+    - *upsample
     - vert: bloom-vs
       frag: combine-fs
       phase: bloom-combine
@@ -47,7 +60,6 @@ CCProgram bloom-vs %{
   }
 }%
 
-
 CCProgram prefilter-fs %{
   precision highp float;
   #include <cc-global>
@@ -55,11 +67,10 @@ CCProgram prefilter-fs %{
 
   in vec2 v_uv;
 
-  layout(binding = 0) uniform BloomUBO {
+  uniform BloomUBO {
     mediump vec4 texSize;
   };
-
-  layout(binding = 1) uniform sampler2D outputResultMap;
+  uniform sampler2D outputResultMap;
 
   layout(location = 0) out vec4 fragColor;
 
@@ -114,7 +125,8 @@ CCProgram downsample-fs %{
 
   void main()
   {
-    vec3 result = downsample(v_uv, 1.0 / texSize.xy).rgb;
+    vec3 result = downsample4taps(v_uv, 1.0 / texSize.xy).rgb;
+
     fragColor = vec4(result, 1.0);
   }
 }%
@@ -155,7 +167,8 @@ CCProgram upsample-fs %{
   }
 
   void main() {
-    vec3 result = upsample(v_uv, 0.5 / texSize.xy).rgb;
+    vec3 result = upsample4taps(v_uv, 0.5 / texSize.xy).rgb;
+
     fragColor = vec4(result, 1.0);
   }
 }%
@@ -166,12 +179,11 @@ CCProgram combine-fs %{
 
   in vec2 v_uv;
 
-  layout(binding = 0) uniform BloomUBO {
+  uniform BloomUBO {
     mediump vec4 texSize;
   };
-
-  layout(binding = 1) uniform sampler2D outputResultMap;
-  layout(binding = 2) uniform sampler2D bloomTexture;
+  uniform sampler2D outputResultMap;
+  uniform sampler2D bloomTexture;
 
   layout(location = 0) out vec4 fragColor;
 

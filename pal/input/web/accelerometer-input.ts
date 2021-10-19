@@ -1,14 +1,12 @@
 import { AccelerometerCallback } from 'pal/input';
 import { systemInfo } from 'pal/system-info';
-import { EventTarget } from '../../../cocos/core/event';
+import { screenAdapter } from 'pal/screen-adapter';
+import { EventTarget } from '../../../cocos/core/event/event-target';
 import { BrowserType, OS } from '../../system-info/enum-type';
-import { legacyCC } from '../../../cocos/core/global-exports';
 import { EventAcceleration, Acceleration } from '../../../cocos/input/types';
 import { InputEventType } from '../../../cocos/input/types/event-enum';
 
 export class AccelerometerInputSource {
-    public support: boolean;
-
     private _intervalInMileSeconds = 200;
     private _accelTimer = 0;
     private _eventTarget: EventTarget = new  EventTarget();
@@ -17,8 +15,6 @@ export class AccelerometerInputSource {
     private _didAccelerateFunc: (event: DeviceMotionEvent | DeviceOrientationEvent) => void;
 
     constructor () {
-        this.support = (window.DeviceMotionEvent !== undefined || window.DeviceOrientationEvent !== undefined);
-
         // init event name
         this._globalEventClass = window.DeviceMotionEvent || window.DeviceOrientationEvent;
         // TODO fix DeviceMotionEvent bug on QQ Browser version 4.1 and below.
@@ -62,8 +58,7 @@ export class AccelerometerInputSource {
             z = ((deviceOrientationEvent.alpha || 0) / 90) * 0.981;
         }
 
-        // TODO: should not call engine API
-        if (legacyCC.view._isRotated) {
+        if (screenAdapter.isFrameRotated) {
             const tmp = x;
             x = -y;
             y = tmp;

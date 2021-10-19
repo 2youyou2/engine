@@ -29,7 +29,7 @@
  * @module ui
  */
 
-import { ccclass, help, executionOrder, menu, tooltip, displayOrder, type, range, editable, serializable } from 'cc.decorator';
+import { ccclass, help, executionOrder, menu, tooltip, displayOrder, type, range, editable, serializable, visible, override, displayName } from 'cc.decorator';
 import { EDITOR, UI_GPU_DRIVEN } from 'internal:constants';
 import { SpriteAtlas } from '../assets/sprite-atlas';
 import { SpriteFrame } from '../assets/sprite-frame';
@@ -179,6 +179,25 @@ enum EventType {
 @executionOrder(110)
 @menu('2D/Sprite')
 export class Sprite extends Renderable2D {
+    /**
+     * @en The customMaterial
+     * @zh 用户自定材质
+     */
+    @type(Material)
+    @displayOrder(0)
+    @displayName('CustomMaterial')
+    @override
+    get customMaterial () {
+        return this._customMaterial;
+    }
+
+    set customMaterial (val) {
+        this._customMaterial = val;
+        this.updateMaterial();
+        if (UI_GPU_DRIVEN && !val) {
+            this._canDrawByFourVertex = true;
+        }
+    }
     /**
      * @en
      * The sprite atlas where the sprite is.
@@ -379,6 +398,9 @@ export class Sprite extends Renderable2D {
      * sprite.trim = true;
      * ```
      */
+    @visible(function (this: Sprite) {
+        return this._type === SpriteType.SIMPLE;
+    })
     @displayOrder(8)
     @tooltip('i18n:sprite.trim')
     get trim () {
@@ -395,6 +417,7 @@ export class Sprite extends Renderable2D {
             && this._renderData) {
             this.markForUpdateRenderData(true);
         }
+        this._updateUVWithTrim();
     }
 
     @editable
@@ -472,6 +495,9 @@ export class Sprite extends Renderable2D {
     protected _atlas: SpriteAtlas | null = null;
     // static State = State;
 
+    // macro.UI_GPU_DRIVEN
+    public declare tillingOffsetWithTrim: number[];
+
     constructor () {
         super();
         if (UI_GPU_DRIVEN) {
@@ -514,6 +540,9 @@ export class Sprite extends Renderable2D {
         // this._flushAssembler();
         this._activateMaterial();
         this._markForUpdateUvDirty();
+        if (UI_GPU_DRIVEN) {
+            this.tillingOffsetWithTrim = [];
+        }
     }
 
     public onDestroy () {
@@ -570,10 +599,6 @@ export class Sprite extends Renderable2D {
     }
 
     protected _updateBuiltinMaterial () {
-        // macro.UI_GPU_DRIVEN
-        if (UI_GPU_DRIVEN) {
-            this._canDrawByFourVertex = true;
-        }
         let mat = super._updateBuiltinMaterial();
         if (this.spriteFrame && this.spriteFrame.texture instanceof RenderTexture) {
             const defines = { SAMPLE_FROM_RT: true, ...mat.passes[0].defines };
@@ -750,5 +775,39 @@ export class Sprite extends Renderable2D {
 
         out.x = content.width / rect.width;
         out.y = content.height / rect.height;
+    }
+
+    // macro.UI_GPU_DRIVEN
+    public _updateUVWithTrim () {
+        this.tillingOffsetWithTrim.length = 0;
+        const frame = this.spriteFrame!;
+        const originSize = frame.originalSize;
+        const rect = frame.rect;
+        const tex = frame.texture;
+        const texw = tex.width;
+        const texh = tex.height;
+        let x = 0;
+        let y = 0;
+        if (frame.original) {
+            x = rect.x - frame.original._x;
+            y = rect.y - frame.original._y;
+        }
+        let l = texw === 0 ? 0 : x / texw;
+        let r = texw === 0 ? 1 : (x + originSize.width) / texw;
+        let b = texh === 0 ? 1 : (y + originSize.height) / texh;
+        let t = texh === 0 ? 0 : y / texh;
+        if (frame.rotated) {
+            l = texw === 0 ? 0 : x / texw;
+            r = texw === 0 ? 1 : (x + originSize.height) / texw;
+            t = texh === 0 ? 0 : y / texh;
+            b = texh === 0 ? 1 : (y + originSize.width) / texh;
+        }
+        this.tillingOffsetWithTrim[0] = r - l;//r-l
+        this.tillingOffsetWithTrim[1] = b - t;//b-t
+        this.tillingOffsetWithTrim[2] = l;//l
+        this.tillingOffsetWithTrim[3] = t;//t
+        if (frame.rotated) {
+            this.tillingOffsetWithTrim[0] = -this.tillingOffsetWithTrim[0];
+        }
     }
 }

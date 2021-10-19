@@ -287,6 +287,7 @@ module.exports = {
             animationBakeRate: {
                 name: 'Animation Bake Rate',
                 title: 'Specify the animation bake rate in frames per second (fps).',
+                auto: '自动',
             },
             promoteSingleRootNode: {
                 name: 'Promote single root node',
@@ -315,6 +316,9 @@ module.exports = {
         material: {
             'fail-to-load-custom-inspector': 'material: fail to load custom inspector of {effect}',
             'illegal-inspector-url': "Inspector's URL is not valid",
+        },
+        animationGraph: {
+            edit: 'Edit in the Animation Graph panel',
         },
         multipleWarning: 'Multi-select editing of this type of asset is not supported',
     },

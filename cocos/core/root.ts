@@ -287,13 +287,7 @@ export class Root {
         });
         this._curWindow = this._mainWindow;
 
-        return Promise.resolve(builtinResMgr.initBuiltinRes(this._device)).then(() => {
-            legacyCC.view.on('design-resolution-changed', () => {
-                const width = legacyCC.game.canvas.width;
-                const height = legacyCC.game.canvas.height;
-                this.resize(width, height);
-            }, this);
-        });
+        return Promise.resolve(builtinResMgr.initBuiltinRes(this._device));
     }
 
     public destroy () {
@@ -346,7 +340,7 @@ export class Root {
             // disable cluster
             this._pipeline.clusterEnabled = false;
         }
-        this._pipeline.bloomEnable = false;
+        this._pipeline.bloomEnabled = false;
 
         if (!this._pipeline.activate(this._mainWindow!.swapchain)) {
             if (isCreateDefaultPipeline) {

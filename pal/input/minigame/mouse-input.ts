@@ -1,34 +1,29 @@
 import { MouseCallback } from 'pal/input';
 import { MouseEventData, MouseWheelEventData, minigame } from 'pal/minigame';
 import { screenAdapter } from 'pal/screen-adapter';
+import { systemInfo } from 'pal/system-info';
 import { Vec2 } from '../../../cocos/core/math';
 import { EventTarget } from '../../../cocos/core/event';
 import { EventMouse } from '../../../cocos/input/types';
-import { legacyCC } from '../../../cocos/core/global-exports';
 import { InputEventType } from '../../../cocos/input/types/event-enum';
+import { Feature } from '../../system-info/enum-type';
 
 export class MouseInputSource {
-    public support: boolean;
     private _eventTarget: EventTarget = new EventTarget();
     private _isPressed = false;
     private _preMousePos: Vec2 = new Vec2();
 
     constructor () {
-        this.support = typeof minigame.wx === 'object' && typeof minigame.wx.onMouseDown !== 'undefined';
-        if (this.support) {
+        if (systemInfo.hasFeature(Feature.EVENT_MOUSE)) {
             this._registerEvent();
         }
     }
 
     private _getLocation (event: MouseEventData): Vec2 {
         const windowSize = screenAdapter.windowSize;
-        let x = event.x;
-        let y = windowSize.height - event.y;
-        // TODO: should not call engine API
-        const view = legacyCC.view;
-        const dpr = view._devicePixelRatio;
-        x *= dpr;
-        y *= dpr;
+        const dpr = screenAdapter.devicePixelRatio;
+        const x = event.x * dpr;
+        const y = windowSize.height - event.y * dpr;
         return new Vec2(x, y);
     }
 

@@ -254,6 +254,14 @@ Forward render pipeline initialized.
 
 Deferred render pipeline initialized. Note that non-transparent materials with no lighting will not be rendered, such as builtin-unlit.
 
+### 1220
+
+Failed to set shading scale, pipelineSceneData is invalid.
+
+### 1221
+
+Setting orientation is not supported yet.
+
 ### 1300
 
 %s is not in the model pool and cannot be destroyed by destroyModel.
@@ -3141,3 +3149,7 @@ Can not encode CCON binary: lack of text encoder.
 ### 13104
 
 Can not decode CCON binary: lack of text decoder.
+
+### 14000
+
+Graph update has been interrupted since too many transitions(greater than %s) occurred during one frame.

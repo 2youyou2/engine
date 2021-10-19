@@ -48,6 +48,8 @@ import { BrowserType } from '../../pal/system-info/enum-type';
 import { Layers } from './scene-graph';
 import { log2 } from './math/bits';
 import { garbageCollectionManager } from './data/garbage-collection';
+import { screen } from './platform/screen';
+import { Size } from './math';
 
 interface ISceneInfo {
     url: string;
@@ -591,7 +593,10 @@ export class Game extends EventTarget {
         }
         garbageCollectionManager.init();
 
-        return Promise.resolve(initPromise).then(() => this._setRenderPipelineNShowSplash());
+        return Promise.resolve(initPromise).then(() => this._setRenderPipelineNShowSplash()).then(() => {
+            // @ts-expect-error access private method.
+            screen._init();
+        });
     }
 
     //  @ Persist root node section
@@ -659,7 +664,9 @@ export class Game extends EventTarget {
 
     private _initEngine () {
         this._initDevice();
-        return Promise.resolve(legacyCC.director._init()).then(() => {
+        const director = legacyCC.director;
+        return Promise.resolve(director._init()).then(() => {
+            legacyCC.view.init();
             // Log engine version
             debug.log(`Cocos Creator v${VERSION}`);
             this.emit(Game.EVENT_ENGINE_INITED);
@@ -793,18 +800,10 @@ export class Game extends EventTarget {
         this.renderType = Game.RENDER_TYPE_CANVAS;
         let supportRender = false;
 
-        if (userRenderMode === 0) {
-            if (sys.capabilities.opengl) {
-                this.renderType = Game.RENDER_TYPE_WEBGL;
-                supportRender = true;
-            } else if (sys.capabilities.canvas) {
-                this.renderType = Game.RENDER_TYPE_CANVAS;
-                supportRender = true;
-            }
-        } else if (userRenderMode === 1 && sys.capabilities.canvas) {
+        if (userRenderMode === 1) {
             this.renderType = Game.RENDER_TYPE_CANVAS;
             supportRender = true;
-        } else if (userRenderMode === 2 && sys.capabilities.opengl) {
+        } else if (userRenderMode === 0 || userRenderMode === 2) {
             this.renderType = Game.RENDER_TYPE_WEBGL;
             supportRender = true;
         } else if (userRenderMode === 3) {
@@ -834,7 +833,6 @@ export class Game extends EventTarget {
         // WebGL context created successfully
         if (this.renderType === Game.RENDER_TYPE_WEBGL) {
             const ctors: Constructor<Device>[] = [];
-
             const deviceInfo = new DeviceInfo(bindingMappingInfo);
 
             if (JSB && window.gfx) {
@@ -875,8 +873,9 @@ export class Game extends EventTarget {
         }
 
         const swapchainInfo = new SwapchainInfo(this.canvas!);
-        swapchainInfo.width = sys.windowPixelResolution.width;
-        swapchainInfo.height = sys.windowPixelResolution.height;
+        const windowSize = screen.windowSize;
+        swapchainInfo.width = windowSize.width;
+        swapchainInfo.height = windowSize.height;
         this._swapchain = this._gfxDevice.createSwapchain(swapchainInfo);
 
         this.canvas!.oncontextmenu = () => false;
