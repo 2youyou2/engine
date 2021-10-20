@@ -29,7 +29,7 @@
 import { ccclass, displayOrder, type, serializable } from 'cc.decorator';
 import { Camera } from '../../renderer/scene';
 import { SetIndex } from '../define';
-import { Color, Rect, PipelineState, ClearFlagBit } from '../../gfx';
+import { Color, Rect, PipelineState, ClearFlagBit, Viewport } from '../../gfx';
 import { IRenderStageInfo, RenderStage } from '../render-stage';
 import { CommonStagePriority } from './enum';
 import { Material } from '../../assets/material';
@@ -38,7 +38,6 @@ import { RenderQueueDesc } from '../pipeline-serialization';
 import { renderProfiler } from '../pipeline-funcs';
 import { RenderFlow, RenderPipeline } from '..';
 import { CommonPipelineSceneData } from './common-pipeline-scene-data';
-import { macro } from '../..';
 import { DeferredPipeline } from 'exports/base';
 import { UIPhase } from './ui-phase';
 
@@ -105,7 +104,6 @@ export class PostProcessStage extends RenderStage {
         const device = pipeline.device;
         const sceneData = pipeline.pipelineSceneData;
         const cmdBuff = pipeline.commandBuffers[0];
-
         pipeline.pipelineUBO.updateCameraUBO(camera);
 
         const vp = camera.viewport;
@@ -134,7 +132,6 @@ export class PostProcessStage extends RenderStage {
         cmdBuff.beginRenderPass(renderPass, framebuffer, this._renderArea,
             colors, camera.clearDepth, camera.clearStencil);
         cmdBuff.bindDescriptorSet(SetIndex.GLOBAL, pipeline.descriptorSet);
-
         // Postprocess
         const builtinPostProcess = (sceneData as CommonPipelineSceneData).postprocessMaterial;
         const pass = builtinPostProcess.passes[0];
