@@ -55,6 +55,7 @@ export { InstancedBuffer } from './instanced-buffer';
 export { PipelineStateManager } from './pipeline-state-manager';
 
 export { DeferredPipelineSceneData } from './deferred/deferred-pipeline-scene-data';
+export { PipelineEventProcessor, PipelineEventType } from './pipeline-event';
 
 export function createDefaultPipeline () {
     const rppl = new ForwardPipeline();

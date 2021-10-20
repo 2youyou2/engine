@@ -253,7 +253,6 @@ export class LightingStage extends RenderStage {
         const deferredData = pipeline.getPipelineRenderData();
         const framebuffer = deferredData.outputFrameBuffer;
         const renderPass = framebuffer.renderPass;
-        pipeline.applyFramebufferRatio(framebuffer);
 
         pipeline.pipelineUBO.updateShadowUBO(camera);
 
