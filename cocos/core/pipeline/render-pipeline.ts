@@ -255,6 +255,9 @@ export abstract class RenderPipeline extends Asset implements IPipelineEvent {
 
     set bloomEnabled (value) {
         this._bloomEnabled = value;
+        if (value && this._pipelineRenderData && !this._pipelineRenderData.bloom) {
+            this._generateBloomRenderData();
+        }
     }
 
     get bloomEnabled () {

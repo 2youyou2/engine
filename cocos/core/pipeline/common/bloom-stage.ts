@@ -88,8 +88,17 @@ export class BloomStage extends RenderStage {
 
     public activate (pipeline: RenderPipeline, flow: RenderFlow) {
         super.activate(pipeline, flow);
-        if (!pipeline.bloomEnabled) return;
         if (this._bloomMaterial) { (pipeline.pipelineSceneData as CommonPipelineSceneData).bloomMaterial = this._bloomMaterial; }
+    }
+
+    private _inited = false;
+    public init () {
+        let pipeline = this._pipeline;
+        if (!pipeline.bloomEnabled) return;
+
+        if (this._inited) {
+            return;
+        }
 
         const passNumber = MAX_BLOOM_FILTER_PASS_NUM * 2 + 2;
         for (let i = 0; i < passNumber; ++i) {
@@ -100,6 +109,8 @@ export class BloomStage extends RenderStage {
                 UBOBloom.SIZE,
             ));
         }
+
+        this._inited = true;
     }
 
     public destroy () {
@@ -110,11 +121,11 @@ export class BloomStage extends RenderStage {
         if (!camera.window?.swapchain && !pipeline.macros.CC_PIPELINE_TYPE) {
             return;
         }
-        if (!pipeline.bloomEnabled || camera.scene!.batches.length > 0) return;
 
-        const device = pipeline.device;
         const sceneData = pipeline.pipelineSceneData;
-        const builtinBloomProcess = (sceneData as CommonPipelineSceneData).bloomMaterial;
+        if (!pipeline.bloomEnabled || !pipeline.pipelineSceneData.renderObjects.length) return;
+
+        this.init();
 
         if (camera.clearFlag & ClearFlagBit.COLOR) {
             colors[0].x = camera.clearColor.x;
