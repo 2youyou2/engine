@@ -142,8 +142,8 @@ export class PostProcessStage extends RenderStage {
 
         const deferredData = (pipeline as DeferredPipeline).getPipelineRenderData();
         
-        if (pipeline.bloomEnabled) {
-            pass.descriptorSet.bindTexture(0, renderData.bloom!.combineTex);
+        if (pipeline.bloomEnabled && renderData.bloom) {
+            pass.descriptorSet.bindTexture(0, renderData.bloom.combineTex);
         }
         else if (deferredData.taaResult) {
             pass.descriptorSet.bindTexture(0, deferredData.taaResult);
