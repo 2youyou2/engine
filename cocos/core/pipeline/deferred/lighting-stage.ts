@@ -257,6 +257,7 @@ export class LightingStage extends RenderStage {
 
         cmdBuff.beginRenderPass(renderPass, framebuffer, this._renderArea,
             colors, camera.clearDepth, camera.clearStencil);
+        cmdBuff.setScissor(pipeline.generateScissor(camera));
         cmdBuff.setViewport(pipeline.generateViewport(camera));
         cmdBuff.bindDescriptorSet(SetIndex.GLOBAL, pipeline.descriptorSet);
 
