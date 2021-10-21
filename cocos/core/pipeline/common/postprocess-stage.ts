@@ -114,11 +114,6 @@ export class PostProcessStage extends RenderStage {
 
         colors[0].w = camera.clearColor.w;
 
-        // if (this._renderScale !== 1) {
-        //     this._renderArea.width *= this._renderScale;
-        //     this._renderArea.height *= this._renderScale;
-        // }
-
         cmdBuff.beginRenderPass(renderPass, framebuffer, this._renderArea,
             colors, camera.clearDepth, camera.clearStencil);
         cmdBuff.bindDescriptorSet(SetIndex.GLOBAL, pipeline.descriptorSet);
