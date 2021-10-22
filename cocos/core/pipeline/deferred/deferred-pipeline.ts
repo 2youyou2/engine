@@ -283,10 +283,22 @@ export class DeferredPipeline extends RenderPipeline {
         const data: DeferredRenderData = this._pipelineRenderData = new DeferredRenderData();
 
         for (let i = 0; i < 4; ++i) {
+            let format = Format.RGBA8;
+
+            // position need most precision for reflection
+            if (i === 1) {
+                format = Format.RGBA32F;
+            }
+            // normal & emission
+            // emission stored hdr lightmap info, need more precision
+            else if (i === 2 || i === 3) {
+                format = Format.RGBA16F;
+            }
+
             data.gbufferRenderTargets.push(device.createTexture(new TextureInfo(
                 TextureType.TEX2D,
                 TextureUsageBit.COLOR_ATTACHMENT | TextureUsageBit.SAMPLED,
-                i % 3 ? Format.RGBA32F : Format.RGBA8, // positions & normals need more precision
+                format,
                 this._width,
                 this._height,
             )));
