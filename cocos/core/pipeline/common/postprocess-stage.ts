@@ -39,6 +39,7 @@ import { renderProfiler } from '../pipeline-funcs';
 import { RenderFlow, RenderPipeline } from '..';
 import { CommonPipelineSceneData } from './common-pipeline-scene-data';
 import { DeferredPipeline } from 'exports/base';
+import { UIPhase } from './ui-phase';
 
 const colors: Color[] = [new Color(0, 0, 0, 1)];
 
@@ -66,8 +67,11 @@ export class PostProcessStage extends RenderStage {
 
     private _renderArea = new Rect();
 
+    private _uiPhase: UIPhase;
+
     constructor () {
         super();
+        this._uiPhase = new UIPhase();
     }
 
     public initialize (info: IRenderStageInfo): boolean {
@@ -77,6 +81,7 @@ export class PostProcessStage extends RenderStage {
 
     public activate (pipeline: RenderPipeline, flow: RenderFlow) {
         super.activate(pipeline, flow);
+        this._uiPhase.activate(pipeline);
         if (this._postProcessMaterial) { (pipeline.pipelineSceneData as CommonPipelineSceneData).postprocessMaterial = this._postProcessMaterial; }
     }
 
@@ -152,6 +157,7 @@ export class PostProcessStage extends RenderStage {
             cmdBuff.draw(inputAssembler);
         }
 
+        this._uiPhase.render(camera, renderPass);
         renderProfiler(device, renderPass, cmdBuff, pipeline.profiler, swapchain);
 
         cmdBuff.endRenderPass();

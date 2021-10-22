@@ -63,7 +63,7 @@ export class LightingStage extends RenderStage {
     private _descriptorSetLayout!: DescriptorSetLayout;
     private _renderArea = new Rect();
     private declare _planarQueue: PlanarShadowQueue;
-    private _uiPhase: UIPhase;
+    // private _uiPhase: UIPhase;
 
     @type(Material)
     @serializable
@@ -87,7 +87,7 @@ export class LightingStage extends RenderStage {
 
     constructor () {
         super();
-        this._uiPhase = new UIPhase();
+        // this._uiPhase = new UIPhase();
     }
 
     public initialize (info: IRenderStageInfo): boolean {
@@ -187,7 +187,7 @@ export class LightingStage extends RenderStage {
 
     public activate (pipeline: DeferredPipeline, flow: MainFlow) {
         super.activate(pipeline, flow);
-        this._uiPhase.activate(pipeline);
+        // this._uiPhase.activate(pipeline);
         const device = pipeline.device;
 
         // activate queue
@@ -324,7 +324,7 @@ export class LightingStage extends RenderStage {
             // planarQueue
             this._planarQueue.recordCommandBuffer(device, renderPass, cmdBuff);
         }
-        this._uiPhase.render(camera, renderPass);
+        // this._uiPhase.render(camera, renderPass);
         cmdBuff.endRenderPass();
     }
 }
