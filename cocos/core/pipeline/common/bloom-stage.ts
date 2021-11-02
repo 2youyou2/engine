@@ -123,7 +123,7 @@ export class BloomStage extends RenderStage {
         }
 
         const sceneData = pipeline.pipelineSceneData;
-        if (!pipeline.bloomEnabled || !pipeline.pipelineSceneData.renderObjects.length) return;
+        if (!pipeline.bloomEnabled || !sceneData.renderObjects.length) return;
 
         this.init();
 
