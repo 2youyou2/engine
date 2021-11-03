@@ -636,7 +636,7 @@ export abstract class RenderPipeline extends Asset implements IPipelineEvent {
 
         // create renderPass
         const colorAttachment = new ColorAttachment();
-        colorAttachment.format = Format.RGBA8;
+        colorAttachment.format = Format.RGBA16F;
         colorAttachment.loadOp = LoadOp.CLEAR;
         colorAttachment.storeOp = StoreOp.STORE;
         colorAttachment.endAccesses = [AccessType.COLOR_ATTACHMENT_WRITE];
@@ -649,7 +649,7 @@ export abstract class RenderPipeline extends Asset implements IPipelineEvent {
         bloom.prefiterTex = device.createTexture(new TextureInfo(
             TextureType.TEX2D,
             TextureUsageBit.COLOR_ATTACHMENT | TextureUsageBit.SAMPLED,
-            Format.RGBA8,
+            Format.RGBA16F,
             curWidth >> 1,
             curHeight >> 1,
         ));
@@ -665,7 +665,7 @@ export abstract class RenderPipeline extends Asset implements IPipelineEvent {
             bloom.downsampleTexs.push(device.createTexture(new TextureInfo(
                 TextureType.TEX2D,
                 TextureUsageBit.COLOR_ATTACHMENT | TextureUsageBit.SAMPLED,
-                Format.RGBA8,
+                Format.RGBA16F,
                 curWidth >> 1,
                 curHeight >> 1,
             )));
@@ -677,7 +677,7 @@ export abstract class RenderPipeline extends Asset implements IPipelineEvent {
             bloom.upsampleTexs.push(device.createTexture(new TextureInfo(
                 TextureType.TEX2D,
                 TextureUsageBit.COLOR_ATTACHMENT | TextureUsageBit.SAMPLED,
-                Format.RGBA8,
+                Format.RGBA16F,
                 curWidth,
                 curHeight,
             )));
@@ -694,7 +694,7 @@ export abstract class RenderPipeline extends Asset implements IPipelineEvent {
         bloom.combineTex = device.createTexture(new TextureInfo(
             TextureType.TEX2D,
             TextureUsageBit.COLOR_ATTACHMENT | TextureUsageBit.SAMPLED,
-            Format.RGBA8,
+            Format.RGBA16F,
             this._width,
             this._height,
         ));

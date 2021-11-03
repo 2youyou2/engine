@@ -50,8 +50,6 @@ const PIPELINE_TYPE = 1;
 export class DeferredRenderData extends PipelineRenderData {
     gbufferFrameBuffer: Framebuffer = null!;
     gbufferRenderTargets: Texture[] = [];
-
-    taaResult: Texture | null = null;
 }
 
 /**
@@ -67,6 +65,8 @@ export class DeferredPipeline extends RenderPipeline {
     @serializable
     @displayOrder(2)
     protected renderTextures: RenderTextureConfig[] = [];
+
+    public renderOverdraw = false;
 
     public initialize (info: IRenderPipelineInfo): boolean {
         super.initialize(info);
@@ -317,7 +317,7 @@ export class DeferredPipeline extends RenderPipeline {
 
         data.outputFrameBuffer = device.createFramebuffer(new FramebufferInfo(
             this._lightingRenderPass!,
-            data.outputRenderTargets,
+            data.outputRenderTargets.concat(),
             data.outputDepth,
         ));
         // Listens when the attachment texture is scaled

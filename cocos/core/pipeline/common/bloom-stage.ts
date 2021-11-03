@@ -159,7 +159,7 @@ export class BloomStage extends RenderStage {
         cmdBuff.bindDescriptorSet(SetIndex.GLOBAL, pipeline.descriptorSet);
 
         pass.descriptorSet.bindBuffer(0, this._bloomUBO[0]);
-        pass.descriptorSet.bindTexture(1, (renderData as any).taaResult || renderData.outputRenderTargets[0]);
+        pass.descriptorSet.bindTexture(1, renderData.outputRenderTargets[0]);
         pass.descriptorSet.bindSampler(1, bloomData.sampler);
         pass.descriptorSet.update();
         cmdBuff.bindDescriptorSet(SetIndex.MATERIAL, pass.descriptorSet);
@@ -295,7 +295,7 @@ export class BloomStage extends RenderStage {
         cmdBuff.bindDescriptorSet(SetIndex.GLOBAL, pipeline.descriptorSet);
         const pass = builtinBloomProcess.passes[BLOOM_COMBINEPASS_INDEX];
         pass.descriptorSet.bindBuffer(0, this._bloomUBO[uboIndex]);
-        pass.descriptorSet.bindTexture(1, (deferredData as any).taaResult || deferredData.outputRenderTargets[0]!);
+        pass.descriptorSet.bindTexture(1, deferredData.outputRenderTargets[0]!);
         pass.descriptorSet.bindTexture(2, bloomData.upsampleTexs[0]);
         pass.descriptorSet.bindSampler(1, bloomData.sampler);
         pass.descriptorSet.bindSampler(2, bloomData.sampler);
@@ -315,6 +315,8 @@ export class BloomStage extends RenderStage {
             cmdBuff.bindInputAssembler(inputAssembler);
             cmdBuff.draw(inputAssembler);
         }
+
+        deferredData.outputRenderTargets[0] = bloomData.combineTex;
 
         cmdBuff.endRenderPass();
     }

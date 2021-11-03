@@ -326,5 +326,7 @@ export class LightingStage extends RenderStage {
         }
         // this._uiPhase.render(camera, renderPass);
         cmdBuff.endRenderPass();
+
+        deferredData.outputRenderTargets[0] = deferredData.outputFrameBuffer.colorTextures[0]!;
     }
 }
