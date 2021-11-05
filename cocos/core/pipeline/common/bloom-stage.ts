@@ -91,28 +91,6 @@ export class BloomStage extends RenderStage {
         if (this._bloomMaterial) { (pipeline.pipelineSceneData as CommonPipelineSceneData).bloomMaterial = this._bloomMaterial; }
     }
 
-    private _inited = false;
-    public init () {
-        let pipeline = this._pipeline;
-        if (!pipeline.bloomEnabled) return;
-
-        if (this._inited) {
-            return;
-        }
-
-        const passNumber = MAX_BLOOM_FILTER_PASS_NUM * 2 + 2;
-        for (let i = 0; i < passNumber; ++i) {
-            this._bloomUBO[i] = pipeline.device.createBuffer(new BufferInfo(
-                BufferUsageBit.UNIFORM | BufferUsageBit.TRANSFER_DST,
-                MemoryUsageBit.HOST | MemoryUsageBit.DEVICE,
-                UBOBloom.SIZE,
-                UBOBloom.SIZE,
-            ));
-        }
-
-        this._inited = true;
-    }
-
     public destroy () {
     }
 
@@ -125,7 +103,19 @@ export class BloomStage extends RenderStage {
         const sceneData = pipeline.pipelineSceneData;
         if (!pipeline.bloomEnabled || !sceneData.renderObjects.length) return;
 
-        this.init();
+        pipeline.generateBloomRenderData();
+
+        if (this._bloomUBO.length === 0) {
+            const passNumber = MAX_BLOOM_FILTER_PASS_NUM * 2 + 2;
+            for (let i = 0; i < passNumber; ++i) {
+                this._bloomUBO[i] = pipeline.device.createBuffer(new BufferInfo(
+                    BufferUsageBit.UNIFORM | BufferUsageBit.TRANSFER_DST,
+                    MemoryUsageBit.HOST | MemoryUsageBit.DEVICE,
+                    UBOBloom.SIZE,
+                    UBOBloom.SIZE,
+                ));
+            }
+        }
 
         if (camera.clearFlag & ClearFlagBit.COLOR) {
             colors[0].x = camera.clearColor.x;
@@ -164,7 +154,7 @@ export class BloomStage extends RenderStage {
         pass.descriptorSet.update();
         cmdBuff.bindDescriptorSet(SetIndex.MATERIAL, pass.descriptorSet);
 
-        const inputAssembler = camera.window!.swapchain ? pipeline.quadIAOffscreen : pipeline.quadIAOnscreen;
+        const inputAssembler = camera.window.swapchain ? pipeline.quadIAOffscreen : pipeline.quadIAOnscreen;
         let pso: PipelineState | null = null;
 
         const shader = pass.getShaderVariant();
@@ -212,7 +202,7 @@ export class BloomStage extends RenderStage {
             pass.descriptorSet.update();
             cmdBuff.bindDescriptorSet(SetIndex.MATERIAL, pass.descriptorSet);
 
-            const inputAssembler = camera.window!.swapchain ? pipeline.quadIAOffscreen : pipeline.quadIAOnscreen;
+            const inputAssembler = camera.window.swapchain ? pipeline.quadIAOffscreen : pipeline.quadIAOnscreen;
             let pso: PipelineState | null = null;
 
             if (pass != null && shader != null && inputAssembler != null) {
@@ -261,7 +251,7 @@ export class BloomStage extends RenderStage {
             pass.descriptorSet.update();
             cmdBuff.bindDescriptorSet(SetIndex.MATERIAL, pass.descriptorSet);
 
-            const inputAssembler = camera.window!.swapchain ? pipeline.quadIAOffscreen : pipeline.quadIAOnscreen;
+            const inputAssembler = camera.window.swapchain ? pipeline.quadIAOffscreen : pipeline.quadIAOnscreen;
             let pso: PipelineState | null = null;
 
             if (pass != null && shader != null && inputAssembler != null) {
@@ -302,7 +292,7 @@ export class BloomStage extends RenderStage {
         pass.descriptorSet.update();
         cmdBuff.bindDescriptorSet(SetIndex.MATERIAL, pass.descriptorSet);
 
-        const inputAssembler = camera.window!.swapchain ? pipeline.quadIAOffscreen : pipeline.quadIAOnscreen;
+        const inputAssembler = camera.window.swapchain ? pipeline.quadIAOffscreen : pipeline.quadIAOnscreen;
         let pso: PipelineState | null = null;
 
         const shader = pass.getShaderVariant();
