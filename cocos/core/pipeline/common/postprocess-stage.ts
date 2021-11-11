@@ -38,7 +38,7 @@ import { RenderQueueDesc } from '../pipeline-serialization';
 import { renderProfiler } from '../pipeline-funcs';
 import { RenderFlow, RenderPipeline } from '..';
 import { CommonPipelineSceneData } from './common-pipeline-scene-data';
-import { DeferredPipeline } from 'exports/base';
+import { builtinResMgr, DeferredPipeline, Texture2D } from 'exports/base';
 import { UIPhase } from './ui-phase';
 
 const colors: Color[] = [new Color(0, 0, 0, 1)];
@@ -140,15 +140,18 @@ export class PostProcessStage extends RenderStage {
         }
 
         const renderObjects = pipeline.pipelineSceneData.renderObjects;
-        if (pso != null && (renderObjects.length > 0 || camera.scene!.batches.length > 0)) {
+        if (pso != null && (renderObjects.length > 0)) {
             cmdBuff.bindPipelineState(pso);
             cmdBuff.bindInputAssembler(inputAssembler);
             cmdBuff.draw(inputAssembler);
         }
 
         this._uiPhase.render(camera, renderPass);
-        renderProfiler(device, renderPass, cmdBuff, pipeline.profiler, swapchain);
 
+        if (pipeline.cameras.indexOf(camera) === pipeline.cameras.length - 1) {
+            renderProfiler(device, renderPass, cmdBuff, pipeline.profiler, swapchain);
+        }
+            
         cmdBuff.endRenderPass();
     }
 }

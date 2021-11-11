@@ -376,6 +376,8 @@ export abstract class RenderPipeline extends Asset implements IPipelineEvent {
 
     protected _ensureEnoughSize (cameras: Camera[]) {}
 
+    cameras: Camera[] = []
+
     /**
      * @en Render function, it basically run the render process of all flows in sequence for the given view.
      * @zh 渲染函数，对指定的渲染视图按顺序执行所有渲染流程。
@@ -385,6 +387,9 @@ export abstract class RenderPipeline extends Asset implements IPipelineEvent {
         if (cameras.length === 0) {
             return;
         }
+
+        this.cameras = cameras;
+
         this._commandBuffers[0].begin();
         this.emit(PipelineEventType.RENDER_FRAME_BEGIN, cameras);
         this._ensureEnoughSize(cameras);

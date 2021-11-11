@@ -224,7 +224,7 @@ export class ForwardPipeline extends RenderPipeline {
 
         data.outputFrameBuffer = device.createFramebuffer(new FramebufferInfo(
             this._postRenderPass!,
-            data.outputRenderTargets,
+            data.outputRenderTargets.concat(),
             data.outputDepth,
         ));
         // Listens when the attachment texture is scaled

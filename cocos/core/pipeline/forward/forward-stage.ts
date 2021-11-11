@@ -88,13 +88,11 @@ export class ForwardStage extends RenderStage {
     private _clearFlag = 0xffffffff;
     private declare _additiveLightQueue: RenderAdditiveLightQueue;
     private declare _planarQueue: PlanarShadowQueue;
-    private declare _uiPhase: UIPhase;
 
     constructor () {
         super();
         this._batchedQueue = new RenderBatchedQueue();
         this._instancedQueue = new RenderInstancedQueue();
-        this._uiPhase = new UIPhase();
     }
 
     public initialize (info: IRenderStageInfo): boolean {
@@ -113,7 +111,6 @@ export class ForwardStage extends RenderStage {
 
         this._additiveLightQueue = new RenderAdditiveLightQueue(this._pipeline as ForwardPipeline);
         this._planarQueue = new PlanarShadowQueue(this._pipeline);
-        if (!pipeline.postRenderPass) this._uiPhase.activate(pipeline);
     }
 
     public destroy () {
@@ -182,6 +179,10 @@ export class ForwardStage extends RenderStage {
             renderPass = pipeline.getRenderPass(camera.clearFlag & this._clearFlag, swapchain);
             const forwardData = pipeline.getPipelineRenderData();
             framebuffer = forwardData.outputFrameBuffer;
+            
+            if (renderObjects.length && camera.name !== 'Editor UIGizmoCamera') {
+                forwardData.outputRenderTargets[0] = framebuffer.colorTextures[0]!;
+            }
         }
         cmdBuff.beginRenderPass(renderPass, framebuffer, this._renderArea,
             colors, camera.clearDepth, camera.clearStencil);
@@ -198,7 +199,6 @@ export class ForwardStage extends RenderStage {
         cmdBuff.bindDescriptorSet(SetIndex.GLOBAL, pipeline.descriptorSet);
         this._planarQueue.recordCommandBuffer(device, renderPass, cmdBuff);
         this._renderQueues[1].recordCommandBuffer(device, renderPass, cmdBuff);
-        this._uiPhase.render(camera, renderPass);
         cmdBuff.endRenderPass();
     }
 }
