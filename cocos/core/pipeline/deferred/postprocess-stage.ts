@@ -29,17 +29,17 @@
 import { ccclass, displayOrder, type, serializable } from 'cc.decorator';
 import { Camera } from '../../renderer/scene';
 import { SetIndex } from '../define';
-import { Color, Rect, PipelineState, ClearFlagBit, Viewport } from '../../gfx';
+import { Color, Rect, PipelineState, ClearFlagBit } from '../../gfx';
 import { IRenderStageInfo, RenderStage } from '../render-stage';
-import { CommonStagePriority } from './enum';
+import { CommonStagePriority } from '../enum';
 import { Material } from '../../assets/material';
 import { PipelineStateManager } from '../pipeline-state-manager';
 import { RenderQueueDesc } from '../pipeline-serialization';
 import { renderProfiler } from '../pipeline-funcs';
 import { RenderFlow, RenderPipeline } from '..';
-import { CommonPipelineSceneData } from './common-pipeline-scene-data';
-import { builtinResMgr, DeferredPipeline, Texture2D } from 'exports/base';
-import { UIPhase } from './ui-phase';
+
+import { UIPhase } from '../ui-phase';
+import { DeferredPipelineSceneData } from './deferred-pipeline-scene-data';
 
 const colors: Color[] = [new Color(0, 0, 0, 1)];
 
@@ -66,8 +66,7 @@ export class PostProcessStage extends RenderStage {
     private renderQueues: RenderQueueDesc[] = [];
 
     private _renderArea = new Rect();
-
-    private _uiPhase: UIPhase;
+    private declare _uiPhase: UIPhase;
 
     constructor () {
         super();
@@ -81,8 +80,8 @@ export class PostProcessStage extends RenderStage {
 
     public activate (pipeline: RenderPipeline, flow: RenderFlow) {
         super.activate(pipeline, flow);
+        if (this._postProcessMaterial) { (pipeline.pipelineSceneData as DeferredPipelineSceneData).postprocessMaterial = this._postProcessMaterial; }
         this._uiPhase.activate(pipeline);
-        if (this._postProcessMaterial) { (pipeline.pipelineSceneData as CommonPipelineSceneData).postprocessMaterial = this._postProcessMaterial; }
     }
 
     public destroy () {
@@ -90,12 +89,6 @@ export class PostProcessStage extends RenderStage {
 
     public render (camera: Camera) {
         const pipeline = this._pipeline;
-        // TODO: The offscreen camera does not do fxaa processing
-        // (For example, the editor camera small window will cause the picture to be distorted, etc.)
-        // Later the version will get the configuration from the camera
-        if (!camera.window?.swapchain && !pipeline.macros.CC_PIPELINE_TYPE) {
-            return;
-        }
         const device = pipeline.device;
         const sceneData = pipeline.pipelineSceneData;
         const cmdBuff = pipeline.commandBuffers[0];
@@ -123,7 +116,7 @@ export class PostProcessStage extends RenderStage {
             colors, camera.clearDepth, camera.clearStencil);
         cmdBuff.bindDescriptorSet(SetIndex.GLOBAL, pipeline.descriptorSet);
         // Postprocess
-        const builtinPostProcess = (sceneData as CommonPipelineSceneData).postprocessMaterial;
+        const builtinPostProcess = (sceneData as DeferredPipelineSceneData).postprocessMaterial;
         const pass = builtinPostProcess.passes[0];
         const shader = pass.getShaderVariant();
 
@@ -140,7 +133,8 @@ export class PostProcessStage extends RenderStage {
         }
 
         const renderObjects = pipeline.pipelineSceneData.renderObjects;
-        if (pso != null && (renderObjects.length > 0)) {
+
+        if (pso != null && renderObjects.length > 0) {
             cmdBuff.bindPipelineState(pso);
             cmdBuff.bindInputAssembler(inputAssembler);
             cmdBuff.draw(inputAssembler);
@@ -149,7 +143,7 @@ export class PostProcessStage extends RenderStage {
         this._uiPhase.render(camera, renderPass);
 
         if (pipeline.cameras.indexOf(camera) === pipeline.cameras.length - 1) {
-            renderProfiler(device, renderPass, cmdBuff, pipeline.profiler, swapchain);
+            renderProfiler(device, renderPass, cmdBuff, pipeline.profiler, camera);
         }
             
         cmdBuff.endRenderPass();

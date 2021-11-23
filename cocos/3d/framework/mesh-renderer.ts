@@ -299,6 +299,8 @@ export class MeshRenderer extends RenderableComponent {
         if (!this._model) {
             this._updateModels();
         }
+        this._updateCastShadow();
+        this._updateReceiveShadow();
         this._attachToScene();
     }
 

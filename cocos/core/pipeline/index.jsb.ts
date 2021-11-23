@@ -27,14 +27,14 @@
 declare const nr: any;
 
 import { getPhaseID } from './pass-phase'
-import { setClassName, mixin } from '../../core/utils/js';
+import { setClassName, mixin, addon } from '../../core/utils/js';
 import { DeferredPipelineSceneData } from './deferred/deferred-pipeline-scene-data';
 import { legacyCC } from '../../core/global-exports';
 import { Asset } from '../assets/asset';
 import { Swapchain } from '../gfx';
 import { Model, Camera } from '../renderer/scene';
-import { CommonPipelineSceneData } from './common/common-pipeline-scene-data';
 import { IPipelineEvent, PipelineEventType } from './pipeline-event';
+import { PipelineSceneData } from './pipeline-scene-data';
 
 import * as pipeline from './define';
 export { pipeline };
@@ -64,7 +64,7 @@ export function createDefaultPipeline () {
 
 // ForwardPipeline
 export class ForwardPipeline extends nr.ForwardPipeline implements IPipelineEvent {
-    public pipelineSceneData = new CommonPipelineSceneData();
+    public pipelineSceneData = new PipelineSceneData();
 
     constructor() {
       super();
@@ -112,7 +112,7 @@ export class ForwardPipeline extends nr.ForwardPipeline implements IPipelineEven
     }
 }
 
-mixin(ForwardPipeline.prototype, Asset.prototype);
+addon(ForwardPipeline.prototype, Asset.prototype);
 
 const ForwardOnLoaded = ForwardPipeline.prototype.onLoaded;
 
@@ -256,7 +256,7 @@ export class DeferredPipeline extends nr.DeferredPipeline implements IPipelineEv
 
 }
 
-mixin(DeferredPipeline.prototype, Asset.prototype);
+addon(DeferredPipeline.prototype, Asset.prototype);
 
 const DeferredOnLoaded = DeferredPipeline.prototype.onLoaded;
 

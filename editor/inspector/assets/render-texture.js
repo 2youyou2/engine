@@ -15,12 +15,12 @@ exports.template = texture.template.replace('<!-- dont delete, for insert -->', 
 
 exports.style = texture.style;
 
-exports.$ = Object.assign(texture.$, {
+exports.$ = Object.assign({}, texture.$, {
     widthInput: '.width-input',
     heightInput: '.height-input',
 });
 
-const Elements = Object.assign(texture.Elements, {
+const Elements = Object.assign({}, texture.Elements, {
     width: {
         ready() {
             const panel = this;
@@ -63,9 +63,16 @@ const Elements = Object.assign(texture.Elements, {
     },
 });
 
-exports.ready = texture.ready;
+exports.ready = function() {
+    for (const prop in Elements) {
+        const element = Elements[prop];
+        if (element.ready) {
+            element.ready.call(this);
+        }
+    }
+};
 
-exports.methods = Object.assign(texture.methods, {
+exports.methods = Object.assign({}, texture.methods, {
     async apply() {
         await Editor.Message.request('scene', 'apply-render-texture', this.asset.uuid, this.userData);
     },

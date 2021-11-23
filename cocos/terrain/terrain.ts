@@ -390,7 +390,7 @@ export class TerrainBlock {
         this._renderable._model.node = this._renderable._model.transform = this._node;
         // ensure the terrain node is in the scene
         if (this._renderable.node.scene != null) {
-            this._renderable._getRenderScene().addModel(this._renderable._model);
+            this.visible = true;
         }
 
         // reset weightmap
@@ -415,6 +415,7 @@ export class TerrainBlock {
     }
 
     public destroy () {
+        this.visible = false;
         this._renderable._destroyModel();
 
         if (this._node != null && this._node.isValid) {
@@ -673,7 +674,8 @@ export class TerrainBlock {
             if (val) {
                 if (this._terrain.node != null
                     && this._terrain.node.scene != null
-                    && this._terrain.node.scene.renderScene != null) {
+                    && this._terrain.node.scene.renderScene != null
+                    && this._renderable._model.scene == null) {
                     this._terrain.node.scene.renderScene.addModel(this._renderable._model);
                 }
             } else if (this._renderable._model.scene !== null) {
@@ -901,7 +903,23 @@ export class TerrainBlock {
             }
         }
 
-        if (this._lodKey.compare(key)) {
+        if (this._lodKey.equals(key)) {
+            return;
+        }
+
+        this._lodKey = key;
+        this._updateIndexBuffer();
+    }
+
+    public _resetLod () {
+        const key = new TerrainLodKey();
+        key.level = 0;
+        key.north = 0;
+        key.south = 0;
+        key.west = 0;
+        key.east = 0;
+
+        if (this._lodKey.equals(key)) {
             return;
         }
 
@@ -1083,6 +1101,7 @@ export class Terrain extends Component {
     @disallowAnimation
     protected _lodBias = 0;
 
+    protected _buitinAsset : TerrainAsset|null = null;
     protected _tileSize = 1;
     protected _blockCount: number[] = [1, 1];
     protected _weightMapSize = 128;
@@ -1108,8 +1127,10 @@ export class Terrain extends Component {
     @type(TerrainAsset)
     @visible(true)
     public set _asset (value: TerrainAsset|null) {
-        if (this.__asset !== value) {
-            this.__asset = value;
+        this.__asset = value;
+
+        if (this._buitinAsset !== this.__asset) {
+            this._buitinAsset = this.__asset;
 
             // destroy all block
             for (let i = 0; i < this._blocks.length; ++i) {
@@ -1136,8 +1157,8 @@ export class Terrain extends Component {
                 this._blocks = [];
             }
 
-             // Ensure device is created
-             if (legacyCC.director.root.device) {
+            // Ensure device is created
+            if (legacyCC.director.root.device) {
                 // rebuild
                 this._buildImp();
             }
@@ -1222,12 +1243,17 @@ export class Terrain extends Component {
      * @zh 是否允许lod
      */
     @editable
-    get LodEnable () {
+    get lodEnable () {
         return this._lodEnable;
     }
 
-    set LodEnable (val) {
+    set lodEnable (val) {
         this._lodEnable = val;
+        if (!this._lodEnable) {
+            for (let i = 0; i < this._blocks.length; i++) {
+                this._blocks[i]._resetLod();
+            }
+        }
     }
 
     /**
@@ -1527,7 +1553,7 @@ export class Terrain extends Component {
     }
 
     public onRestore () {
-        this.onDisable();
+        this.onEnable();
         this._buildImp(true);
     }
 
@@ -1538,7 +1564,7 @@ export class Terrain extends Component {
     }
 
     public onUpdateFromCamera (cam: Camera): void {
-        if (!this.LodEnable) {
+        if (!this.lodEnable) {
             return;
         }
         if (cam.scene !== this._getRenderScene()) {
