@@ -125,8 +125,10 @@ activateTasksPool.get = function getActivateTask () {
 };
 
 function _componentCorrupted (node, comp, index) {
-    errorID(3817, node.name, index);
-    console.log('Corrupted component value:', comp);
+    if (DEV) {
+        errorID(3817, node.name, index);
+        console.log('Corrupted component value:', comp);
+    }
     if (comp) {
         node._removeComponent(comp);
     } else {
@@ -136,7 +138,7 @@ function _componentCorrupted (node, comp, index) {
 
 function _onLoadInEditor (comp) {
     if (comp.onLoad && !legacyCC.GAME_VIEW) {
-        // @ts-expect-error Editor API usage
+        // @ts-expect-error
         const focused = Editor.Selection.getLastSelected('node') === comp.node.uuid;
         if (focused) {
             if (comp.onFocusInEditor && callOnFocusInTryCatch) {
@@ -147,7 +149,7 @@ function _onLoadInEditor (comp) {
         }
     }
     if (!TEST) {
-        // @ts-expect-error Editor API usage
+        // @ts-expect-error
         _Scene.AssetsWatcher.start(comp);
     }
 }
