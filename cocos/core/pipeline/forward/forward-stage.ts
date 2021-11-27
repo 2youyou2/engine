@@ -180,7 +180,7 @@ export class ForwardStage extends RenderStage {
         const renderPass = swapchain ? pipeline.getRenderPass(camera.clearFlag & this._clearFlag, swapchain) : framebuffer.renderPass;
 
         const forwardData = pipeline.getPipelineRenderData();
-        if (renderObjects.length && camera.name !== 'Editor UIGizmoCamera') {
+        if (forwardData && renderObjects.length && camera.name !== 'Editor UIGizmoCamera') {
             forwardData.outputRenderTargets[0] = framebuffer.colorTextures[0]!;
         }
 
