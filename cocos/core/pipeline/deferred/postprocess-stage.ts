@@ -92,7 +92,7 @@ export class PostProcessStage extends RenderStage {
         const device = pipeline.device;
         const sceneData = pipeline.pipelineSceneData;
         const cmdBuff = pipeline.commandBuffers[0];
-        pipeline.pipelineUBO.updateCameraUBO(camera);
+        // pipeline.pipelineUBO.updateCameraUBO(camera);
 
         const vp = camera.viewport;
         this._renderArea.x = vp.x * camera.window.width;
@@ -116,7 +116,11 @@ export class PostProcessStage extends RenderStage {
             colors, camera.clearDepth, camera.clearStencil);
         cmdBuff.bindDescriptorSet(SetIndex.GLOBAL, pipeline.descriptorSet);
         // Postprocess
-        const builtinPostProcess = (sceneData as DeferredPipelineSceneData).postprocessMaterial;
+        const builtinPostProcess = (sceneData as DeferredPipelineSceneData).postprocessMaterial || this._postProcessMaterial;
+        if (!builtinPostProcess) {
+            return;
+        }
+
         const pass = builtinPostProcess.passes[0];
         const shader = pass.getShaderVariant();
 

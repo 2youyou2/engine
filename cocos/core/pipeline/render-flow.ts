@@ -32,6 +32,8 @@ import { RenderStage } from './render-stage';
 import { RenderPipeline } from './render-pipeline';
 import { legacyCC } from '../global-exports';
 import { Camera } from '../renderer/scene';
+import { EDITOR } from 'internal:constants';
+import { ForwardFlow, ForwardStage } from '.';
 
 /**
  * @en Render flow information descriptor
@@ -142,6 +144,13 @@ export abstract class RenderFlow {
      * @param view Render view。
      */
     public render (camera: Camera) {
+        if (EDITOR) {
+            if (camera.name !== 'Editor Camera' && this._pipeline instanceof ForwardFlow) {
+                let stage = this._stages.find(s => s instanceof ForwardStage);
+                stage?.render(camera);
+                return;
+            }
+        }
         for (let i = 0, len = this._stages.length; i < len; i++) {
             if (this._stages[i].enabled) this._stages[i].render(camera);
         }

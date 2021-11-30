@@ -46,6 +46,8 @@ import { PlanarShadowQueue } from '../planar-shadow-queue';
 import { UIPhase } from '../ui-phase';
 import { Camera } from '../../renderer/scene';
 import { renderProfiler } from '../pipeline-funcs';
+import { legacyCC } from '../../global-exports';
+import { EDITOR } from 'internal:constants';
 
 const colors: Color[] = [new Color(0, 0, 0, 1)];
 
@@ -173,14 +175,27 @@ export class ForwardStage extends RenderStage {
             colors[0].w = camera.clearColor.w;
         }
         pipeline.generateRenderArea(camera, this._renderArea);
+        pipeline.updateQuadVertexData(this._renderArea, camera.window);
 
         const swapchain = camera.window.swapchain;
-
-        const framebuffer = camera.window.framebuffer;
-        const renderPass = swapchain ? pipeline.getRenderPass(camera.clearFlag & this._clearFlag, swapchain) : framebuffer.renderPass;
-
+        
         const forwardData = pipeline.getPipelineRenderData();
-        if (forwardData && renderObjects.length && camera.name !== 'Editor UIGizmoCamera') {
+
+        let framebuffer = camera.window.framebuffer;
+        if (camera.window === legacyCC.director.root.mainWindow && forwardData) {
+            if (EDITOR) {
+                if (camera.name === 'Editor Camera') {
+                    framebuffer = forwardData.outputFrameBuffer;
+                }
+            }
+            else {
+                framebuffer = forwardData.outputFrameBuffer;
+            }
+        }
+
+        const renderPass = swapchain ? pipeline.getRenderPass(camera.clearFlag & this._clearFlag, swapchain) : framebuffer.renderPass;
+        
+        if (forwardData && renderObjects.length) {
             forwardData.outputRenderTargets[0] = framebuffer.colorTextures[0]!;
         }
 
@@ -196,8 +211,8 @@ export class ForwardStage extends RenderStage {
         this._planarQueue.recordCommandBuffer(device, renderPass, cmdBuff);
         this._renderQueues[1].recordCommandBuffer(device, renderPass, cmdBuff);
 
-        this._uiPhase.render(camera, renderPass);
-        renderProfiler(device, renderPass, cmdBuff, pipeline.profiler, camera);
+        // this._uiPhase.render(camera, renderPass);
+        // renderProfiler(device, renderPass, cmdBuff, pipeline.profiler, camera);
 
         cmdBuff.endRenderPass();
     }
