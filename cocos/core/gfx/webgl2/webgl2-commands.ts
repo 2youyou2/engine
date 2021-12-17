@@ -1940,7 +1940,8 @@ export function WebGL2CmdFuncBindStates (
 
             const isFrontFaceCCW = rs.isFrontFaceCCW; // boolean XOR
             if (device.stateCache.rs.isFrontFaceCCW !== isFrontFaceCCW) {
-                gl.frontFace(isFrontFaceCCW ? gl.CCW : gl.CW);
+                let flipedFace = device.flipFace ? !isFrontFaceCCW : isFrontFaceCCW;
+                gl.frontFace(flipedFace ? gl.CCW : gl.CW);
                 device.stateCache.rs.isFrontFaceCCW = isFrontFaceCCW;
             }
 

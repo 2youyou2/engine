@@ -313,6 +313,9 @@ export class Camera {
         // view matrix
         if (this._node.hasChangedFlags || forceUpdate) {
             Mat4.invert(this._matView, this._node.worldMatrix);
+            if ((this as any)._onCalcViewMat) {
+                (this as any)._onCalcViewMat(this._matView);
+            }
             if (JSB) {
                 this._nativeObj!.matView = this._matView;
             }
@@ -342,6 +345,9 @@ export class Camera {
                 const y = this._orthoHeight;
                 Mat4.ortho(this._matProj, -x, x, -y, y, this._nearClip, this._farClip,
                     this._device.capabilities.clipSpaceMinZ, projectionSignY, orientation);
+            }
+            if ((this as any)._onCalcProjMat) {
+                (this as any)._onCalcProjMat(this._matProj);
             }
             if (JSB) {
                 this._nativeObj!.aspect = this._aspect;
