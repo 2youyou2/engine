@@ -182,15 +182,13 @@ export class ForwardStage extends RenderStage {
         const forwardData = pipeline.getPipelineRenderData();
 
         let framebuffer = camera.window.framebuffer;
-        if (camera.window === legacyCC.director.root.mainWindow && forwardData) {
-            if (EDITOR) {
-                if (camera.name === 'Editor Camera') {
-                    framebuffer = forwardData.outputFrameBuffer;
-                }
-            }
-            else {
+        if (EDITOR) {
+            if (camera.name === 'Editor Camera') {
                 framebuffer = forwardData.outputFrameBuffer;
             }
+        }
+        else {
+            framebuffer = forwardData.outputFrameBuffer;
         }
 
         const renderPass = swapchain ? pipeline.getRenderPass(camera.clearFlag & this._clearFlag, swapchain) : framebuffer.renderPass;
