@@ -124,6 +124,9 @@ export class RenderShadowMapBatchedQueue {
                 break;
             default:
             }
+
+            this._instancedQueue.uploadBuffers(cmdBuff);
+            this._batchedQueue.uploadBuffers(cmdBuff);
         }
     }
 
@@ -162,9 +165,6 @@ export class RenderShadowMapBatchedQueue {
                 this._passArray.push(pass);
             }
         }
-
-        this._instancedQueue.uploadBuffers(cmdBuff);
-        this._batchedQueue.uploadBuffers(cmdBuff);
     }
 
     /**
