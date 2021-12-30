@@ -30,6 +30,10 @@ import { DispatcherEventType, NodeEventProcessor } from '../../core/scene-graph/
 import { js } from '../../core/utils/js';
 import { InputEventType } from '../../input/types/event-enum';
 
+function _isRootNode (node: Node | null) {
+    return node?.parent?.parent === null;
+}
+
 class PointerEventDispatcher {
     private _isListDirty = false;
     private _inDispatchCount = 0;
@@ -50,6 +54,7 @@ class PointerEventDispatcher {
 
         NodeEventProcessor.callbacksInvoker.on(DispatcherEventType.ADD_POINTER_EVENT_PROCESSOR, this.addPointerEventProcessor, this);
         NodeEventProcessor.callbacksInvoker.on(DispatcherEventType.REMOVE_POINTER_EVENT_PROCESSOR, this.removePointerEventProcessor, this);
+        NodeEventProcessor.callbacksInvoker.on(DispatcherEventType.MARK_LIST_DIRTY, this._markListDirty, this);
     }
 
     public addPointerEventProcessor (pointerEventProcessor: NodeEventProcessor) {
@@ -187,10 +192,15 @@ class PointerEventDispatcher {
             return p2.cachedCameraPriority - p1.cachedCameraPriority;
         }
         let n1: Node | null = node1; let n2: Node | null = node2; let ex = false;
+        if (_isRootNode(n1)) {
+            return 1;
+        } else if (_isRootNode(n2)) {
+            return -1;
+        }
         // @ts-expect-error _id is a protected property
         while (n1.parent?._id !== n2.parent?._id) {
-            n1 = n1?.parent?.parent === null ? (ex = true) && node2 : n1 && n1.parent;
-            n2 = n2?.parent?.parent === null ? (ex = true) && node1 : n2 && n2.parent;
+            n1 = _isRootNode(n1) ? (ex = true) && node2 : n1 && n1.parent;
+            n2 = _isRootNode(n2) ? (ex = true) && node1 : n2 && n2.parent;
         }
 
         // @ts-expect-error protected property _id
@@ -209,6 +219,10 @@ class PointerEventDispatcher {
         const priority2 = n2 ? n2.getSiblingIndex() : 0;
 
         return ex ? priority1 - priority2 : priority2 - priority1;
+    }
+
+    private _markListDirty () {
+        this._isListDirty = true;
     }
 }
 
