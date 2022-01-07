@@ -333,7 +333,7 @@ export class Camera {
         // projection matrix
         const swapchain = this.window?.swapchain;
         const orientation = swapchain && swapchain.surfaceTransform || SurfaceTransform.IDENTITY;
-        if (this._isProjDirty || this._curTransform !== orientation) {
+        if (this._isProjDirty || this._curTransform !== orientation || forceUpdate) {
             this._curTransform = orientation;
             const projectionSignY = this._device.capabilities.clipSpaceSignY;
             // Only for rendertexture processing

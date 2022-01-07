@@ -103,6 +103,10 @@ export abstract class RenderFlow {
     protected _stages: RenderStage[] = [];
     protected _pipeline!: RenderPipeline;
 
+    setRenderStages (stages: RenderStage[]) {
+        this._stages = stages;
+    }
+
     /**
      * @en Get pipeline
      * @zh 获取pipeline
