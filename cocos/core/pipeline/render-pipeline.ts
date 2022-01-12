@@ -302,7 +302,7 @@ export abstract class RenderPipeline extends Asset implements IPipelineEvent {
         return renderPass;
     }
 
-    public applyFramebufferRatio (framebuffer: Framebuffer) {
+    public applyFramebufferRatio (framebuffer: Framebuffer, resizeDepth = false) {
         const sceneData = this.pipelineSceneData;
         const width = this._width * sceneData.shadingScale;
         const height = this._height * sceneData.shadingScale;
@@ -310,7 +310,7 @@ export abstract class RenderPipeline extends Asset implements IPipelineEvent {
         for (let i = 0; i < colorTexArr.length; i++) {
             colorTexArr[i]!.resize(width, height);
         }
-        if (framebuffer.depthStencilTexture) {
+        if (framebuffer.depthStencilTexture && resizeDepth) {
             framebuffer.depthStencilTexture.resize(width, height);
         }
         framebuffer.destroy();
