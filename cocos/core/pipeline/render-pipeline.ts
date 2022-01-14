@@ -384,6 +384,10 @@ export abstract class RenderPipeline extends Asset implements IPipelineEvent {
         return true;
     }
 
+    sceneCulling (camera: Camera) {
+        sceneCulling(this, camera);
+    }
+
     protected _ensureEnoughSize (cameras: Camera[]) {}
 
     cameras: Camera[] = []
@@ -410,7 +414,7 @@ export abstract class RenderPipeline extends Asset implements IPipelineEvent {
             if (camera.scene) {
                 this.emit(PipelineEventType.RENDER_CAMERA_BEGIN, camera);
                 validPunctualLightsCulling(this, camera);
-                sceneCulling(this, camera);
+                this.sceneCulling(camera);
                 this._pipelineUBO.updateGlobalUBO(camera.window);
                 this._pipelineUBO.updateCameraUBO(camera);
                 for (let j = 0; j < this._flows.length; j++) {

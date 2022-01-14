@@ -151,6 +151,8 @@ export abstract class RenderStage {
      * @param view The render view
      */
     public abstract render (camera: Camera);
+
+    time = 0;
 }
 
 legacyCC.RenderStage = RenderStage;
