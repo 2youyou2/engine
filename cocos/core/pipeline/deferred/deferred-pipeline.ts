@@ -44,6 +44,7 @@ import { Camera } from '../../renderer/scene';
 import { errorID } from '../../platform/debug';
 import { DeferredPipelineSceneData } from './deferred-pipeline-scene-data';
 import { PipelineEventType } from '../pipeline-event';
+import { legacyCC } from '../../global-exports';
 
 const PIPELINE_TYPE = 1;
 
@@ -277,7 +278,7 @@ export class DeferredPipeline extends RenderPipeline {
             let format = Format.RGBA16F;
 
             // position need most precision for reflection
-            if (i === 1) {
+            if (i === 1 && (legacyCC.sys.platform !== legacyCC.sys.Platform.MOBILE_BROWSER)) {
                 format = Format.RGBA32F;
             }
 

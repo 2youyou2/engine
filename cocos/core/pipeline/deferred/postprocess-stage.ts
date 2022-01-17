@@ -126,7 +126,7 @@ export class PostProcessStage extends RenderStage {
         const shader = pass.getShaderVariant();
 
         pass.descriptorSet.bindTexture(0, renderData.outputRenderTargets[0]);
-        pass.descriptorSet.bindSampler(0, renderData.sampler);
+        pass.descriptorSet.bindSampler(0, pipeline.globalDSManager.pointSampler);
         pass.descriptorSet.update();
 
         cmdBuff.bindDescriptorSet(SetIndex.MATERIAL, pass.descriptorSet);

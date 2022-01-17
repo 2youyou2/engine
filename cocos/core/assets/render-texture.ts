@@ -54,6 +54,8 @@ const _depthStencilAttachment = new DepthStencilAttachment();
 _depthStencilAttachment.format = Format.DEPTH_STENCIL;
 const passInfo = new RenderPassInfo([_colorAttachment], _depthStencilAttachment);
 
+const maxSize = 4096
+
 const _windowInfo: IRenderWindowInfo = {
     width: 1,
     height: 1,
@@ -105,8 +107,8 @@ export class RenderTexture extends TextureBase {
      * @param height The pixel height, the range is from 1 to 2048
      */
     public resize (width: number, height: number) {
-        this._width = Math.floor(clamp(width, 1, 2048));
-        this._height = Math.floor(clamp(height, 1, 2048));
+        this._width = Math.floor(clamp(width, 1, maxSize));
+        this._height = Math.floor(clamp(height, 1, maxSize));
         if (this._window) {
             this._window.resize(this._width, this._height);
         }
@@ -164,7 +166,7 @@ export class RenderTexture extends TextureBase {
     }
 
     public validate () {
-        return this.width >= 1 && this.width <= 2048 && this.height >= 1 && this.height <= 2048;
+        return this.width >= 1 && this.width <= maxSize && this.height >= 1 && this.height <= maxSize;
     }
 
     /**

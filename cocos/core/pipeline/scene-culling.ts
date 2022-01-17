@@ -364,14 +364,34 @@ export function sceneCulling (pipeline: RenderPipeline, camera: Camera) {
         }
     }
 
+    const models = scene.models;
+    const visibility = camera.visibility;
+
+    let modelsLength = models.length
+
+    let octree = (camera.scene as any).octree;
+    if (octree) {
+        octree.update();
+        let res = octree.intersectsFrustum(camera.frustum);
+        
+        let models = res.data;
+        for (let i = 0; i < res.length; i++) {
+            let model = models[i];
+            if (model.node && ((visibility & model.node.layer) === model.node.layer)
+                 || (visibility & model.visFlags)) {
+                renderObjects.push(getRenderObject(model, camera));
+            }
+        }
+
+        modelsLength = 0;
+    }
+
     // if (skybox.enabled && skybox.model && (camera.clearFlag & SKYBOX_FLAG)) {
     //     renderObjects.push(getRenderObject(skybox.model, camera));
     // }
 
-    const models = scene.models;
-    const visibility = camera.visibility;
 
-    for (let i = 0; i < models.length; i++) {
+    for (let i = 0; i < modelsLength; i++) {
         const model = models[i];
 
         // filter model by view visibility
