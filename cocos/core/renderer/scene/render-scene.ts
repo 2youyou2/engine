@@ -149,7 +149,7 @@ export class RenderScene {
         for (let i = 0; i < models.length; i++) {
             const model = models[i];
 
-            if (model.enabled) {
+            if (model.enabled && ((model as any).updateTimes === undefined || (model as any).updateTimes-- > 0)) {
                 model.updateTransform(stamp);
                 model.updateUBOs(stamp);
             }
