@@ -22,7 +22,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  */
-import { JSB } from 'internal:constants';
+import { EDITOR, JSB } from 'internal:constants';
 import { Root } from '../../root';
 import { Node } from '../../scene-graph';
 import { Camera } from './camera';
@@ -149,7 +149,11 @@ export class RenderScene {
         for (let i = 0; i < models.length; i++) {
             const model = models[i];
 
-            if (model.enabled && ((model as any).updateTimes === undefined || (model as any).updateTimes-- > 0)) {
+            let updateTimes = ((model as any).updateTimes === undefined || (model as any).updateTimes-- > 0);
+            if (EDITOR) {
+                updateTimes = true;
+            }
+            if (model.enabled && updateTimes) {
                 model.updateTransform(stamp);
                 model.updateUBOs(stamp);
             }

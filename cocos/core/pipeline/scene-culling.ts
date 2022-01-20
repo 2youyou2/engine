@@ -37,6 +37,7 @@ import { Pool } from '../memop';
 import { IRenderObject, UBOShadow } from './define';
 import { ShadowType, Shadows } from '../renderer/scene/shadows';
 import { SphereLight, DirectionalLight, Light } from '../renderer/scene';
+import { EDITOR } from 'internal:constants';
 
 const _tempVec3 = new Vec3();
 const _dir_negate = new Vec3();
@@ -370,7 +371,7 @@ export function sceneCulling (pipeline: RenderPipeline, camera: Camera) {
     let modelsLength = models.length
 
     let octree = (camera.scene as any).octree;
-    if (octree) {
+    if (!EDITOR && octree) {
         octree.update();
         let res = octree.intersectsFrustum(camera.frustum);
         
