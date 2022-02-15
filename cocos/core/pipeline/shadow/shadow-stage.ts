@@ -39,7 +39,7 @@ import { Light } from '../../renderer/scene/light';
 import { ShadowFlow } from './shadow-flow';
 import { Camera } from '../../renderer/scene';
 
-const colors: Color[] = [new Color(1, 1, 1, 1)];
+const colors: Color[] = [new Color(0, 0, 0, 0)];
 
 /**
  * @en Shadow map render stage

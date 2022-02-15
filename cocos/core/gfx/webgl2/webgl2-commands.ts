@@ -248,7 +248,7 @@ export function GFXFormatToWebGLInternalFormat (format: Format, gl: WebGL2Render
     case Format.RGB10A2UI: return gl.RGB10_A2UI;
     case Format.R11G11B10F: return gl.R11F_G11F_B10F;
     case Format.DEPTH: return gl.DEPTH_COMPONENT32F;
-    case Format.DEPTH_STENCIL: return gl.DEPTH32F_STENCIL8;
+    case Format.DEPTH_STENCIL: return gl.DEPTH24_STENCIL8;
 
     case Format.BC1: return WebGL2EXT.COMPRESSED_RGB_S3TC_DXT1_EXT;
     case Format.BC1_ALPHA: return WebGL2EXT.COMPRESSED_RGBA_S3TC_DXT1_EXT;
