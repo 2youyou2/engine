@@ -99,7 +99,7 @@ export class ShadowStage extends RenderStage {
         const pipeline = this._pipeline;
         const pipelineSceneData = pipeline.pipelineSceneData;
         const shadowInfo = pipelineSceneData.shadows;
-        const shadingScale = pipelineSceneData.shadingScale;
+        const shadingScale = 1;//pipelineSceneData.shadingScale;
         const descriptorSet = this._globalDS!;
         const cmdBuff = pipeline.commandBuffers[0];
 

@@ -42,6 +42,7 @@ import { RenderPipeline } from '..';
 import { ShadowType } from '../../renderer/scene/shadows';
 import { Light, LightType } from '../../renderer/scene/light';
 import { Camera } from '../../renderer/scene';
+import { sys } from '../..';
 
 const _validLights: Light[] = [];
 
@@ -169,7 +170,7 @@ export class ShadowFlow extends RenderFlow {
         const shadowMapSize = shadows.size;
         const shadowFrameBufferMap = pipeline.pipelineSceneData.shadowFrameBufferMap;
         // const format = supportsFloatTexture(device) ? Format.R32F : Format.RGBA8;
-        const format = supportsFloatTexture(device) ? Format.RGBA32F : Format.RGBA8;
+        const format = supportsFloatTexture(device) ? (sys.isMobile ? Format.RGBA16F : Format.RGBA32F) : Format.RGBA8;
 
         if (!this._shadowRenderPass) {
             const colorAttachment = new ColorAttachment();
@@ -257,7 +258,8 @@ export class ShadowFlow extends RenderFlow {
         const pipeline = this._pipeline;
         const device = pipeline.device;
         const shadowFrameBufferMap = pipeline.pipelineSceneData.shadowFrameBufferMap;
-        const format = supportsFloatTexture(device) ? Format.R32F : Format.RGBA8;
+        // const format = supportsFloatTexture(device) ? Format.R32F : Format.RGBA8;
+        const format = supportsFloatTexture(device) ? (sys.isMobile ? Format.RGBA16F : Format.RGBA32F) : Format.RGBA8;
 
         const it = shadowFrameBufferMap.values();
         let res = it.next();
