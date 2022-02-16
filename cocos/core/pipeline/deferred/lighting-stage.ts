@@ -79,6 +79,8 @@ export class LightingStage extends RenderStage {
     private _overdrawID = getPhaseID('overdraw');
     private _renderQueues: RenderQueue[] = [];
 
+    enablePlanarShadow = true;
+
     public static initInfo: IRenderStageInfo = {
         name: 'LightingStage',
         priority: DeferredStagePriority.LIGHTING,
@@ -235,7 +237,10 @@ export class LightingStage extends RenderStage {
         // light信息
         this.gatherLights(camera);
         this._descriptorSet.update();
-        this._planarQueue.gatherShadowPasses(camera, cmdBuff);
+
+        if (this.enablePlanarShadow) {
+            this._planarQueue.gatherShadowPasses(camera, cmdBuff);
+        }
 
         const dynamicOffsets: number[] = [0];
         cmdBuff.bindDescriptorSet(SetIndex.LOCAL, this._descriptorSet, dynamicOffsets);
@@ -322,7 +327,9 @@ export class LightingStage extends RenderStage {
             }
 
             // planarQueue
-            this._planarQueue.recordCommandBuffer(device, renderPass, cmdBuff);
+            if (this.enablePlanarShadow) {
+                this._planarQueue.recordCommandBuffer(device, renderPass, cmdBuff);
+            }
         }
         // this._uiPhase.render(camera, renderPass);
         cmdBuff.endRenderPass();
