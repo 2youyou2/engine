@@ -277,10 +277,10 @@ export class DeferredPipeline extends RenderPipeline {
         for (let i = 0; i < 4; ++i) {
             let format = Format.RGBA16F;
 
-            // position need most precision for reflection
-            if (i === 1 && (legacyCC.sys.platform !== legacyCC.sys.Platform.MOBILE_BROWSER)) {
-                format = Format.RGBA32F;
-            }
+            // // position need most precision for reflection
+            // if (i === 1 && (legacyCC.sys.platform !== legacyCC.sys.Platform.MOBILE_BROWSER)) {
+            //     format = Format.RGBA32F;
+            // }
 
             data.gbufferRenderTargets.push(device.createTexture(new TextureInfo(
                 TextureType.TEX2D,
