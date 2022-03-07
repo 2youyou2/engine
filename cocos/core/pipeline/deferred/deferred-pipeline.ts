@@ -45,6 +45,7 @@ import { errorID } from '../../platform/debug';
 import { DeferredPipelineSceneData } from './deferred-pipeline-scene-data';
 import { PipelineEventType } from '../pipeline-event';
 import { legacyCC } from '../../global-exports';
+import { game } from 'cocos/core';
 
 const PIPELINE_TYPE = 1;
 
@@ -254,13 +255,18 @@ export class DeferredPipeline extends RenderPipeline {
     }
 
     protected _ensureEnoughSize (cameras: Camera[]) {
-        let newWidth = this._width;
-        let newHeight = this._height;
-        for (let i = 0; i < cameras.length; ++i) {
-            const window = cameras[i].window;
-            newWidth = Math.max(window.width, newWidth);
-            newHeight = Math.max(window.height, newHeight);
-        }
+        // let newWidth = 0;
+        // let newHeight = 0;
+        // for (let i = 0; i < cameras.length; ++i) {
+        //     const window = cameras[i].window;
+        //     newWidth = Math.max(window.width, newWidth);
+        //     newHeight = Math.max(window.height, newHeight);
+        // }
+        // newWidth = newWidth || this._width;
+        // newHeight = newHeight || this._height;
+
+        let newWidth = game.canvas!.width;
+        let newHeight = game.canvas!.height;
         if (newWidth !== this._width || newHeight !== this._height) {
             this._width = newWidth;
             this._height = newHeight;
