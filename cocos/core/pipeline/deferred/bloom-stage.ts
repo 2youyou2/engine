@@ -304,6 +304,8 @@ export class BloomStage extends RenderStage {
             cmdBuff.draw(inputAssembler);
         }
 
+        deferredData.outputRenderTargets[0] = bloomData.combineTex;
+
         cmdBuff.endRenderPass();
     }
 }

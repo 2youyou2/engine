@@ -30,12 +30,12 @@
 
 import { ccclass, displayOrder, type, serializable } from 'cc.decorator';
 import { EDITOR } from 'internal:constants';
-import { RenderPipeline, IRenderPipelineInfo } from '../render-pipeline';
+import { RenderPipeline, IRenderPipelineInfo, PipelineRenderData } from '../render-pipeline';
 import { ForwardFlow } from './forward-flow';
 import { RenderTextureConfig } from '../pipeline-serialization';
 import { ShadowFlow } from '../shadow/shadow-flow';
 import { UBOGlobal, UBOShadow, UBOCamera, UNIFORM_SHADOWMAP_BINDING, UNIFORM_SPOT_LIGHTING_MAP_TEXTURE_BINDING } from '../define';
-import { Swapchain, RenderPass } from '../../gfx';
+import { Swapchain, RenderPass, TextureInfo, TextureType, TextureUsageBit, Format, FramebufferInfo, ColorAttachment, LoadOp, StoreOp, AccessType, DepthStencilAttachment, RenderPassInfo } from '../../gfx';
 import { builtinResMgr } from '../../builtin';
 import { Texture2D } from '../../assets/texture-2d';
 import { Camera } from '../../renderer/scene';
@@ -124,6 +124,60 @@ export class ForwardPipeline extends RenderPipeline {
         return super.destroy();
     }
 
+    private _createRenderData () {
+        const device = this.device;
+
+        const data = this._pipelineRenderData = new PipelineRenderData();
+        const sceneData = this.pipelineSceneData;
+        data.outputDepth = device.createTexture(new TextureInfo(
+            TextureType.TEX2D,
+            TextureUsageBit.DEPTH_STENCIL_ATTACHMENT,
+            Format.DEPTH_STENCIL,
+            this._width * sceneData.shadingScale,
+            this._height * sceneData.shadingScale,
+        ));
+
+        data.outputRenderTargets.push(device.createTexture(new TextureInfo(
+            TextureType.TEX2D,
+            TextureUsageBit.COLOR_ATTACHMENT | TextureUsageBit.SAMPLED,
+            Format.RGBA16F,
+            this._width * sceneData.shadingScale,
+            this._height * sceneData.shadingScale,
+        )));
+
+        const colorAttachment = new ColorAttachment();
+        colorAttachment.format = Format.RGBA8;
+        colorAttachment.loadOp = LoadOp.CLEAR; // should clear color attachment
+        colorAttachment.storeOp = StoreOp.STORE;
+        colorAttachment.endAccesses = [AccessType.COLOR_ATTACHMENT_WRITE];
+
+        const depthStencilAttachment = new DepthStencilAttachment();
+        depthStencilAttachment.format = Format.DEPTH_STENCIL;
+        depthStencilAttachment.depthLoadOp = LoadOp.LOAD;
+        depthStencilAttachment.depthStoreOp = StoreOp.DISCARD;
+        depthStencilAttachment.stencilLoadOp = LoadOp.LOAD;
+        depthStencilAttachment.stencilStoreOp = StoreOp.DISCARD;
+        depthStencilAttachment.beginAccesses = [AccessType.DEPTH_STENCIL_ATTACHMENT_WRITE];
+        depthStencilAttachment.endAccesses = [AccessType.DEPTH_STENCIL_ATTACHMENT_WRITE];
+
+        const renderPassInfo = new RenderPassInfo([colorAttachment], depthStencilAttachment);
+        const renderPass = device.createRenderPass(renderPassInfo);
+
+        data.outputFrameBuffer = device.createFramebuffer(new FramebufferInfo(
+            renderPass,
+            data.outputRenderTargets.concat(),
+            data.outputDepth,
+        ));
+
+        let ia = this._createQuadInputAssembler();
+        this._quadVBOnscreen = ia.quadVB;
+        this._quadIAOnscreen = ia.quadIA;
+
+        ia = this._createQuadInputAssembler();
+        this._quadVBOffscreen = ia.quadVB;
+        this._quadIAOffscreen = ia.quadIA;
+    }
+
     private _activeRenderer (swapchain: Swapchain) {
         const device = this.device;
 
@@ -135,6 +189,10 @@ export class ForwardPipeline extends RenderPipeline {
         this._descriptorSet.bindSampler(UNIFORM_SPOT_LIGHTING_MAP_TEXTURE_BINDING, shadowMapSampler);
         this._descriptorSet.bindTexture(UNIFORM_SPOT_LIGHTING_MAP_TEXTURE_BINDING, builtinResMgr.get<Texture2D>('default-texture').getGFXTexture()!);
         this._descriptorSet.update();
+
+        this._width = swapchain.width;
+        this._height = swapchain.height;
+        this._createRenderData();
 
         return true;
     }

@@ -44,6 +44,7 @@ import { Camera } from '../../renderer/scene';
 import { errorID } from '../../platform/debug';
 import { DeferredPipelineSceneData } from './deferred-pipeline-scene-data';
 import { PipelineEventType } from '../pipeline-event';
+import { legacyCC } from '../../global-exports';
 
 const PIPELINE_TYPE = 1;
 
@@ -65,6 +66,8 @@ export class DeferredPipeline extends RenderPipeline {
     @serializable
     @displayOrder(2)
     protected renderTextures: RenderTextureConfig[] = [];
+
+    public renderOverdraw = false;
 
     public initialize (info: IRenderPipelineInfo): boolean {
         super.initialize(info);
@@ -246,13 +249,18 @@ export class DeferredPipeline extends RenderPipeline {
     }
 
     protected _ensureEnoughSize (cameras: Camera[]) {
-        let newWidth = this._width;
-        let newHeight = this._height;
-        for (let i = 0; i < cameras.length; ++i) {
-            const window = cameras[i].window;
-            newWidth = Math.max(window.width, newWidth);
-            newHeight = Math.max(window.height, newHeight);
-        }
+        // let newWidth = 0;
+        // let newHeight = 0;
+        // for (let i = 0; i < cameras.length; ++i) {
+        //     const window = cameras[i].window;
+        //     newWidth = Math.max(window.width, newWidth);
+        //     newHeight = Math.max(window.height, newHeight);
+        // }
+        // newWidth = newWidth || this._width;
+        // newHeight = newHeight || this._height;
+
+        let newWidth = legacyCC.game.canvas!.width;
+        let newHeight = legacyCC.game.canvas!.height;
         if (newWidth !== this._width || newHeight !== this._height) {
             this._width = newWidth;
             this._height = newHeight;
@@ -266,11 +274,19 @@ export class DeferredPipeline extends RenderPipeline {
 
         const data: DeferredRenderData = this._pipelineRenderData = new DeferredRenderData();
         const sceneData = this.pipelineSceneData;
-        for (let i = 0; i < 3; ++i) {
+
+        for (let i = 0; i < 4; ++i) {
+            let format = Format.RGBA16F;
+
+            // // position need most precision for reflection
+            // if (i === 1 && (legacyCC.sys.platform !== legacyCC.sys.Platform.MOBILE_BROWSER)) {
+            //     format = Format.RGBA32F;
+            // }
+
             data.gbufferRenderTargets.push(device.createTexture(new TextureInfo(
                 TextureType.TEX2D,
                 TextureUsageBit.COLOR_ATTACHMENT | TextureUsageBit.SAMPLED,
-                Format.RGBA16F, // normals need more precision
+                format, // positions & normals need more precision
                 this._width * sceneData.shadingScale,
                 this._height * sceneData.shadingScale,
             )));
@@ -298,11 +314,16 @@ export class DeferredPipeline extends RenderPipeline {
 
         data.outputFrameBuffer = device.createFramebuffer(new FramebufferInfo(
             this._lightingRenderPass!,
-            data.outputRenderTargets,
+            data.outputRenderTargets.concat(),
             null,
         ));
         // Listens when the attachment texture is scaled
         this.on(PipelineEventType.ATTACHMENT_SCALE_CAHNGED, (val: number) => {
+            const sceneData = this.pipelineSceneData;
+            const width = this._width * sceneData.shadingScale;
+            const height = this._height * sceneData.shadingScale;
+            data.outputDepth.resize(width, height);
+
             data.sampler = val < 1 ? this.globalDSManager.pointSampler : this.globalDSManager.linearSampler;
             this.applyFramebufferRatio(data.gbufferFrameBuffer);
             this.applyFramebufferRatio(data.outputFrameBuffer);

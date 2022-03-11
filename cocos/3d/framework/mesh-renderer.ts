@@ -85,8 +85,10 @@ const ModelShadowReceivingMode = Enum({
  */
 @ccclass('cc.ModelLightmapSettings')
 class ModelLightmapSettings {
+    @visible(true)
     @serializable
     public texture: Texture2D|null = null;
+    @visible(true)
     @serializable
     public uvParam: Vec4 = new Vec4();
     @serializable

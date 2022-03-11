@@ -360,7 +360,9 @@ export class Model {
         if (idx >= 0) {
             const attrs = this.instancedAttributes.views;
             uploadMat4AsVec4x3(worldMatrix, attrs[idx], attrs[idx + 1], attrs[idx + 2]);
-        } else if (this._localBuffer) {
+        } 
+        
+        if (this._localBuffer) {
             Mat4.toArray(this._localData, worldMatrix, UBOLocal.MAT_WORLD_OFFSET);
             Mat4.inverseTranspose(m4_1, worldMatrix);
             if (!JSB) {

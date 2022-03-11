@@ -39,7 +39,7 @@ import { Light } from '../../renderer/scene/light';
 import { ShadowFlow } from './shadow-flow';
 import { Camera } from '../../renderer/scene';
 
-const colors: Color[] = [new Color(1, 1, 1, 1)];
+const colors: Color[] = [new Color(0, 0, 0, 0)];
 
 /**
  * @en Shadow map render stage
@@ -99,7 +99,7 @@ export class ShadowStage extends RenderStage {
         const pipeline = this._pipeline;
         const pipelineSceneData = pipeline.pipelineSceneData;
         const shadowInfo = pipelineSceneData.shadows;
-        const shadingScale = pipelineSceneData.shadingScale;
+        const shadingScale = 1;//pipelineSceneData.shadingScale;
         const descriptorSet = this._globalDS!;
         const cmdBuff = pipeline.commandBuffers[0];
 

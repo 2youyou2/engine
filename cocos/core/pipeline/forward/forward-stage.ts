@@ -46,6 +46,8 @@ import { PlanarShadowQueue } from '../planar-shadow-queue';
 import { UIPhase } from '../ui-phase';
 import { Camera } from '../../renderer/scene';
 import { renderProfiler } from '../pipeline-funcs';
+import { legacyCC } from '../../global-exports';
+import { EDITOR } from 'internal:constants';
 
 const colors: Color[] = [new Color(0, 0, 0, 1)];
 
@@ -86,12 +88,14 @@ export class ForwardStage extends RenderStage {
     private _clearFlag = 0xffffffff;
     private declare _additiveLightQueue: RenderAdditiveLightQueue;
     private declare _planarQueue: PlanarShadowQueue;
+
     private declare _uiPhase: UIPhase;
 
     constructor () {
         super();
         this._batchedQueue = new RenderBatchedQueue();
         this._instancedQueue = new RenderInstancedQueue();
+
         this._uiPhase = new UIPhase();
     }
 
@@ -111,6 +115,7 @@ export class ForwardStage extends RenderStage {
 
         this._additiveLightQueue = new RenderAdditiveLightQueue(this._pipeline as ForwardPipeline);
         this._planarQueue = new PlanarShadowQueue(this._pipeline);
+
         this._uiPhase.activate(pipeline);
     }
 
@@ -160,7 +165,7 @@ export class ForwardStage extends RenderStage {
 
         this._instancedQueue.uploadBuffers(cmdBuff);
         this._batchedQueue.uploadBuffers(cmdBuff);
-        this._additiveLightQueue.gatherLightPasses(camera, cmdBuff);
+        // this._additiveLightQueue.gatherLightPasses(camera, cmdBuff);
         this._planarQueue.gatherShadowPasses(camera, cmdBuff);
 
         if (camera.clearFlag & ClearFlagBit.COLOR) {
@@ -170,23 +175,42 @@ export class ForwardStage extends RenderStage {
             colors[0].w = camera.clearColor.w;
         }
         pipeline.generateRenderArea(camera, this._renderArea);
+        pipeline.updateQuadVertexData(this._renderArea, camera.window);
 
-        const framebuffer = camera.window.framebuffer;
+        let framebuffer = camera.window.framebuffer;
         const renderPass = pipeline.getRenderPass(camera.clearFlag & this._clearFlag, framebuffer);
+        const swapchain = camera.window.swapchain;
+        
+        const forwardData = pipeline.getPipelineRenderData();
+
+        if (EDITOR) {
+            if (camera.name === 'Editor Camera') {
+                framebuffer = forwardData.outputFrameBuffer;
+            }
+        }
+        else {
+            framebuffer = forwardData.outputFrameBuffer;
+        }
+
+        if (forwardData && renderObjects.length) {
+            forwardData.outputRenderTargets[0] = framebuffer.colorTextures[0]!;
+        }
+
         cmdBuff.beginRenderPass(renderPass, framebuffer, this._renderArea,
             colors, camera.clearDepth, camera.clearStencil);
         cmdBuff.bindDescriptorSet(SetIndex.GLOBAL, pipeline.descriptorSet);
         this._renderQueues[0].recordCommandBuffer(device, renderPass, cmdBuff);
         this._instancedQueue.recordCommandBuffer(device, renderPass, cmdBuff);
         this._batchedQueue.recordCommandBuffer(device, renderPass, cmdBuff);
-
-        this._additiveLightQueue.recordCommandBuffer(device, renderPass, cmdBuff);
+        // this._additiveLightQueue.recordCommandBuffer(device, renderPass, cmdBuff);
 
         cmdBuff.bindDescriptorSet(SetIndex.GLOBAL, pipeline.descriptorSet);
         this._planarQueue.recordCommandBuffer(device, renderPass, cmdBuff);
         this._renderQueues[1].recordCommandBuffer(device, renderPass, cmdBuff);
-        this._uiPhase.render(camera, renderPass);
-        renderProfiler(device, renderPass, cmdBuff, pipeline.profiler, camera);
+
+        // this._uiPhase.render(camera, renderPass);
+        // renderProfiler(device, renderPass, cmdBuff, pipeline.profiler, camera);
+
         cmdBuff.endRenderPass();
     }
 }

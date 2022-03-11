@@ -37,6 +37,7 @@ import { Pool } from '../memop';
 import { IRenderObject, UBOShadow } from './define';
 import { ShadowType, Shadows } from '../renderer/scene/shadows';
 import { SphereLight, DirectionalLight, Light } from '../renderer/scene';
+import { EDITOR } from 'internal:constants';
 
 const _tempVec3 = new Vec3();
 const _dir_negate = new Vec3();
@@ -391,14 +392,34 @@ export function sceneCulling (pipeline: RenderPipeline, camera: Camera) {
         }
     }
 
-    if (skybox.enabled && skybox.model && (camera.clearFlag & SKYBOX_FLAG)) {
-        renderObjects.push(getRenderObject(skybox.model, camera));
-    }
-
     const models = scene.models;
     const visibility = camera.visibility;
 
-    for (let i = 0; i < models.length; i++) {
+    let modelsLength = models.length
+
+    let octree = (camera.scene as any).octree;
+    if (!EDITOR && octree) {
+        octree.update();
+        let res = octree.intersectsFrustum(camera.frustum);
+        
+        let models = res.data;
+        for (let i = 0; i < res.length; i++) {
+            let model = models[i];
+            if (model.node && ((visibility & model.node.layer) === model.node.layer)
+                 || (visibility & model.visFlags)) {
+                renderObjects.push(getRenderObject(model, camera));
+            }
+        }
+
+        modelsLength = 0;
+    }
+
+    // if (skybox.enabled && skybox.model && (camera.clearFlag & SKYBOX_FLAG)) {
+    //     renderObjects.push(getRenderObject(skybox.model, camera));
+    // }
+
+
+    for (let i = 0; i < modelsLength; i++) {
         const model = models[i];
 
         // filter model by view visibility

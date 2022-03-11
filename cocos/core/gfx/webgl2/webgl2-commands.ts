@@ -123,7 +123,7 @@ export function GFXFormatToWebGLType (format: Format, gl: WebGL2RenderingContext
     case Format.RGB9E5: return gl.FLOAT;
 
     case Format.DEPTH: return gl.FLOAT;
-    case Format.DEPTH_STENCIL: return gl.UNSIGNED_INT_24_8;
+    case Format.DEPTH_STENCIL: return gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
 
     case Format.BC1: return gl.UNSIGNED_BYTE;
     case Format.BC1_SRGB: return gl.UNSIGNED_BYTE;
@@ -1980,7 +1980,8 @@ export function WebGL2CmdFuncBindStates (
 
             const isFrontFaceCCW = rs.isFrontFaceCCW; // boolean XOR
             if (device.stateCache.rs.isFrontFaceCCW !== isFrontFaceCCW) {
-                gl.frontFace(isFrontFaceCCW ? gl.CCW : gl.CW);
+                let flipedFace = device.flipFace ? !isFrontFaceCCW : isFrontFaceCCW;
+                gl.frontFace(flipedFace ? gl.CCW : gl.CW);
                 device.stateCache.rs.isFrontFaceCCW = isFrontFaceCCW;
             }
 

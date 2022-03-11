@@ -42,6 +42,7 @@ import { RenderPipeline } from '..';
 import { ShadowType } from '../../renderer/scene/shadows';
 import { Light, LightType } from '../../renderer/scene/light';
 import { Camera } from '../../renderer/scene';
+import { gfx, sys } from '../..';
 
 const _validLights: Light[] = [];
 
@@ -163,12 +164,16 @@ export class ShadowFlow extends RenderFlow {
         if (this._shadowRenderPass) { this._shadowRenderPass.destroy(); }
     }
 
+    shadowFormat () {
+        return Format.RGBA16F;
+        // return supportsFloatTexture(this._pipeline.device) ? (sys.isMobile ? Format.RGBA16F : Format.RGBA32F) : Format.RGBA8;
+    };
     public _initShadowFrameBuffer  (pipeline: RenderPipeline, light: Light, swapchain: Swapchain) {
         const { device } = pipeline;
         const shadows = pipeline.pipelineSceneData.shadows;
         const shadowMapSize = shadows.size;
         const shadowFrameBufferMap = pipeline.pipelineSceneData.shadowFrameBufferMap;
-        const format = supportsFloatTexture(device) ? Format.R32F : Format.RGBA8;
+        const format = this.shadowFormat();
 
         if (!this._shadowRenderPass) {
             const colorAttachment = new ColorAttachment();
@@ -256,7 +261,7 @@ export class ShadowFlow extends RenderFlow {
         const pipeline = this._pipeline;
         const device = pipeline.device;
         const shadowFrameBufferMap = pipeline.pipelineSceneData.shadowFrameBufferMap;
-        const format = supportsFloatTexture(device) ? Format.R32F : Format.RGBA8;
+        const format = this.shadowFormat();
 
         const it = shadowFrameBufferMap.values();
         let res = it.next();

@@ -568,7 +568,7 @@ export class Details {
      * @param {Object} data
      */
     init (data?: IFileData) {
-        if (FORCE_COMPILED || data) {
+        if (data) {
             this.uuidObjList = data![File.DependObjs];
             this.uuidPropList = data![File.DependKeys];
             this.uuidList = data![File.DependUuidIndices];
@@ -1009,7 +1009,7 @@ export function deserialize (data: IFileData | string | CCON | any, details: Det
     details = details || Details.pool.get();
     let res;
 
-    if (!FORCE_COMPILED && !isCompiledJson(data)) {
+    if (!(isCompiledJson(data))) {
         res = deserializeDynamic(data, details, options);
     } else {
         details.init(data);

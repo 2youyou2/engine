@@ -63,7 +63,7 @@ export class LightingStage extends RenderStage {
     private _descriptorSetLayout!: DescriptorSetLayout;
     private _renderArea = new Rect();
     private declare _planarQueue: PlanarShadowQueue;
-    private _uiPhase: UIPhase;
+    // private _uiPhase: UIPhase;
 
     @type(Material)
     @serializable
@@ -75,7 +75,11 @@ export class LightingStage extends RenderStage {
     @displayOrder(2)
     private renderQueues: RenderQueueDesc[] = [];
     private _phaseID = getPhaseID('default');
+
+    private _overdrawID = getPhaseID('overdraw');
     private _renderQueues: RenderQueue[] = [];
+
+    enablePlanarShadow = true;
 
     public static initInfo: IRenderStageInfo = {
         name: 'LightingStage',
@@ -85,7 +89,7 @@ export class LightingStage extends RenderStage {
 
     constructor () {
         super();
-        this._uiPhase = new UIPhase();
+        // this._uiPhase = new UIPhase();
     }
 
     public initialize (info: IRenderStageInfo): boolean {
@@ -185,7 +189,7 @@ export class LightingStage extends RenderStage {
 
     public activate (pipeline: DeferredPipeline, flow: MainFlow) {
         super.activate(pipeline, flow);
-        this._uiPhase.activate(pipeline);
+        // this._uiPhase.activate(pipeline);
         const device = pipeline.device;
 
         // activate queue
@@ -233,7 +237,10 @@ export class LightingStage extends RenderStage {
         // light信息
         this.gatherLights(camera);
         this._descriptorSet.update();
-        this._planarQueue.gatherShadowPasses(camera, cmdBuff);
+
+        if (this.enablePlanarShadow) {
+            this._planarQueue.gatherShadowPasses(camera, cmdBuff);
+        }
 
         const dynamicOffsets: number[] = [0];
         cmdBuff.bindDescriptorSet(SetIndex.LOCAL, this._descriptorSet, dynamicOffsets);
@@ -260,6 +267,7 @@ export class LightingStage extends RenderStage {
         cmdBuff.bindDescriptorSet(SetIndex.GLOBAL, pipeline.descriptorSet);
 
         // Lighting
+
         const lightingMat = (sceneData as DeferredPipelineSceneData).deferredLightingMaterial;
         const pass = lightingMat.passes[0];
         const shader = pass.getShaderVariant();
@@ -280,7 +288,7 @@ export class LightingStage extends RenderStage {
             pso = PipelineStateManager.getOrCreatePipelineState(device, pass, shader, renderPass, inputAssembler);
         }
 
-        if (pso != null) {
+        if (pso != null && renderObjects.length > 0) {
             cmdBuff.bindPipelineState(pso);
             cmdBuff.bindInputAssembler(inputAssembler);
             cmdBuff.draw(inputAssembler);
@@ -298,7 +306,16 @@ export class LightingStage extends RenderStage {
                 const passes = subModel.passes;
                 for (p = 0; p < passes.length; ++p) {
                     const pass = passes[p];
-                    if (pass.phase !== this._phaseID) continue;
+
+                    if (pipeline.renderOverdraw) {
+                        if (pass.phase !== this._overdrawID) {
+                            continue;
+                        }
+                    }
+                    else if (pass.phase !== this._phaseID) {
+                        continue;
+                    }
+                    
                     for (k = 0; k < this._renderQueues.length; k++) {
                         this._renderQueues[k].insertRenderPass(ro, m, p);
                     }
@@ -312,9 +329,13 @@ export class LightingStage extends RenderStage {
             }
 
             // planarQueue
-            this._planarQueue.recordCommandBuffer(device, renderPass, cmdBuff);
+            if (this.enablePlanarShadow) {
+                this._planarQueue.recordCommandBuffer(device, renderPass, cmdBuff);
+            }
         }
-        this._uiPhase.render(camera, renderPass);
+        // this._uiPhase.render(camera, renderPass);
         cmdBuff.endRenderPass();
+
+        deferredData.outputRenderTargets[0] = deferredData.outputFrameBuffer.colorTextures[0]!;
     }
 }

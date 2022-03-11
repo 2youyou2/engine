@@ -37,6 +37,7 @@ import { PipelineStateManager } from '../pipeline-state-manager';
 import { RenderQueueDesc } from '../pipeline-serialization';
 import { renderProfiler } from '../pipeline-funcs';
 import { RenderFlow, RenderPipeline } from '..';
+
 import { UIPhase } from '../ui-phase';
 import { DeferredPipelineSceneData } from './deferred-pipeline-scene-data';
 
@@ -91,7 +92,13 @@ export class PostProcessStage extends RenderStage {
         const device = pipeline.device;
         const sceneData = pipeline.pipelineSceneData;
         const cmdBuff = pipeline.commandBuffers[0];
-        pipeline.pipelineUBO.updateCameraUBO(camera);
+        // pipeline.pipelineUBO.updateCameraUBO(camera);
+
+        // Postprocess
+        const builtinPostProcess = (sceneData as DeferredPipelineSceneData).postprocessMaterial || this._postProcessMaterial;
+        if (!builtinPostProcess) {
+            return;
+        }
 
         const vp = camera.viewport;
         this._renderArea.x = vp.x * camera.window.width;
@@ -113,17 +120,12 @@ export class PostProcessStage extends RenderStage {
         cmdBuff.beginRenderPass(renderPass, framebuffer, this._renderArea,
             colors, camera.clearDepth, camera.clearStencil);
         cmdBuff.bindDescriptorSet(SetIndex.GLOBAL, pipeline.descriptorSet);
-        // Postprocess
-        const builtinPostProcess = (sceneData as DeferredPipelineSceneData).postprocessMaterial;
+        
         const pass = builtinPostProcess.passes[0];
         const shader = pass.getShaderVariant();
 
-        if (pipeline.bloomEnabled) {
-            pass.descriptorSet.bindTexture(0, renderData.bloom!.combineTex);
-        } else {
-            pass.descriptorSet.bindTexture(0, renderData.outputRenderTargets[0]);
-        }
-        pass.descriptorSet.bindSampler(0, renderData.sampler);
+        pass.descriptorSet.bindTexture(0, renderData.outputRenderTargets[0]);
+        pass.descriptorSet.bindSampler(0, pipeline.globalDSManager.pointSampler);
         pass.descriptorSet.update();
 
         cmdBuff.bindDescriptorSet(SetIndex.MATERIAL, pass.descriptorSet);
@@ -135,14 +137,19 @@ export class PostProcessStage extends RenderStage {
         }
 
         const renderObjects = pipeline.pipelineSceneData.renderObjects;
+
         if (pso != null && renderObjects.length > 0) {
             cmdBuff.bindPipelineState(pso);
             cmdBuff.bindInputAssembler(inputAssembler);
             cmdBuff.draw(inputAssembler);
         }
-        this._uiPhase.render(camera, renderPass);
-        renderProfiler(device, renderPass, cmdBuff, pipeline.profiler, camera);
 
+        this._uiPhase.render(camera, renderPass);
+
+        if (pipeline.cameras.indexOf(camera) === pipeline.cameras.length - 1) {
+            renderProfiler(device, renderPass, cmdBuff, pipeline.profiler, camera);
+        }
+            
         cmdBuff.endRenderPass();
     }
 }
