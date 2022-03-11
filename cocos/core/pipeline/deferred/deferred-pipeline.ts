@@ -45,7 +45,6 @@ import { errorID } from '../../platform/debug';
 import { DeferredPipelineSceneData } from './deferred-pipeline-scene-data';
 import { PipelineEventType } from '../pipeline-event';
 import { legacyCC } from '../../global-exports';
-import { game } from 'cocos/core';
 
 const PIPELINE_TYPE = 1;
 
@@ -265,8 +264,8 @@ export class DeferredPipeline extends RenderPipeline {
         // newWidth = newWidth || this._width;
         // newHeight = newHeight || this._height;
 
-        let newWidth = game.canvas!.width;
-        let newHeight = game.canvas!.height;
+        let newWidth = legacyCC.game.canvas!.width;
+        let newHeight = legacyCC.game.canvas!.height;
         if (newWidth !== this._width || newHeight !== this._height) {
             this._width = newWidth;
             this._height = newHeight;
