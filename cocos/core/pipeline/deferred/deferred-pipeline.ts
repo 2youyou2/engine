@@ -276,17 +276,10 @@ export class DeferredPipeline extends RenderPipeline {
         const sceneData = this.pipelineSceneData;
 
         for (let i = 0; i < 4; ++i) {
-            let format = Format.RGBA16F;
-
-            // // position need most precision for reflection
-            // if (i === 1 && (legacyCC.sys.platform !== legacyCC.sys.Platform.MOBILE_BROWSER)) {
-            //     format = Format.RGBA32F;
-            // }
-
             data.gbufferRenderTargets.push(device.createTexture(new TextureInfo(
                 TextureType.TEX2D,
                 TextureUsageBit.COLOR_ATTACHMENT | TextureUsageBit.SAMPLED,
-                format, // positions & normals need more precision
+                Format.RGBA16F,
                 this._width * sceneData.shadingScale,
                 this._height * sceneData.shadingScale,
             )));

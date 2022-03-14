@@ -41,7 +41,8 @@ import { RenderFlow, RenderPipeline } from '..';
 import { UIPhase } from '../ui-phase';
 import { DeferredPipelineSceneData } from './deferred-pipeline-scene-data';
 
-const colors: Color[] = [new Color(0, 0, 0, 1)];
+const clearColors: Color[] = [new Color(0, 0, 0, 1)];
+const emptyColors = []
 
 /**
   * @en The postprocess render stage
@@ -109,13 +110,17 @@ export class PostProcessStage extends RenderStage {
         const framebuffer = camera.window.framebuffer;
         const renderPass = pipeline.getRenderPass(camera.clearFlag, framebuffer);
 
+        let colors = clearColors;
         if (camera.clearFlag & ClearFlagBit.COLOR) {
             colors[0].x = camera.clearColor.x;
             colors[0].y = camera.clearColor.y;
             colors[0].z = camera.clearColor.z;
+            colors[0].w = camera.clearColor.w;
+        }
+        else {
+            colors = emptyColors;
         }
 
-        colors[0].w = camera.clearColor.w;
 
         cmdBuff.beginRenderPass(renderPass, framebuffer, this._renderArea,
             colors, camera.clearDepth, camera.clearStencil);
