@@ -28,7 +28,7 @@
 #include "Define.h"
 #include "scene/Define.h"
 #include "scene/Light.h"
-#include "scene/Sphere.h"
+#include "shadow/CSMLayers.h"
 
 namespace cc {
 
@@ -52,39 +52,23 @@ public:
     inline const std::unordered_map<const scene::Light *, gfx::Framebuffer *> &getShadowFramebufferMap() const { return _shadowFrameBufferMap; }
     inline scene::PipelineSharedSceneData *                                    getSharedData() const { return _sharedSceneData; }
     inline const RenderObjectList &                                            getRenderObjects() const { return _renderObjects; }
-    inline const RenderObjectList &                                            getDirShadowObjects() const { return _dirShadowObjects; }
     inline void                                                                setRenderObjects(RenderObjectList &&ro) { _renderObjects = std::forward<RenderObjectList>(ro); }
-    inline void                                                                setDirShadowObjects(RenderObjectList &&ro) { _dirShadowObjects = std::forward<RenderObjectList>(ro); }
-    inline const RenderObjectList &                                            getCastShadowObjects() const { return _castShadowObjects; }
-    inline void                                                                setCastShadowObjects(RenderObjectList &&ro) { _castShadowObjects = std::forward<RenderObjectList>(ro); }
     inline const vector<const scene::Light *> &                                getValidPunctualLights() const { return _validPunctualLights; }
     inline void                                                                setValidPunctualLights(vector<const scene::Light *> &&validPunctualLights) { _validPunctualLights = std::forward<vector<const scene::Light *>>(validPunctualLights); }
-    inline float                                                               getShadowCameraFar() const { return _shadowCameraFar; }
-    inline void                                                                setShadowCameraFar(float shadowDistance) { _shadowCameraFar = shadowDistance; }
-    inline Mat4                                                                getMatShadowView() const { return _matShadowView; }
-    inline void                                                                setMatShadowView(const Mat4 &matShadowView) { _matShadowView = matShadowView; }
-    inline Mat4                                                                getMatShadowProj() const { return _matShadowProj; }
-    inline void                                                                setMatShadowProj(const Mat4 &matShadowProj) { _matShadowProj = matShadowProj; }
-    inline Mat4                                                                getMatShadowViewProj() const { return _matShadowViewProj; }
-    inline void                                                                setMatShadowViewProj(const Mat4 &matShadowViewProj) { _matShadowViewProj = matShadowViewProj; }
     inline void                                                                addRenderObject(RenderObject &&obj) { _renderObjects.emplace_back(obj); }
     inline void                                                                clearRenderObjects() { _renderObjects.clear(); }
     inline void                                                                addValidPunctualLight(scene::Light *light) { _validPunctualLights.emplace_back(light); }
     inline void                                                                clearValidPunctualLights() { _validPunctualLights.clear(); }
+    inline CSMLayers *                                                         getCSMLayers() const { return _csmLayers; }
 
 private:
     RenderObjectList             _renderObjects;
-    RenderObjectList             _dirShadowObjects;
-    RenderObjectList             _castShadowObjects;
     vector<const scene::Light *> _validPunctualLights;
 
     scene::PipelineSharedSceneData *_sharedSceneData = nullptr;
     RenderPipeline *                _pipeline        = nullptr;
     gfx::Device *                   _device          = nullptr;
-    float                           _shadowCameraFar = 0.0F;
-    Mat4                            _matShadowView;
-    Mat4                            _matShadowProj;
-    Mat4                            _matShadowViewProj;
+    CSMLayers *                     _csmLayers       = nullptr;
 
     std::unordered_map<const scene::Light *, gfx::Framebuffer *> _shadowFrameBufferMap;
 };

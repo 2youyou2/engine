@@ -23,11 +23,6 @@
  THE SOFTWARE.
  */
 
-/**
- * @packageDocumentation
- * @module geometry
- */
-
 import { Mat4, Vec3 } from '../math';
 import { Camera } from '../renderer/scene';
 import enums from './enums';
@@ -311,6 +306,13 @@ export class Frustum {
         }
         for (let i = 0; i < 8; i++) {
             Vec3.transformMat4(this.vertices[i], this.vertices[i], mat);
+        }
+        this.updatePlanes();
+    }
+
+    public zero () {
+        for (let i = 0; i < 8; i++) {
+            this.vertices[i].set(0.0, 0.0, 0.0);
         }
         this.updatePlanes();
     }

@@ -29,11 +29,16 @@ import { Vec3 } from '../../math';
 import { Ambient } from './ambient';
 import { Light, LightType } from './light';
 import { NativeDirectionalLight } from '../native-scene';
-import { PCFType, Shadows } from './shadows';
+import { CSMLevel, PCFType, Shadows } from './shadows';
 
 const _forward = new Vec3(0, 0, -1);
 const _v3 = new Vec3();
 
+/**
+ * @en The directional light representation in the render scene, it acts as the main light source in a scene.
+ * As main light, only one directional light can be created in a scene, it can generate realtime shadows with configuration.
+ * @zh 渲染场景中的方向光抽象，这是场景中的主光源。作为主光源，每个场景只能有一个方向光，它也包含阴影配置，用来生成实时阴影。
+ */
 export class DirectionalLight extends Light {
     protected _dir: Vec3 = new Vec3(1.0, -1.0, -1.0);
     protected _illuminanceHDR: number = Ambient.SUN_ILLUM;
@@ -49,6 +54,10 @@ export class DirectionalLight extends Light {
     protected _shadowSaturation = 1.0;
     protected _shadowDistance = 100;
     protected _shadowInvisibleOcclusionRange = 200;
+    protected _shadowCSMLevel = CSMLevel.level_3;
+    protected _shadowCSMValueDirty = false;
+    protected _shadowCSMLambda = 0.35;
+    protected _shadowCSMDebugMode = false;
 
     // fixed area properties
     protected _shadowFixedArea = false;
@@ -56,6 +65,10 @@ export class DirectionalLight extends Light {
     protected _shadowFar = 10.0;
     protected _shadowOrthoSize = 5;
 
+    /**
+     * @en The direction vector of the light
+     * @zh 光源的方向
+     */
     set direction (dir: Vec3) {
         Vec3.normalize(this._dir, dir);
         if (JSB) {
@@ -67,7 +80,10 @@ export class DirectionalLight extends Light {
         return this._dir;
     }
 
-    // in Lux(lx)
+    /**
+     * @en The illuminance of the light in Lux(lx)
+     * @zh 光源的辐照度，单位是 Lux(lx)
+     */
     get illuminance (): number {
         const isHDR = (legacyCC.director.root).pipeline.pipelineSceneData.isHDR;
         if (isHDR) {
@@ -85,6 +101,10 @@ export class DirectionalLight extends Light {
         }
     }
 
+    /**
+     * @en The illuminance of the light in HDR mode
+     * @zh HDR 模式下光源的辐照度
+     */
     get illuminanceHDR () {
         return this._illuminanceHDR;
     }
@@ -95,6 +115,10 @@ export class DirectionalLight extends Light {
         }
     }
 
+    /**
+     * @en The illuminance of the light in LDR mode
+     * @zh LDR 模式下光源的辐照度
+     */
     get illuminanceLDR () {
         return this._illuminanceLDR;
     }
@@ -120,9 +144,9 @@ export class DirectionalLight extends Light {
     }
 
     /**
-      * @en get or set shadow pcf.
-      * @zh 获取或者设置阴影pcf等级。
-      */
+     * @en get or set shadow pcf.
+     * @zh 获取或者设置阴影pcf等级。
+     */
     get shadowPcf () {
         return this._shadowPcf;
     }
@@ -134,9 +158,9 @@ export class DirectionalLight extends Light {
     }
 
     /**
-      * @en get or set shadow map sampler offset
-      * @zh 获取或者设置阴影纹理偏移值
-      */
+     * @en get or set shadow map sampler offset
+     * @zh 获取或者设置阴影纹理偏移值
+     */
     get shadowBias () {
         return this._shadowBias;
     }
@@ -148,9 +172,9 @@ export class DirectionalLight extends Light {
     }
 
     /**
-      * @en get or set normal bias.
-      * @zh 设置或者获取法线偏移。
-      */
+     * @en get or set normal bias.
+     * @zh 设置或者获取法线偏移。
+     */
     get shadowNormalBias () {
         return this._shadowNormalBias;
     }
@@ -176,9 +200,9 @@ export class DirectionalLight extends Light {
     }
 
     /**
-      * @en get or set shadow camera far
-      * @zh 获取或者设置潜在阴影产生的范围
-      */
+     * @en get or set shadow camera far
+     * @zh 获取或者设置潜在阴影产生的范围
+     */
     get shadowDistance () {
         return this._shadowDistance;
     }
@@ -190,8 +214,8 @@ export class DirectionalLight extends Light {
     }
 
     /**
-      * @en get or set shadow camera far
-      * @zh 获取或者设置潜在阴影产生的范围
+     * @en get or set shadow camera far
+     * @zh 获取或者设置潜在阴影产生的范围
      */
     get shadowInvisibleOcclusionRange () {
         return this._shadowInvisibleOcclusionRange;
@@ -200,6 +224,58 @@ export class DirectionalLight extends Light {
         this._shadowInvisibleOcclusionRange = Math.min(val, Shadows.MAX_FAR);
         if (JSB) {
             (this._nativeObj as NativeDirectionalLight).setShadowInvisibleOcclusionRange(val);
+        }
+    }
+
+    /**
+      * @en get or set shadow CSM level
+      * @zh 获取或者设置级联阴影层数
+     */
+    get shadowCSMLevel () {
+        return this._shadowCSMLevel;
+    }
+    set shadowCSMLevel (val) {
+        this._shadowCSMLevel = val;
+        if (JSB) {
+            (this._nativeObj as NativeDirectionalLight).setShadowCSMLevel(val);
+        }
+    }
+
+    get shadowCSMValueDirty () {
+        return this._shadowCSMValueDirty;
+    }
+    set shadowCSMValueDirty (val) {
+        this._shadowCSMValueDirty = val;
+        if (JSB) {
+            (this._nativeObj as NativeDirectionalLight).setShadowCSMValueDirty(val);
+        }
+    }
+
+    /**
+      * @en get or set shadow CSM level ratio
+      * @zh 获取或者设置级联阴影层数系数
+     */
+    get shadowCSMLambda () {
+        return this._shadowCSMLambda;
+    }
+    set shadowCSMLambda (val) {
+        this._shadowCSMLambda = val;
+        if (JSB) {
+            (this._nativeObj as NativeDirectionalLight).setShadowCSMLambda(val);
+        }
+    }
+
+    /**
+      * @en get or set shadow CSM level ratio
+      * @zh 获取或者设置级联阴影层数系数
+     */
+    get shadowCSMDebugMode () {
+        return this._shadowCSMDebugMode;
+    }
+    set shadowCSMDebugMode (val) {
+        this._shadowCSMDebugMode = val;
+        if (JSB) {
+            (this._nativeObj as NativeDirectionalLight).setShadowCSMDebugMode(val);
         }
     }
 
@@ -218,9 +294,9 @@ export class DirectionalLight extends Light {
     }
 
     /**
-      * @en get or set shadow camera near
-      * @zh 获取或者设置阴影相机近裁剪面
-      */
+     * @en The near clip plane of the shadow camera
+     * @zh 获取或者设置阴影相机近裁剪面
+     */
     get shadowNear () {
         return this._shadowNear;
     }
@@ -232,9 +308,9 @@ export class DirectionalLight extends Light {
     }
 
     /**
-      * @en get or set shadow camera far
-      * @zh 获取或者设置阴影相机远裁剪面
-      */
+     * @en The far clip plane of the shadow camera
+     * @zh 获取或者设置阴影相机远裁剪面
+     */
     get shadowFar () {
         return this._shadowFar;
     }
@@ -246,9 +322,9 @@ export class DirectionalLight extends Light {
     }
 
     /**
-      * @en get or set shadow camera orthoSize
-      * @zh 获取或者设置阴影相机正交大小
-      */
+     * @en get or set shadow camera orthoSize
+     * @zh 获取或者设置阴影相机正交大小
+     */
     get shadowOrthoSize () {
         return this._shadowOrthoSize;
     }
@@ -271,6 +347,10 @@ export class DirectionalLight extends Light {
         this.direction = new Vec3(1.0, -1.0, -1.0);
     }
 
+    /**
+     * @en Update the direction
+     * @zh 更新方向
+     */
     public update () {
         if (this._node && this._node.hasChangedFlags) {
             this.direction = Vec3.transformQuat(_v3, _forward, this._node.worldRotation);

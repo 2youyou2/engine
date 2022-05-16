@@ -126,6 +126,10 @@ export const NativeDirectionalLight: Constructor<{
     setShadowSaturation(val: number): void;
     setShadowDistance(val: number): void;
     setShadowInvisibleOcclusionRange(val: number): void;
+    setShadowCSMLevel(val: number): void;
+    setShadowCSMValueDirty(val: boolean): void;
+    setShadowCSMLambda(val: number): void;
+    setShadowCSMDebugMode(val: boolean): void;
     setShadowFixedArea(val: boolean): void;
     setShadowNear(val: number): void;
     setShadowFar(val: number): void;
@@ -192,6 +196,7 @@ export const NativeRenderWindow: Constructor<{
 export type NativeRenderWindow = InstanceType<typeof NativeRenderWindow>;
 
 export const NativeCamera: Constructor<{
+    isOrtho: boolean;
     width: number;
     height: number;
     nearClip: number;

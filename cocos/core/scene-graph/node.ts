@@ -23,10 +23,7 @@
  THE SOFTWARE.
 */
 
-/**
- * @packageDocumentation
- * @module scene-graph
- */
+
 
 import {
     ccclass, editable, serializable, type,
@@ -496,6 +493,9 @@ export class Node extends BaseNode implements CustomSerializable {
         this._hasChangedFlagsChunk[this._hasChangedFlagsOffset] = val;
     }
 
+    /**
+     * @internal
+     */
     public [serializeTag] (serializationOutput: SerializationOutput, context: SerializationContext) {
         if (!EDITOR) {
             serializationOutput.writeThis();

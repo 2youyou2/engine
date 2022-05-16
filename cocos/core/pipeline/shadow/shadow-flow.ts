@@ -23,10 +23,7 @@
  THE SOFTWARE.
  */
 
-/**
- * @packageDocumentation
- * @module pipeline.forward
- */
+
 
 import { ccclass } from 'cc.decorator';
 import { PIPELINE_FLOW_SHADOW, supportsR32FloatTexture } from '../define';
@@ -35,7 +32,7 @@ import { ForwardFlowPriority } from '../enum';
 import { ShadowStage } from './shadow-stage';
 import { RenderPass, LoadOp, StoreOp,
     Format, Texture, TextureType, TextureUsageBit, ColorAttachment,
-    DepthStencilAttachment, RenderPassInfo, TextureInfo, FramebufferInfo, Swapchain } from '../../gfx';
+    DepthStencilAttachment, RenderPassInfo, TextureInfo, FramebufferInfo, Swapchain, Framebuffer, DescriptorSet } from '../../gfx';
 import { RenderFlowTag } from '../pipeline-serialization';
 import { ForwardPipeline } from '../forward/forward-pipeline';
 import { RenderPipeline } from '..';
@@ -78,8 +75,9 @@ export class ShadowFlow extends RenderFlow {
     public render (camera: Camera) {
         const pipeline = this._pipeline as ForwardPipeline;
         const shadowInfo = pipeline.pipelineSceneData.shadows;
+        const csmLayers = pipeline.pipelineSceneData.csmLayers;
         const shadowFrameBufferMap = pipeline.pipelineSceneData.shadowFrameBufferMap;
-        const castShadowObjects = pipeline.pipelineSceneData.castShadowObjects;
+        const castShadowObjects = csmLayers.castShadowObjects;
         const validPunctualLights = this._pipeline.pipelineSceneData.validPunctualLights;
         if (!shadowInfo.enabled || shadowInfo.type !== ShadowType.ShadowMap) { return; }
 
@@ -109,10 +107,12 @@ export class ShadowFlow extends RenderFlow {
             }
 
             const shadowFrameBuffer = shadowFrameBufferMap.get(mainLight);
-            for (let i = 0; i < this._stages.length; i++) {
-                const shadowStage = this._stages[i] as ShadowStage;
-                shadowStage.setUsage(globalDS, mainLight, shadowFrameBuffer!);
-                shadowStage.render(camera);
+            if (mainLight.shadowFixedArea) {
+                this._renderStage(camera, mainLight, shadowFrameBuffer!, globalDS);
+            } else {
+                for (let i = 0; i < mainLight.shadowCSMLevel; i++) {
+                    this._renderStage(camera, mainLight, shadowFrameBuffer!, globalDS, i);
+                }
             }
         }
 
@@ -125,11 +125,7 @@ export class ShadowFlow extends RenderFlow {
             }
 
             const shadowFrameBuffer = shadowFrameBufferMap.get(light);
-            for (let i = 0; i < this._stages.length; i++) {
-                const shadowStage = this._stages[i] as ShadowStage;
-                shadowStage.setUsage(globalDS, light, shadowFrameBuffer!);
-                shadowStage.render(camera);
-            }
+            this._renderStage(camera, light, shadowFrameBuffer!, globalDS);
         }
 
         _validLights.length = 0;
@@ -219,6 +215,14 @@ export class ShadowFlow extends RenderFlow {
         shadowFrameBufferMap.set(light, shadowFrameBuffer);
     }
 
+    private _renderStage (camera: Camera, light: Light, shadowFrameBuffer: Framebuffer, globalDS: DescriptorSet, level = 0) {
+        for (let i = 0; i < this._stages.length; i++) {
+            const shadowStage = this._stages[i] as ShadowStage;
+            shadowStage.setUsage(globalDS, light, shadowFrameBuffer, level);
+            shadowStage.render(camera);
+        }
+    }
+
     private clearShadowMap (validLights: Light[], camera: Camera) {
         const pipeline = this._pipeline;
         const scene = pipeline.pipelineSceneData;
@@ -234,7 +238,7 @@ export class ShadowFlow extends RenderFlow {
             for (let i = 0; i < this._stages.length; i++) {
                 const shadowStage = this._stages[i] as ShadowStage;
                 shadowStage.setUsage(globalDS, mainLight, shadowFrameBuffer!);
-                shadowStage.render(camera);
+                shadowStage.clearFramebuffer(camera);
             }
         }
 

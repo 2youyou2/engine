@@ -33,6 +33,7 @@ namespace pipeline {
 void PipelineSceneData::activate(gfx::Device *device, RenderPipeline *pipeline) {
     _device   = device;
     _pipeline = pipeline;
+    _csmLayers = new CSMLayers();
 }
 
 void PipelineSceneData::setPipelineSharedSceneData(scene::PipelineSharedSceneData *data) {
@@ -40,12 +41,14 @@ void PipelineSceneData::setPipelineSharedSceneData(scene::PipelineSharedSceneDat
 }
 
 void PipelineSceneData::destroy() {
-    for (auto &pair : _shadowFrameBufferMap) {
+    for (const auto &pair : _shadowFrameBufferMap) {
         pair.second->destroy();
         delete pair.second;
     }
 
     _shadowFrameBufferMap.clear();
+    delete _csmLayers;
+    _csmLayers = nullptr;
 }
 
 } // namespace pipeline
