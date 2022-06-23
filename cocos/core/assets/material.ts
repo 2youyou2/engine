@@ -23,8 +23,6 @@
  THE SOFTWARE.
 */
 
-
-
 import { ccclass, serializable, type } from 'cc.decorator';
 import { Asset } from './asset';
 import { EffectAsset } from './effect-asset';
@@ -45,7 +43,7 @@ const v4_1 = new Vec4();
  * @en The basic infos for material initialization.
  * @zh 用来初始化材质的基本信息。
  */
-interface IMaterialInfo {
+export interface IMaterialInfo {
     /**
      * @en The EffectAsset to use. Must provide if `effectName` is not specified.
      * @zh
@@ -483,6 +481,7 @@ export class Material extends Asset {
         this.initialize({
             effectName: 'unlit',
             defines: { USE_COLOR: true },
+            technique: 0,
         });
         this.setProperty('mainColor', new Color('#ff00ff'));
     }
