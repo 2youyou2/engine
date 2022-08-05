@@ -37,6 +37,7 @@ import { RenderPipeline } from '..';
 import { ShadowType } from '../../renderer/scene/shadows';
 import { Light, LightType } from '../../renderer/scene/light';
 import { Camera } from '../../renderer/scene';
+import { LightComponent } from '../../../3d';
 
 const _validLights: Light[] = [];
 
@@ -67,7 +68,31 @@ export class ShadowFlow extends RenderFlow {
             shadowMapStage.initialize(ShadowStage.initInfo);
             this._stages.push(shadowMapStage);
         }
+
+        this.checkLightValid = this.checkLightValid.bind(this);
+
         return true;
+    }
+
+    checkLightValid (frameBuffer: Framebuffer, light: Light) {
+        const pipeline = this._pipeline as ForwardPipeline;
+        const shadowFrameBufferMap = pipeline.pipelineSceneData.shadowFrameBufferMap;
+
+        if (!light.node!.isValid) {
+            shadowFrameBufferMap.delete(light);
+
+            const renderTargets = frameBuffer.colorTextures;
+            for (let j = 0; j < renderTargets.length; j++) {
+                const renderTarget = renderTargets[j];
+                if (renderTarget) { renderTarget.destroy(); }
+            }
+            renderTargets.length = 0;
+
+            const depth = frameBuffer.depthStencilTexture;
+            if (depth) { depth.destroy(); }
+
+            frameBuffer.destroy();
+        }
     }
 
     public render (camera: Camera) {
@@ -94,6 +119,8 @@ export class ShadowFlow extends RenderFlow {
             this.clearShadowMap(_validLights, camera);
             return;
         }
+
+        shadowFrameBufferMap.forEach(this.checkLightValid);
 
         if (shadowInfo.shadowMapDirty) { this.resizeShadowMap(); }
 
@@ -140,7 +167,7 @@ export class ShadowFlow extends RenderFlow {
                 if (!frameBuffer) { continue; }
                 const renderTargets = frameBuffer.colorTextures;
                 for (let j = 0; j < renderTargets.length; j++) {
-                    const renderTarget = renderTargets[i];
+                    const renderTarget = renderTargets[j];
                     if (renderTarget) { renderTarget.destroy(); }
                 }
                 renderTargets.length = 0;
