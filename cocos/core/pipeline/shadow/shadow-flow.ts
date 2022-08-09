@@ -69,8 +69,6 @@ export class ShadowFlow extends RenderFlow {
             this._stages.push(shadowMapStage);
         }
 
-        this.checkLightValid = this.checkLightValid.bind(this);
-
         return true;
     }
 
@@ -93,6 +91,11 @@ export class ShadowFlow extends RenderFlow {
 
             frameBuffer.destroy();
         }
+    }
+
+    public activate(pipeline: RenderPipeline): void {
+        super.activate(pipeline);
+        this.checkLightValid = this.checkLightValid.bind(this);
     }
 
     public render (camera: Camera) {
