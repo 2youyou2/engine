@@ -297,8 +297,9 @@ export class AudioSource extends Component {
             this._operationsBeforeLoading.push('stop');
             return;
         }
+        let player = this._player
         this._player?.stop().then(() => {
-            audioManager.removePlaying(this._player!);
+            audioManager.removePlaying(player!);
         }).catch((e) => {});
     }
 
