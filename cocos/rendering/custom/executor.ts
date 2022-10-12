@@ -35,7 +35,7 @@ import intersect from '../../core/geometry/intersect';
 import { Sphere } from '../../core/geometry/sphere';
 import { AccessFlagBit, Attribute, Buffer, BufferInfo, BufferUsageBit, BufferViewInfo, Color, ColorAttachment, CommandBuffer, DepthStencilAttachment, DescriptorSet, DescriptorSetInfo, Device, deviceManager, Format, Framebuffer,
     FramebufferInfo, GeneralBarrierInfo, InputAssemblerInfo, LoadOp, MemoryUsageBit, PipelineState, Rect, RenderPass, RenderPassInfo, Sampler, SamplerInfo, StoreOp, SurfaceTransform, Swapchain, Texture, TextureInfo,
-    TextureType, TextureUsageBit, Viewport } from '../../gfx';
+    TextureType, TextureUsageBit, Viewport, Filter } from '../../gfx';
 import { legacyCC } from '../../core/global-exports';
 import { Vec3 } from '../../core/math/vec3';
 import { Vec4 } from '../../core/math/vec4';
@@ -491,7 +491,12 @@ class RenderPassLayoutInfo {
                     for (let i = 0; i !== block.descriptors.length; ++i) {
                         if (descriptorID === block.descriptors[i].descriptorID) {
                             layoutData.descriptorSet!.bindTexture(block.offset + i, gfxTex);
-                            layoutData.descriptorSet!.bindSampler(block.offset + i, context.device.getSampler(new SamplerInfo()));
+                            let info = new SamplerInfo()
+                            if (descriptorName === 'depth_stencil') {
+                                info.minFilter = Filter.POINT
+                                info.magFilter = Filter.POINT
+                            }
+                            layoutData.descriptorSet!.bindSampler(block.offset + i, context.device.getSampler(info));
                             if (!this._descriptorSet) this._descriptorSet = layoutData.descriptorSet;
                         }
                     }

@@ -334,6 +334,21 @@ export function buildForwardLayout (ppl: Pipeline) {
         lg.setDescriptor(postPassBlock, 'outputResultMap', Type.SAMPLER2D);
         lg.merge(postDescriptors);
         lg.mergeDescriptors(postPassID);
+
+        // 6. === blit === 
+        let tempID = 0
+        const blitPassID = lg.addRenderStage('Blit', tempID++);
+        lg.addRenderPhase('Queue', blitPassID);
+        const blitDescriptors = lg.layoutGraph.getDescriptors(blitPassID);
+        const blitPassBlock = lg.getLayoutBlock(UpdateFrequency.PER_PASS,
+            ParameterType.TABLE,
+            DescriptorTypeOrder.SAMPLER_TEXTURE,
+            ShaderStageFlagBit.FRAGMENT,
+            blitDescriptors);
+
+        lg.setDescriptor(blitPassBlock, 'inputTexture', Type.SAMPLER2D);
+        lg.merge(blitDescriptors);
+        lg.mergeDescriptors(blitPassID);
     }
 
     const builder = ppl.layoutGraphBuilder;
