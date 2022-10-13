@@ -39,11 +39,11 @@ export function createCustomPipeline (): Pipeline {
     const ppl = new WebPipeline();
     const pplName = macro.CUSTOM_PIPELINE_NAME;
     ppl.setCustomPipelineName(pplName);
-    // if (ppl.usesDeferredPipeline) {
+    if (pplName === 'Deferred') {
         buildDeferredLayout(ppl);
-    // } else {
-    //     buildForwardLayout(ppl);
-    // }
+    } else {
+        buildForwardLayout(ppl);
+    }
     _pipeline = ppl;
     return ppl;
 }
