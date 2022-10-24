@@ -492,7 +492,9 @@ class RenderPassLayoutInfo {
                         if (descriptorID === block.descriptors[i].descriptorID) {
                             layoutData.descriptorSet!.bindTexture(block.offset + i, gfxTex);
                             let info = new SamplerInfo()
-                            if (descriptorName === 'depth_stencil') {
+                            if (descriptorName === 'depth_stencil' ||
+                                descriptorName === 'light_cluster_InfoTexture' ||
+                                descriptorName === 'light_cluster_Texture') {
                                 info.minFilter = Filter.POINT
                                 info.magFilter = Filter.POINT
                             }
@@ -1231,9 +1233,11 @@ class DeviceSceneTask extends WebSceneTask {
             const currRes = toGpuDesc.gpuDescriptors[i];
             if (!currRes.gpuBuffer) {
                 currRes.gpuBuffer = fromGpuDesc.gpuDescriptors[i].gpuBuffer;
-            } else if (!currRes.gpuTextureView) {
+            } 
+            if (!currRes.gpuTextureView) {
                 currRes.gpuTextureView = fromGpuDesc.gpuDescriptors[i].gpuTextureView;
-            } else if (!currRes.gpuSampler) {
+            } 
+            if (!currRes.gpuSampler) {
                 currRes.gpuSampler = fromGpuDesc.gpuDescriptors[i].gpuSampler;
             }
         }
