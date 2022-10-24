@@ -611,7 +611,7 @@ export function buildGBufferPass (camera: Camera,
     gBufferPass.addRasterView(gBufferPassDSName, passDSView);
     gBufferPass
         .addQueue(QueueHint.RENDER_OPAQUE)
-        .addSceneOfCamera(camera, new LightInfo(), SceneFlags.OPAQUE_OBJECT | SceneFlags.CUTOUT_OBJECT);
+        .addSceneOfCamera(camera, new LightInfo(), SceneFlags.OPAQUE_OBJECT | SceneFlags.CUTOUT_OBJECT | SceneFlags.DRAW_INSTANCING);
     const gBufferInfo = new GBufferInfo();
     gBufferInfo.color = gBufferPassRTName;
     gBufferInfo.normal = gBufferPassNormal;

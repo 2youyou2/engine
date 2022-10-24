@@ -334,6 +334,21 @@ export function buildForwardLayout (ppl: Pipeline) {
         lg.setDescriptor(postPassBlock, 'outputResultMap', Type.SAMPLER2D);
         lg.merge(postDescriptors);
         lg.mergeDescriptors(postPassID);
+
+        // 6. === blit === 
+        let tempID = 0
+        const blitPassID = lg.addRenderStage('Blit', tempID++);
+        lg.addRenderPhase('Queue', blitPassID);
+        const blitDescriptors = lg.layoutGraph.getDescriptors(blitPassID);
+        const blitPassBlock = lg.getLayoutBlock(UpdateFrequency.PER_PASS,
+            ParameterType.TABLE,
+            DescriptorTypeOrder.SAMPLER_TEXTURE,
+            ShaderStageFlagBit.FRAGMENT,
+            blitDescriptors);
+
+        lg.setDescriptor(blitPassBlock, 'inputTexture', Type.SAMPLER2D);
+        lg.merge(blitDescriptors);
+        lg.mergeDescriptors(blitPassID);
     }
 
     const builder = ppl.layoutGraphBuilder;
@@ -380,6 +395,10 @@ export function buildDeferredLayout (ppl: Pipeline) {
         ShaderStageFlagBit.FRAGMENT,
         lightingDescriptors);
 
+    lg.setDescriptor(lightingPassBlock, 'CustomLightingUBO', Type.UNKNOWN);
+    lg.setDescriptor(lightingPassBlock, 'light_cluster_InfoTexture', Type.FLOAT4);
+    lg.setDescriptor(lightingPassBlock, 'light_cluster_Texture', Type.SAMPLER2D);
+
     lg.setDescriptor(lightingPassBlock, 'gbuffer_albedoMap', Type.FLOAT4);
     lg.setDescriptor(lightingPassBlock, 'gbuffer_normalMap', Type.FLOAT4);
     lg.setDescriptor(lightingPassBlock, 'gbuffer_emissiveMap', Type.FLOAT4);
@@ -403,6 +422,22 @@ export function buildDeferredLayout (ppl: Pipeline) {
     lg.merge(postDescriptors);
 
     lg.mergeDescriptors(postPassID);
+    
+    //  === blit === 
+    let tempID = 0
+    const blitPassID = lg.addRenderStage('Blit', tempID++);
+    lg.addRenderPhase('Queue', blitPassID);
+    const blitDescriptors = lg.layoutGraph.getDescriptors(blitPassID);
+    const blitPassBlock = lg.getLayoutBlock(UpdateFrequency.PER_PASS,
+        ParameterType.TABLE,
+        DescriptorTypeOrder.SAMPLER_TEXTURE,
+        ShaderStageFlagBit.FRAGMENT,
+        blitDescriptors);
+
+    lg.setDescriptor(blitPassBlock, 'inputTexture', Type.SAMPLER2D);
+    lg.merge(blitDescriptors);
+    lg.mergeDescriptors(blitPassID);
+
     if (visitor.error) {
         console.log(visitor.error);
     }
@@ -410,4 +445,5 @@ export function buildDeferredLayout (ppl: Pipeline) {
     const builder = ppl.layoutGraphBuilder;
     builder.clear();
     buildLayoutGraphDataImpl(lg.layoutGraph, builder);
+
 }
