@@ -27,11 +27,10 @@ import { ccclass, serializable } from 'cc.decorator';
 import { Vertex, Tetrahedron, Delaunay } from './delaunay';
 import { PolynomialSolver } from './polynomial-solver';
 import { LightProbeInfo } from '../../scene-graph/scene-globals';
-import { Vec3 } from '../../core/math/vec3';
-import { Vec4 } from '../../core/math/vec4';
-import { legacyCC } from '../../core/global-exports';
+import { Vec3, Vec4, cclegacy, math } from '../../core';
 import { SH } from './sh';
-import { math } from '../../core';
+import { EPSILON } from '../../core/math/utils';
+import { warnID } from '../../core/platform/debug';
 
 @ccclass('cc.LightProbesData')
 export class LightProbesData {
@@ -47,23 +46,31 @@ export class LightProbesData {
         return this._probes.length === 0 || this._tetrahedrons.length === 0;
     }
 
-    public available () {
-        return !this.empty() && this._probes[0].coefficients.length !== 0;
+    public reset () {
+        this._probes.length = 0;
+        this._tetrahedrons.length = 0;
     }
 
-    public build (points: Vec3[]) {
+    public updateProbes (points: Vec3[]) {
+        this._probes.length = 0;
+
+        const pointCount = points.length;
+        for (let i = 0; i < pointCount; i++) {
+            this._probes.push(new Vertex(points[i]));
+        }
+    }
+
+    public updateTetrahedrons () {
         const delaunay = new Delaunay();
-        delaunay.build(points);
-
-        this._probes = delaunay.getProbes();
-        this._tetrahedrons = delaunay.getTetrahedrons();
+        this._tetrahedrons = delaunay.build(this._probes);
     }
 
-    public getInterpolationSHCoefficients (position: Vec3, tetIndex: number, coefficients: Vec3[]) {
-        const weights = new Vec4(0.0, 0.0, 0.0, 0.0);
-        tetIndex = this.getInterpolationWeights(position, tetIndex, weights);
-        const length = SH.getBasisCount();
+    public getInterpolationSHCoefficients (tetIndex: number, weights: Vec4, coefficients: Vec3[]) {
+        if (!this.hasCoefficients()) {
+            return false;
+        }
 
+        const length = SH.getBasisCount();
         const tetrahedron = this._tetrahedrons[tetIndex];
         const c0 = this._probes[tetrahedron.vertex0].coefficients;
         const c1 = this._probes[tetrahedron.vertex1].coefficients;
@@ -88,10 +95,10 @@ export class LightProbesData {
             }
         }
 
-        return tetIndex;
+        return true;
     }
 
-    private getInterpolationWeights (position: Vec3, tetIndex: number, weights: Vec4) {
+    public getInterpolationWeights (position: Vec3, tetIndex: number, weights: Vec4) {
         const tetrahedronCount = this._tetrahedrons.length;
         if (tetIndex < 0 || tetIndex >= tetrahedronCount) {
             tetIndex = 0;
@@ -129,6 +136,10 @@ export class LightProbesData {
         return tetIndex;
     }
 
+    private hasCoefficients () {
+        return !this.empty() && this._probes[0].coefficients.length !== 0;
+    }
+
     private static getTriangleBarycentricCoord (p0: Vec3, p1: Vec3, p2: Vec3, position: Vec3) {
         const v1 = new Vec3(0.0, 0.0, 0.0);
         const v2 = new Vec3(0.0, 0.0, 0.0);
@@ -138,7 +149,7 @@ export class LightProbesData {
         Vec3.subtract(v2, p2, p0);
         Vec3.cross(normal, v1, v2);
 
-        if (normal.lengthSqr() <= math.EPSILON) {
+        if (normal.lengthSqr() <= EPSILON) {
             return new Vec3(0.0, 0.0, 0.0);
         }
 
@@ -232,6 +243,7 @@ export class LightProbesData {
     @serializable
     private _tetrahedrons: Tetrahedron[] = [];
 }
+cclegacy.internal.LightProbesData = LightProbesData;
 
 /**
  * @en light probe data
@@ -252,6 +264,39 @@ export class LightProbes {
     }
     get enabled () {
         return this._enabled;
+    }
+
+    /**
+     * @en GI multiplier
+     * @zh GI乘数
+     */
+    set giScale (val: number) {
+        this._giScale = val;
+    }
+    get giScale (): number {
+        return this._giScale;
+    }
+
+    /**
+      * @en GI sample counts
+      * @zh GI 采样数量
+      */
+    set giSamples (val: number) {
+        this._giSamples = val;
+    }
+    get giSamples (): number {
+        return this._giSamples;
+    }
+
+    /**
+      * @en light bounces
+      * @zh 光照反弹次数
+      */
+    set bounces (val: number) {
+        this._bounces = val;
+    }
+    get bounces (): number {
+        return this._bounces;
     }
 
     /**
@@ -310,6 +355,9 @@ export class LightProbes {
     }
 
     protected _enabled = false;
+    protected _giScale = 1.0;
+    protected _giSamples = 1024;
+    protected _bounces = 2;
     protected _reduceRinging = 0.0;
     protected _showProbe = true;
     protected _showWireframe = true;
@@ -318,6 +366,9 @@ export class LightProbes {
 
     public initialize (info: LightProbeInfo) {
         this._enabled = info.enabled;
+        this._giScale = info.giScale;
+        this._giSamples = info.giSamples;
+        this._bounces = info.bounces;
         this._reduceRinging = info.reduceRinging;
         this._showProbe = info.showProbe;
         this._showWireframe = info.showWireframe;
@@ -327,20 +378,20 @@ export class LightProbes {
         this._updatePipeline();
     }
 
-    public available () {
+    public empty () {
         if (!this._enabled) {
-            return false;
+            return true;
         }
 
         if (!this._data) {
-            return false;
+            return true;
         }
 
-        return this._data.available();
+        return this._data.empty();
     }
 
     protected _updatePipeline () {
-        const root = legacyCC.director.root;
+        const root = cclegacy.director.root;
         const pipeline = root.pipeline;
 
         if (pipeline.macros.CC_LIGHT_PROBE_ENABLED !== this.enabled) {
@@ -349,3 +400,4 @@ export class LightProbes {
         }
     }
 }
+cclegacy.internal.LightProbes = LightProbes;
