@@ -35,7 +35,7 @@ import intersect from '../../core/geometry/intersect';
 import { Sphere } from '../../core/geometry/sphere';
 import { AccessFlagBit, Attribute, Buffer, BufferInfo, BufferUsageBit, BufferViewInfo, Color, ColorAttachment, CommandBuffer, DepthStencilAttachment, DescriptorSet, DescriptorSetInfo, Device, deviceManager, Format, Framebuffer,
     FramebufferInfo, GeneralBarrierInfo, InputAssemblerInfo, LoadOp, MemoryUsageBit, PipelineState, Rect, RenderPass, RenderPassInfo, Sampler, SamplerInfo, StoreOp, SurfaceTransform, Swapchain, Texture, TextureInfo,
-    TextureType, TextureUsageBit, Viewport, Filter } from '../../gfx';
+    TextureType, TextureUsageBit, Viewport, Filter, Address } from '../../gfx';
 import { legacyCC } from '../../core/global-exports';
 import { Vec3 } from '../../core/math/vec3';
 import { Vec4 } from '../../core/math/vec4';
@@ -500,6 +500,11 @@ class RenderPassLayoutInfo {
                                 descriptorName === 'light_cluster_Texture') {
                                 samplerInfo.minFilter = Filter.POINT
                                 samplerInfo.magFilter = Filter.POINT
+                            }
+                            if (descriptorName === 'bloomTexture' ||
+                                descriptorName === 'outputResultMap') {
+                                samplerInfo.addressU = Address.CLAMP;
+                                samplerInfo.addressV = Address.CLAMP
                             }
                             layoutData.descriptorSet!.bindSampler(block.offset + i, context.device.getSampler(samplerInfo));
 

@@ -245,12 +245,18 @@ function buildBloomUpSample (lg, idx: number) {
     lg.setUniform(bloomUpsampleUBO, 'texSize', Type.FLOAT4, 1);
     lg.setDescriptor(bloomUpsampleUniformBlock, 'BloomUBO', Type.UNKNOWN);
 
-    const bloomUpsamplePassBlock = lg.getLayoutBlock(UpdateFrequency.PER_PASS,
+    const bloomCombineSamplePassBlock = lg.getLayoutBlock(UpdateFrequency.PER_PASS,
         ParameterType.TABLE,
         DescriptorTypeOrder.SAMPLER_TEXTURE,
         ShaderStageFlagBit.FRAGMENT,
         bloomUpsampleDescriptors);
-    lg.setDescriptor(bloomUpsamplePassBlock, 'bloomTexture', Type.SAMPLER2D);
+    lg.setDescriptor(bloomCombineSamplePassBlock, 'outputResultMap', Type.SAMPLER2D);
+    const bloomCombineSamplePassBlock2 = lg.getLayoutBlock(UpdateFrequency.PER_PASS,
+        ParameterType.TABLE,
+        DescriptorTypeOrder.SAMPLER_TEXTURE,
+        ShaderStageFlagBit.FRAGMENT,
+        bloomUpsampleDescriptors);
+    lg.setDescriptor(bloomCombineSamplePassBlock2, 'bloomTexture', Type.SAMPLER2D);
     lg.merge(bloomUpsampleDescriptors);
     lg.mergeDescriptors(bloomUpsampleID);
 }
@@ -287,12 +293,16 @@ export function buildForwardLayout (ppl: Pipeline) {
         lg.setDescriptor(bloomPrefilterPassBlock, 'outputResultMap', Type.SAMPLER2D);
         lg.merge(bloomPrefilterDescriptors);
         lg.mergeDescriptors(bloomPrefilterID);
+
+        let MAX_BLOOM_FILTER_PASS_NUM = 6;
         // 2.=== Bloom downsample ===
-        buildBloomDownSample(lg, 0);
-        buildBloomDownSample(lg, 1);
+        for (let i = 0; i < MAX_BLOOM_FILTER_PASS_NUM; i++) {
+            buildBloomDownSample(lg, i);
+        }
         // 3.=== Bloom upsample ===
-        buildBloomUpSample(lg, 0);
-        buildBloomUpSample(lg, 1);
+        for (let i = 0; i < MAX_BLOOM_FILTER_PASS_NUM; i++) {
+            buildBloomUpSample(lg, i);
+        }
         // 4.=== Bloom combine ===
         const bloomCombineSampleID = lg.addRenderStage('Bloom_Combine', BloomStage.COMBINE);
         lg.addRenderPhase('Queue', bloomCombineSampleID);
@@ -437,6 +447,71 @@ export function buildDeferredLayout (ppl: Pipeline) {
     lg.setDescriptor(blitPassBlock, 'inputTexture', Type.SAMPLER2D);
     lg.merge(blitDescriptors);
     lg.mergeDescriptors(blitPassID);
+
+
+    // 1.=== Bloom prefilter ===
+    const bloomPrefilterID = lg.addRenderStage('Bloom_Prefilter', BloomStage.PREFILTER);
+    lg.addRenderPhase('Queue', bloomPrefilterID);
+    const bloomPrefilterDescriptors = lg.layoutGraph.getDescriptors(bloomPrefilterID);
+    // unifom
+    const bloomPrefilterUniformBlock = lg.getLayoutBlock(UpdateFrequency.PER_PASS,
+        ParameterType.TABLE,
+        DescriptorTypeOrder.UNIFORM_BUFFER,
+        ShaderStageFlagBit.ALL,
+        bloomPrefilterDescriptors);
+    const bloomPrefilterUBO: UniformBlock = lg.getUniformBlock(SetIndex.MATERIAL,
+        0, 'BloomUBO', bloomPrefilterUniformBlock);
+    lg.setUniform(bloomPrefilterUBO, 'texSize', Type.FLOAT4, 1);
+    lg.setDescriptor(bloomPrefilterUniformBlock, 'BloomUBO', Type.UNKNOWN);
+    // texture
+    const bloomPrefilterPassBlock = lg.getLayoutBlock(UpdateFrequency.PER_PASS,
+        ParameterType.TABLE,
+        DescriptorTypeOrder.SAMPLER_TEXTURE,
+        ShaderStageFlagBit.FRAGMENT,
+        bloomPrefilterDescriptors);
+    lg.setDescriptor(bloomPrefilterPassBlock, 'outputResultMap', Type.SAMPLER2D);
+    lg.merge(bloomPrefilterDescriptors);
+    lg.mergeDescriptors(bloomPrefilterID);
+
+    let MAX_BLOOM_FILTER_PASS_NUM = 6;
+    // 2.=== Bloom downsample ===
+    for (let i = 0; i < MAX_BLOOM_FILTER_PASS_NUM; i++) {
+        buildBloomDownSample(lg, i);
+    }
+    // 3.=== Bloom upsample ===
+    for (let i = 0; i < MAX_BLOOM_FILTER_PASS_NUM; i++) {
+        buildBloomUpSample(lg, i);
+    }
+
+    // 4.=== Bloom combine ===
+    const bloomCombineSampleID = lg.addRenderStage('Bloom_Combine', BloomStage.COMBINE);
+    lg.addRenderPhase('Queue', bloomCombineSampleID);
+    const bloomCombineSampleDescriptors = lg.layoutGraph.getDescriptors(bloomCombineSampleID);
+
+    const bloomCombinesampleUniformBlock = lg.getLayoutBlock(UpdateFrequency.PER_PASS,
+        ParameterType.TABLE,
+        DescriptorTypeOrder.UNIFORM_BUFFER,
+        ShaderStageFlagBit.ALL,
+        bloomCombineSampleDescriptors);
+    const bloomCombinesampleUBO: UniformBlock = lg.getUniformBlock(SetIndex.MATERIAL,
+        0, 'BloomUBO', bloomCombinesampleUniformBlock);
+    lg.setUniform(bloomCombinesampleUBO, 'texSize', Type.FLOAT4, 1);
+    lg.setDescriptor(bloomCombinesampleUniformBlock, 'BloomUBO', Type.UNKNOWN);
+
+    const bloomCombineSamplePassBlock = lg.getLayoutBlock(UpdateFrequency.PER_PASS,
+        ParameterType.TABLE,
+        DescriptorTypeOrder.SAMPLER_TEXTURE,
+        ShaderStageFlagBit.FRAGMENT,
+        bloomCombineSampleDescriptors);
+    lg.setDescriptor(bloomCombineSamplePassBlock, 'outputResultMap', Type.SAMPLER2D);
+    const bloomCombineSamplePassBlock2 = lg.getLayoutBlock(UpdateFrequency.PER_PASS,
+        ParameterType.TABLE,
+        DescriptorTypeOrder.SAMPLER_TEXTURE,
+        ShaderStageFlagBit.FRAGMENT,
+        bloomCombineSampleDescriptors);
+    lg.setDescriptor(bloomCombineSamplePassBlock2, 'bloomTexture', Type.SAMPLER2D);
+    lg.merge(bloomCombineSampleDescriptors);
+    lg.mergeDescriptors(bloomCombineSampleID);
 
     if (visitor.error) {
         console.log(visitor.error);
