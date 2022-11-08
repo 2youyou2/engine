@@ -31,6 +31,7 @@ export { Renderer } from './renderer';
 export { MissingScript } from './missing-script';
 export { PrefabLink } from './prefab-link';
 export { ReflectionProbe } from './reflection-probe-component';
+export { ReflectionProbeManager } from '../rendering/reflection-probe-manager';
 /** deprecated */
 export * from './deprecated';
 export { LOD, LODGroup } from './lodgroup-component';

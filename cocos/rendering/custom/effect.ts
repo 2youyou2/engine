@@ -428,9 +428,9 @@ export function buildDeferredLayout (ppl: Pipeline) {
         ShaderStageFlagBit.FRAGMENT,
         postDescriptors);
 
+    lg.setDescriptor(postPassBlock, 'PostUBO', Type.UNKNOWN);
     lg.setDescriptor(postPassBlock, 'outputResultMap', Type.FLOAT4);
     lg.merge(postDescriptors);
-
     lg.mergeDescriptors(postPassID);
     
     //  === blit === 

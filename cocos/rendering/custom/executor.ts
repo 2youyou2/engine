@@ -1249,13 +1249,11 @@ class DeviceSceneTask extends WebSceneTask {
                 currRes.gpuBuffer = fromGpuDesc.gpuDescriptors[i].gpuBuffer;
 
                 extResId.push(i);
-            } 
-            if ('gpuTextureView' in currRes && !currRes.gpuTextureView) {
+            } else if ('gpuTextureView' in currRes && !currRes.gpuTextureView) {
                 currRes.gpuTextureView = fromGpuDesc.gpuDescriptors[i].gpuTextureView;
                 currRes.gpuSampler = fromGpuDesc.gpuDescriptors[i].gpuSampler;
                 extResId.push(i);
-            } 
-            if ('gpuTexture' in currRes && !currRes.gpuTexture) {
+            } else if ('gpuTexture' in currRes && !currRes.gpuTexture) {
                 currRes.gpuTexture = fromGpuDesc.gpuDescriptors[i].gpuTexture;
                 currRes.gpuSampler = fromGpuDesc.gpuDescriptors[i].gpuSampler;
                 extResId.push(i);
