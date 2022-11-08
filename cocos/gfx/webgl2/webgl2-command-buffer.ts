@@ -99,7 +99,7 @@ export class WebGL2CommandBuffer extends CommandBuffer {
 
     public end () {
         if (this._isStateInvalied) {
-            this.bindStates();
+            // this.bindStates();
         }
 
         this._isInRenderPass = false;
