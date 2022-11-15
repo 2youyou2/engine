@@ -29,10 +29,7 @@ import { EDITOR, ALIPAY, XIAOMI, JSB, TEST, BAIDU } from 'internal:constants';
 import { Device, Format, FormatFeatureBit, deviceManager } from '../../gfx';
 import { Asset } from './asset';
 import { PixelFormat } from './asset-enum';
-import { legacyCC } from '../../core/global-exports';
-import { warnID } from '../../core/platform/debug';
-import { macro } from '../../core/platform/macro';
-import { sys } from '../../core/platform/sys';
+import { warnID, macro, sys, cclegacy } from '../../core';
 
 /**
  * @en Image source in memory
@@ -79,6 +76,35 @@ function isNativeImage (imageSource: ImageSource): imageSource is (HTMLImageElem
  */
 @ccclass('cc.ImageAsset')
 export class ImageAsset extends Asset {
+    /**
+     * mergeCompressedTextureMips
+     * ************* hearder ***************
+     * COMPRESSED_MAGIC: 0x50494d43        *
+     * ************* document **************
+     * chunkCount: n                       *
+     * chunkDataSize[0]: xxx               *
+     * ...                                 *
+     * chunkDataSize[n - 1]: xxx           *
+     * ************* chunks ****************
+     *    ******************************   *
+     *    *                            *   *
+     *    *          chunk[0]          *   *
+     *    *                            *   *
+     *    ******************************   *
+     * ...
+     *    ******************************   *
+     *    *                            *   *
+     *    *          chunk[n - 1]      *   *
+     *    *                            *   *
+     *    ******************************   *
+     * *************************************
+     * @param files @zh 压缩纹理数组 @en Compressed Texture Arrays
+     * @returns out @zh 合并后的压缩纹理数据 @en Merged compressed texture data
+     */
+    public static mergeCompressedTextureMips (files: ArrayBuffer[] | ArrayBufferView[]) {
+        return new Uint8Array(0);
+    }
+
     /**
      * @deprecated since v3.5.0, this is an engine private interface that will be removed in the future.
      */
@@ -324,4 +350,4 @@ export class ImageAsset extends Asset {
 function _getGlobalDevice (): Device | null {
     return deviceManager.gfxDevice;
 }
-legacyCC.ImageAsset = ImageAsset;
+cclegacy.ImageAsset = ImageAsset;

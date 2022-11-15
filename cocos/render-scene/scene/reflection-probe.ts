@@ -32,13 +32,13 @@ import { TextureCube } from '../../asset/assets/texture-cube';
 import { RenderTexture } from '../../asset/assets/render-texture';
 
 export enum ProbeClearFlag {
-    SKYBOX= SKYBOX_FLAG | ClearFlagBit.DEPTH_STENCIL,
-    SOLID_COLOR= ClearFlagBit.ALL,
+    SKYBOX = SKYBOX_FLAG | ClearFlagBit.DEPTH_STENCIL,
+    SOLID_COLOR = ClearFlagBit.ALL,
 }
 
 export enum ProbeType {
-    CUBE= 0,
-    PLANAR= 1,
+    CUBE = 0,
+    PLANAR = 1,
 }
 // right left up down front back
 const cameraDir: Vec3[] = [
@@ -125,6 +125,10 @@ export class ReflectionProbe {
         return this._probeType;
     }
 
+    get resolution () {
+        return this._resolution;
+    }
+
     /**
      * @en set render texture size
      * @zh 设置渲染纹理大小
@@ -136,9 +140,6 @@ export class ReflectionProbe {
             });
         }
         this._resolution = value;
-    }
-    get resolution () {
-        return this._resolution;
     }
 
     /**
@@ -181,7 +182,7 @@ export class ReflectionProbe {
      * @zh 获取或设置盒的大小。
      */
     set size (value) {
-        this._size = value;
+        this._size.set(value);
 
         const pos = this.node.getWorldPosition();
         geometry.AABB.set(this._boundingBox!, pos.x, pos.y, pos.z, this._size.x, this._size.y, this._size.z);
@@ -233,6 +234,9 @@ export class ReflectionProbe {
         return this._boundingBox;
     }
 
+    set cameraNode (node:Node) {
+        this._cameraNode = node;
+    }
     get cameraNode () {
         return this._cameraNode!;
     }
@@ -241,15 +245,12 @@ export class ReflectionProbe {
         this._probeId = id;
     }
 
-    public initialize (node: Node) {
+    public initialize (node: Node, cameraNode:Node) {
         this._node = node;
-        this._cameraNode = new Node('ReflectionProbeCamera');
-        this._cameraNode.hideFlags |= CCObject.Flags.DontSave | CCObject.Flags.HideInHierarchy;
-        node.scene.addChild(this._cameraNode);
-
+        this._cameraNode = cameraNode;
         const pos = this.node.getWorldPosition();
         this._boundingBox = geometry.AABB.create(pos.x, pos.y, pos.z, this._size.x, this._size.y, this._size.z);
-        this._createCamera();
+        this._createCamera(cameraNode);
     }
 
     public initBakedTextures () {
@@ -352,14 +353,14 @@ export class ReflectionProbe {
         }
     }
 
-    private _createCamera () {
+    private _createCamera (cameraNode:Node) {
         const root = cclegacy.director.root;
         if (!this._camera) {
             this._camera = (cclegacy.director.root).createCamera();
             if (!this._camera) return null;
             this._camera.initialize({
-                name: this.cameraNode.name,
-                node: this.cameraNode,
+                name: cameraNode.name,
+                node: cameraNode,
                 projection: CameraProjection.PERSPECTIVE,
                 window: EDITOR ? cclegacy.director.root && cclegacy.director.root.mainWindow
                     : cclegacy.director.root && cclegacy.director.root.tempWindow,
@@ -419,9 +420,8 @@ export class ReflectionProbe {
         this._forward.normalize();
         this._forward.negative();
 
-        const up = new Vec3();
-        Vec3.transformQuat(up, Vec3.UP, sourceCamera.node.worldRotation);
-        this._reflect(this._up, up, Vec3.UP, 0);
+        Vec3.transformQuat(this._up, Vec3.UP, sourceCamera.node.worldRotation);
+        this._reflect(this._up, this._up, Vec3.UP, 0);
         this._up.normalize();
 
         Quat.fromViewUp(this._cameraWorldRotation, this._forward, this._up);

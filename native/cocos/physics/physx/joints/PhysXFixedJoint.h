@@ -1,3 +1,4 @@
+
 /****************************************************************************
  Copyright (c) 2020-2022 Xiamen Yaji Software Co., Ltd.
 
@@ -30,22 +31,23 @@
 namespace cc {
 namespace physics {
 
-class PhysXDistance final : public PhysXJoint, public IDistanceJoint {
+class PhysXFixedJoint final : public PhysXJoint, public IFixedJoint {
 public:
-    PhysXDistance() : _mPivotA(physx::PxZero),
-                      _mPivotB(physx::PxZero){};
+    PhysXFixedJoint() {}
+    ~PhysXFixedJoint() override = default;
 
-    ~PhysXDistance() override = default;
-    void setPivotA(float x, float y, float z) override;
-    void setPivotB(float x, float y, float z) override;
+    void setBreakForce(float force) override;
+    void setBreakTorque(float torque) override;
     void updateScale0() override;
     void updateScale1() override;
 
 private:
     void onComponentSet() override;
     void updatePose();
-    physx::PxVec3 _mPivotA;
-    physx::PxVec3 _mPivotB;
+    float _breakForce = 0.0F;
+    float _breakTorque = 0.0F;
+    physx::PxTransform _transA;
+    physx::PxTransform _transB;
 };
 
 } // namespace physics

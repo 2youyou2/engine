@@ -23,7 +23,7 @@
  THE SOFTWARE.
 ****************************************************************************/
 
-#include "physics/physx/joints/PhysXDistance.h"
+#include "physics/physx/joints/PhysXFixedJoint.h"
 #include "math/Quaternion.h"
 #include "physics/physx/PhysXSharedBody.h"
 #include "physics/physx/PhysXUtils.h"
@@ -31,46 +31,52 @@
 namespace cc {
 namespace physics {
 
-void PhysXDistance::onComponentSet() {
-    _mJoint = PxDistanceJointCreate(PxGetPhysics(), &getTempRigidActor(), physx::PxTransform{physx::PxIdentity}, nullptr, physx::PxTransform{physx::PxIdentity});
-}
+void PhysXFixedJoint::onComponentSet() {
+    _transA = physx::PxTransform(physx::PxIdentity);
+    _transB = physx::PxTransform(physx::PxIdentity);
 
-void PhysXDistance::setPivotA(float x, float y, float z) {
-    _mPivotA = physx::PxVec3{x, y, z};
-    updatePose();
-}
+    physx::PxRigidActor *actor0 = _mSharedBody->getImpl().rigidActor;
+    physx::PxRigidActor *actor1 = nullptr;
 
-void PhysXDistance::setPivotB(float x, float y, float z) {
-    _mPivotB = physx::PxVec3{x, y, z};
-    updatePose();
-}
-
-void PhysXDistance::updateScale0() {
-    updatePose();
-}
-
-void PhysXDistance::updateScale1() {
-    updatePose();
-}
-
-void PhysXDistance::updatePose() {
-    physx::PxTransform pose0{physx::PxIdentity};
-    physx::PxTransform pose1{physx::PxIdentity};
-    auto *node0 = _mSharedBody->getNode();
-    node0->updateWorldTransform();
-    pose0.p = _mPivotA * node0->getWorldScale();
-    _mJoint->setLocalPose(physx::PxJointActorIndex::eACTOR0, pose0);
     if (_mConnectedBody) {
-        auto *node1 = _mConnectedBody->getNode();
-        node1->updateWorldTransform();
-        pose1.p = _mPivotB * node1->getWorldScale();
-    } else {
-        pose1.p = _mPivotA * node0->getWorldScale();
-        pose1.p += _mPivotB + node0->getWorldPosition();
-        const auto &wr = node0->getWorldRotation();
-        pose1.q *= physx::PxQuat{wr.x, wr.y, wr.z, wr.w};
+        actor1 = _mConnectedBody->getImpl().rigidActor;
     }
-    _mJoint->setLocalPose(physx::PxJointActorIndex::eACTOR1, pose1);
+
+    _mJoint = PxFixedJointCreate(PxGetPhysics(), actor0, _transA, actor1, _transB);
+
+    updatePose();
+}
+
+void PhysXFixedJoint::setBreakForce(float force) {
+    _breakForce = force;
+    _mJoint->setBreakForce(_breakForce, _breakTorque);
+}
+
+void PhysXFixedJoint::setBreakTorque(float torque) {
+    _breakTorque = torque;
+    _mJoint->setBreakForce(_breakForce, _breakTorque);
+}
+
+void PhysXFixedJoint::updateScale0() {
+    updatePose();
+}
+
+void PhysXFixedJoint::updateScale1() {
+    updatePose();
+}
+
+void PhysXFixedJoint::updatePose() {
+    _transA = physx::PxTransform(physx::PxIdentity);
+    _transB = physx::PxTransform(physx::PxIdentity);
+
+    pxSetVec3Ext(_transA.p, _mSharedBody->getNode()->getWorldPosition());
+    pxSetQuatExt(_transA.q, _mSharedBody->getNode()->getWorldRotation());
+    if (_mConnectedBody) {
+        pxSetVec3Ext(_transB.p, _mConnectedBody->getNode()->getWorldPosition());
+        pxSetQuatExt(_transB.q, _mConnectedBody->getNode()->getWorldRotation());
+    }
+    _mJoint->setLocalPose(physx::PxJointActorIndex::eACTOR0, _transA.getInverse());
+    _mJoint->setLocalPose(physx::PxJointActorIndex::eACTOR1, _transB.getInverse());
 }
 
 } // namespace physics
