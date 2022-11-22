@@ -406,8 +406,13 @@ export function buildDeferredLayout (ppl: Pipeline) {
         lightingDescriptors);
 
     lg.setDescriptor(lightingPassBlock, 'CustomLightingUBO', Type.UNKNOWN);
+    
     lg.setDescriptor(lightingPassBlock, 'light_cluster_InfoTexture', Type.FLOAT4);
     lg.setDescriptor(lightingPassBlock, 'light_cluster_Texture', Type.SAMPLER2D);
+
+    lg.setDescriptor(lightingPassBlock, 'light_ibl_Texture0', Type.SAMPLER2D);
+    lg.setDescriptor(lightingPassBlock, 'light_ibl_Texture1', Type.SAMPLER2D);
+    lg.setDescriptor(lightingPassBlock, 'light_ibl_Texture2', Type.SAMPLER2D);
 
     lg.setDescriptor(lightingPassBlock, 'gbuffer_albedoMap', Type.FLOAT4);
     lg.setDescriptor(lightingPassBlock, 'gbuffer_normalMap', Type.FLOAT4);
