@@ -890,6 +890,13 @@ class DevicePreSceneTask extends WebSceneTask {
                     }
                 }
             }
+
+            let cameraInstances = (this.camera as any).instances as Set<InstancedBuffer>
+            if (cameraInstances) {
+                for (const i of cameraInstances) {
+                    this._submitInfo.instances.add(i);
+                }
+            }
             this._instancedSort();
         }
         const pipeline = this._currentQueue.devicePass.context.pipeline;
