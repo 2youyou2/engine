@@ -771,6 +771,9 @@ export class Camera {
                 Mat4.ortho(this._matProj, -x, x, -y, y, this._nearClip, this._farClip,
                     this._device.capabilities.clipSpaceMinZ, projectionSignY, orientation);
             }
+            if (this._onCalcProjMat) {
+                this._onCalcProjMat()
+            }
             Mat4.invert(this._matProjInv, this._matProj);
             viewProjDirty = true;
             this._isProjDirty = false;

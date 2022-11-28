@@ -437,6 +437,28 @@ export function buildDeferredLayout (ppl: Pipeline) {
     lg.setDescriptor(postPassBlock, 'outputResultMap', Type.FLOAT4);
     lg.merge(postDescriptors);
     lg.mergeDescriptors(postPassID);
+
+
+    // taa
+    for (let i = 0; i < 3; i++) {
+        const taaPassID = lg.addRenderStage('DeferredTAA' + (i-1), DeferredStage.POST+1);
+        lg.addRenderPhase('Queue', taaPassID);
+        const taaDescriptors = lg.layoutGraph.getDescriptors(taaPassID);
+
+        const taaPassBlock = lg.getLayoutBlock(UpdateFrequency.PER_PASS,
+            ParameterType.TABLE,
+            DescriptorTypeOrder.SAMPLER_TEXTURE,
+            ShaderStageFlagBit.FRAGMENT,
+            taaDescriptors);
+
+        lg.setDescriptor(taaPassBlock, 'TaaUBO', Type.UNKNOWN);
+        lg.setDescriptor(taaPassBlock, 'inputTexture', Type.FLOAT4);
+        lg.setDescriptor(taaPassBlock, 'depthBuffer', Type.FLOAT4);
+        lg.setDescriptor(taaPassBlock, 'taaPrevTexture', Type.FLOAT4);
+        lg.merge(taaDescriptors);
+        lg.mergeDescriptors(taaPassID);
+    }
+    
     
     //  === blit === 
     let tempID = 0
