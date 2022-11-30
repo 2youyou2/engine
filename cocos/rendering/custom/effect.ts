@@ -417,7 +417,7 @@ export function buildDeferredLayout (ppl: Pipeline) {
     lg.setDescriptor(lightingPassBlock, 'gbuffer_albedoMap', Type.FLOAT4);
     lg.setDescriptor(lightingPassBlock, 'gbuffer_normalMap', Type.FLOAT4);
     lg.setDescriptor(lightingPassBlock, 'gbuffer_emissiveMap', Type.FLOAT4);
-    lg.setDescriptor(lightingPassBlock, 'depth_stencil', Type.FLOAT4);
+    lg.setDescriptor(lightingPassBlock, 'gbuffer_posMap', Type.FLOAT4);
 
     const visitor = new CollectVisitor();
     const colorMap = new VectorGraphColorMap(lg.layoutGraph.numVertices());
