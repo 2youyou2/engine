@@ -213,7 +213,7 @@ export default class TrailModule {
      */
     @type(CurveRange)
     @serializable
-    @range([0, 1])
+    @range([0, Number.POSITIVE_INFINITY])
     @displayOrder(3)
     @tooltip('i18n:trailSegment.lifeTime')
     public lifeTime = new CurveRange();
@@ -278,7 +278,7 @@ export default class TrailModule {
      */
     @type(CurveRange)
     @serializable
-    @range([0, 1])
+    @range([0, Number.POSITIVE_INFINITY])
     @displayOrder(10)
     @tooltip('i18n:trailSegment.widthRatio')
     public widthRatio = new CurveRange();
@@ -336,6 +336,7 @@ export default class TrailModule {
     private _iBuffer: Uint16Array | null = null;
     private _needTransform = false;
     private _material: Material | null = null;
+    private _inited: boolean;
 
     constructor () {
         this._iaInfo = new IndirectBuffer([new DrawInfo()]);
@@ -353,6 +354,8 @@ export default class TrailModule {
         }
 
         this._particleTrail = new Map<Particle, TrailSegment>();
+
+        this._inited = false;
     }
 
     public onInit (ps) {
@@ -374,6 +377,7 @@ export default class TrailModule {
         if (this._enable) {
             this.enable = this._enable;
         }
+        this._inited = true;
     }
 
     public onEnable () {

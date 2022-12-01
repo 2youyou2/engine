@@ -52,6 +52,7 @@ export declare namespace EffectAsset {
         blendState?: BlendState;
         dynamicStates?: DynamicStateFlags;
         phase?: string | number;
+        pass?: string;
     }
     export interface IPassInfo extends IPassStates {
         program: string; // auto-generated from 'vert' and 'frag'
@@ -143,6 +144,16 @@ export declare namespace EffectAsset {
         samplerTextures: IBuiltin[];
         images: IBuiltin[];
     }
+    export interface IDescriptorInfo {
+        rate: number;
+        blocks: IBlockInfo[];
+        samplerTextures: ISamplerTextureInfo[];
+        samplers: ISamplerInfo[];
+        textures: ITextureInfo[];
+        buffers: IBufferInfo[];
+        images: IImageInfo[];
+        subpassInputs: IInputAttachmentInfo[];
+    }
     export interface IShaderInfo {
         name: string;
         hash: number;
@@ -159,6 +170,7 @@ export declare namespace EffectAsset {
         buffers: IBufferInfo[];
         images: IImageInfo[];
         subpassInputs: IInputAttachmentInfo[];
+        descriptors: IDescriptorInfo[];
     }
     export interface IPreCompileInfo {
         [name: string]: boolean[] | number[] | string[];
@@ -287,6 +299,9 @@ export class EffectAsset extends Asset {
      * @zh 通过 [[CCLoader]] 加载完成时的回调，将自动注册 effect 资源。
      */
     public onLoaded () {
+        if (cclegacy.rendering && cclegacy.rendering.enableEffectImport) {
+            cclegacy.rendering.replaceShaderInfo(this);
+        }
         programLib.register(this);
         EffectAsset.register(this);
         if (!EDITOR || cclegacy.GAME_VIEW) { cclegacy.game.once(cclegacy.Game.EVENT_RENDERER_INITED, this._precompile, this); }
