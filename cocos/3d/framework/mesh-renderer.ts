@@ -651,6 +651,10 @@ export class MeshRenderer extends ModelRenderer {
     }
 
     public updateProbeCubemap (cubeMap: TextureCube | null) {
+        if (this.bakeSettings._probeCubemap === cubeMap) {
+            return;
+        }
+        
         this.bakeSettings._probeCubemap = cubeMap;
         if (this.model !== null) {
             this.model.updateReflctionProbeCubemap(this.bakeSettings._probeCubemap);
