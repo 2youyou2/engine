@@ -480,52 +480,48 @@ class RenderPassLayoutInfo {
         this._context = context;
         this._layout = lg.getLayout(layoutId);
 
-        this.update = () => {
-            const layoutData = this._layout.descriptorSets.get(UpdateFrequency.PER_PASS);
-            if (layoutData) {
-                // find resource
-                const deviceTex = context.deviceTextures.get(this._inputName);
-                const gfxTex = deviceTex?.texture;
-                if (!gfxTex) {
-                    throw Error(`Could not find texture with resource name ${this._inputName}`);
-                }
-                const resId = context.resourceGraph.vertex(this._inputName);
-                const samplerInfo = context.resourceGraph.getSampler(resId);
-                // bind descriptors
-                for (const descriptor of input[1]) {
-                    const descriptorName = descriptor.name;
-                    const descriptorID = lg.attributeIndex.get(descriptorName);
-                    // find descriptor binding
-                    for (const block of layoutData.descriptorSetLayoutData.descriptorBlocks) {
-                        for (let i = 0; i !== block.descriptors.length; ++i) {
-                            if (descriptorID === block.descriptors[i].descriptorID) {
-                                layoutData.descriptorSet!.bindTexture(block.offset + i, gfxTex);
-                                
-                                if (descriptorName === 'light_cluster_InfoTexture' ||
-                                    descriptorName === 'light_cluster_Texture' ||
-                                    descriptorName === 'depthBuffer') {
-                                    samplerInfo.minFilter = Filter.POINT
-                                    samplerInfo.magFilter = Filter.POINT
-                                }
-                                if (descriptorName === 'bloomTexture' ||
-                                    descriptorName === 'outputResultMap') {
-                                    samplerInfo.addressU = Address.CLAMP;
-                                    samplerInfo.addressV = Address.CLAMP
-                                }
-                                layoutData.descriptorSet!.bindSampler(block.offset + i, context.device.getSampler(samplerInfo));
-
-                                if (!this._descriptorSet) this._descriptorSet = layoutData.descriptorSet;
+        const layoutData = this._layout.descriptorSets.get(UpdateFrequency.PER_PASS);
+        if (layoutData) {
+            // find resource
+            const deviceTex = context.deviceTextures.get(this._inputName);
+            const gfxTex = deviceTex?.texture;
+            if (!gfxTex) {
+                throw Error(`Could not find texture with resource name ${this._inputName}`);
+            }
+            const resId = context.resourceGraph.vertex(this._inputName);
+            const samplerInfo = context.resourceGraph.getSampler(resId);
+            // bind descriptors
+            for (const descriptor of input[1]) {
+                const descriptorName = descriptor.name;
+                const descriptorID = lg.attributeIndex.get(descriptorName);
+                // find descriptor binding
+                for (const block of layoutData.descriptorSetLayoutData.descriptorBlocks) {
+                    for (let i = 0; i !== block.descriptors.length; ++i) {
+                        if (descriptorID === block.descriptors[i].descriptorID) {
+                            layoutData.descriptorSet!.bindTexture(block.offset + i, gfxTex);
+                            
+                            if (descriptorName === 'light_cluster_InfoTexture' ||
+                                descriptorName === 'light_cluster_Texture' ||
+                                descriptorName === 'depthBuffer') {
+                                samplerInfo.minFilter = Filter.POINT
+                                samplerInfo.magFilter = Filter.POINT
                             }
+                            if (descriptorName === 'bloomTexture' ||
+                                descriptorName === 'outputResultMap') {
+                                samplerInfo.addressU = Address.CLAMP;
+                                samplerInfo.addressV = Address.CLAMP
+                            }
+                            layoutData.descriptorSet!.bindSampler(block.offset + i, context.device.getSampler(samplerInfo));
+
+                            if (!this._descriptorSet) this._descriptorSet = layoutData.descriptorSet;
                         }
                     }
                 }
             }
-
-            this._descriptorSet?.update()
         }
-        this.update()
+
+        this._descriptorSet?.update()
     }
-    update () {}
     get descriptorSet () { return this._descriptorSet; }
     get layoutID () { return this._layoutID; }
     get stage () { return this._stage; }
@@ -792,6 +788,13 @@ class DeviceRenderPass {
         let framebuffer: Framebuffer | null = null;
         const colTextures: Texture[] = [];
         let depTexture = this._framebuffer.depthStencilTexture;
+        for (const cv of this._rasterInfo.pass.computeViews) {
+            this._applyRenderLayout(cv);
+        }
+        // update the layout descriptorSet
+        if (this.renderLayout && this.renderLayout.descriptorSet) {
+            this.renderLayout.descriptorSet.update();
+        }
         for (const [resName, rasterV] of this._rasterInfo.pass.rasterViews) {
             const deviceTex = this.context.deviceTextures.get(resName)!;
             const resGraph = this.context.resourceGraph;
@@ -1333,7 +1336,6 @@ class DeviceSceneTask extends WebSceneTask {
         if (pso) {
             this.visitor.bindPipelineState(pso);
             const layoutStage = devicePass.renderLayout;
-            layoutStage?.update()
             const layoutDesc = layoutStage!.descriptorSet!;
             const extResId: number[] = this._mergeMatToBlitDesc(pass.descriptorSet, layoutDesc);
             // TODO: It will be changed to global later
