@@ -170,7 +170,6 @@ vec4 CCStandardShadingBase (StandardSurface s, vec4 shadowPos) {
   vec3 ambDiff = mix(cc_ambientSky.rgb, cc_ambientGround.rgb, fAmb);
 
   vec3 env = vec3(0.0);
-  vec3 R = normalize(reflect(-V, N));
   #if CC_USE_IBL
     #if CC_USE_DIFFUSEMAP && !CC_USE_LIGHT_PROBE
       // Diffuse reflection irradiance
@@ -181,6 +180,8 @@ vec4 CCStandardShadingBase (StandardSurface s, vec4 shadowPos) {
         ambDiff = SRGBToLinear(diffuseMap.rgb);
       #endif
     #endif
+
+    vec3 R = normalize(reflect(-V, N));
 
     vec3 rotationDir = RotationVecFromAxisY(R.xyz, cc_surfaceTransform.z, cc_surfaceTransform.w);
     #if USE_REFLECTION_DENOISE && !CC_IBL_CONVOLUTED
@@ -199,6 +200,9 @@ vec4 CCStandardShadingBase (StandardSurface s, vec4 shadowPos) {
 
   #if CC_USE_REFLECTION_PROBE
     vec4 probe = vec4(0.0);
+    #if !CC_USE_IBL
+      vec3 R = normalize(reflect(-V, N));
+    #endif
     #if CC_USE_REFLECTION_PROBE == REFLECTION_PROBE_TYPE_CUBE
       probe = fragTextureLod(cc_reflectionProbeCubemap, R, s.roughness * (cc_ambientGround.w - 1.0));
     #elif CC_USE_REFLECTION_PROBE == REFLECTION_PROBE_TYPE_PLANAR
