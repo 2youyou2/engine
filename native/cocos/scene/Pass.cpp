@@ -1,18 +1,17 @@
 /****************************************************************************
- Copyright (c) 2021 Xiamen Yaji Software Co., Ltd.
+ Copyright (c) 2021-2023 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos.com
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated engine source code (the "Software"), a limited,
- worldwide, royalty-free, non-assignable, revocable and non-exclusive license
- to use Cocos Creator solely to develop games on your target platforms. You shall
- not use Cocos Creator software for developing other software or tools that's
- used for developing games. You are not granted to publish, distribute,
- sublicense, and/or sell copies of Cocos Creator.
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ of the Software, and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
 
- The software or tools in this License Agreement are licensed, not sold.
- Xiamen Yaji Software Co., Ltd. reserves all rights not expressly granted to you.
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
 
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -21,10 +20,11 @@
  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
- ****************************************************************************/
+****************************************************************************/
 
 #include "scene/Pass.h"
 #include "base/std/hash/hash.h"
+#include "cocos/bindings/jswrapper/SeApi.h"
 #include "core/Root.h"
 #include "core/assets/TextureBase.h"
 #include "core/builtin/BuiltinResMgr.h"
@@ -37,7 +37,6 @@
 #include "renderer/pipeline/Define.h"
 #include "renderer/pipeline/InstancedBuffer.h"
 #include "scene/Define.h"
-#include "cocos/bindings/jswrapper/SeApi.h"
 
 namespace cc {
 namespace scene {
@@ -335,7 +334,7 @@ void Pass::resetUniform(const ccstd::string &name) {
     const uint32_t ofs = Pass::getOffsetFromHandle(handle);
     const uint32_t count = Pass::getCountFromHandle(handle);
     auto &block = _blocks[binding];
-    IPropertyValue givenDefaultOpt;
+    ccstd::optional<IPropertyValue> givenDefaultOpt;
     auto iter = _properties.find(name);
     if (iter != _properties.end()) {
         givenDefaultOpt = iter->second.value;
@@ -347,7 +346,7 @@ void Pass::resetUniform(const ccstd::string &name) {
             const auto &floatArr = ccstd::get<ccstd::vector<float>>(value);
             auto iter = type2writer.find(type);
             if (iter != type2writer.end()) {
-                CC_ASSERT(floatArr.size() == 2);
+                CC_ASSERT_EQ(floatArr.size(), 2);
                 iter->second(block.data, toMaterialProperty(type, floatArr), static_cast<int32_t>(ofs));
             }
         }
@@ -532,7 +531,7 @@ void Pass::doInit(const IPassInfoFull &info, bool /*copyDefines*/ /* = false */)
     _primitive = gfx::PrimitiveMode::TRIANGLE_LIST;
 
     _passIndex = info.passIndex;
-    _propertyIndex = info.propertyIndex != CC_INVALID_INDEX ? info.propertyIndex : info.passIndex;
+    _propertyIndex = info.propertyIndex.has_value() ? info.propertyIndex.value() : info.passIndex;
     _programName = info.program;
     _defines = info.defines; // cjh c++ always does copy by assignment.  copyDefines ? ({ ...info.defines }) : info.defines;
     _shaderInfo = programLib->getTemplate(info.program);
@@ -624,7 +623,7 @@ void Pass::doInit(const IPassInfoFull &info, bool /*copyDefines*/ /* = false */)
 void Pass::syncBatchingScheme() {
     auto iter = _defines.find("USE_INSTANCING");
     if (iter != _defines.end()) {
-        if (_device->hasFeature(gfx::Feature::INSTANCED_ARRAYS) && ccstd::get<bool>(iter->second)) {
+        if (_device->hasFeature(gfx::Feature::INSTANCED_ARRAYS) && macroRecordAsBool(iter->second)) {
             _batchingScheme = BatchingSchemes::INSTANCING;
         } else {
             iter->second = false;
@@ -632,7 +631,7 @@ void Pass::syncBatchingScheme() {
         }
     } else {
         auto iter = _defines.find("USE_BATCHING");
-        if (iter != _defines.end() && ccstd::get<bool>(iter->second)) {
+        if (iter != _defines.end() && macroRecordAsBool(iter->second)) {
             _batchingScheme = BatchingSchemes::VB_MERGING;
         } else {
             _batchingScheme = BatchingSchemes::NONE;

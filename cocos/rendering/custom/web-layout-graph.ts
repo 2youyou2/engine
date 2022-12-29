@@ -1,3 +1,27 @@
+/*
+ Copyright (c) 2022-2023 Xiamen Yaji Software Co., Ltd.
+
+ https://www.cocos.com/
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ of the Software, and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+*/
+
 import { DEBUG } from 'internal:constants';
 import { EffectAsset } from '../../asset/assets';
 // eslint-disable-next-line max-len
@@ -10,7 +34,7 @@ import { LayoutGraphBuilder } from './pipeline';
 import { WebLayoutExporter } from './web-layout-exporter';
 import { DescriptorBlockIndex, DescriptorTypeOrder,
     Descriptor, DescriptorBlockFlattened, UpdateFrequency } from './types';
-import { PrintVisitor } from './layout-graph-utils';
+import { getGfxDescriptorType, PrintVisitor } from './layout-graph-utils';
 
 export class WebLayoutGraphBuilder implements LayoutGraphBuilder  {
     private _data: LayoutGraphData;
@@ -23,33 +47,7 @@ export class WebLayoutGraphBuilder implements LayoutGraphBuilder  {
         this._exporter = new WebLayoutExporter(this);
     }
 
-    private getGfxType (type: DescriptorTypeOrder): DescriptorType | null {
-        switch (type) {
-        case DescriptorTypeOrder.UNIFORM_BUFFER:
-            return DescriptorType.UNIFORM_BUFFER;
-        case DescriptorTypeOrder.DYNAMIC_UNIFORM_BUFFER:
-            return DescriptorType.DYNAMIC_UNIFORM_BUFFER;
-        case DescriptorTypeOrder.SAMPLER_TEXTURE:
-            return DescriptorType.SAMPLER_TEXTURE;
-        case DescriptorTypeOrder.SAMPLER:
-            return DescriptorType.SAMPLER;
-        case DescriptorTypeOrder.TEXTURE:
-            return DescriptorType.TEXTURE;
-        case DescriptorTypeOrder.STORAGE_BUFFER:
-            return DescriptorType.STORAGE_BUFFER;
-        case DescriptorTypeOrder.DYNAMIC_STORAGE_BUFFER:
-            return DescriptorType.DYNAMIC_STORAGE_BUFFER;
-        case DescriptorTypeOrder.STORAGE_IMAGE:
-            return DescriptorType.STORAGE_IMAGE;
-        case DescriptorTypeOrder.INPUT_ATTACHMENT:
-            return DescriptorType.INPUT_ATTACHMENT;
-        default:
-            console.error('DescriptorType not found');
-            return null;
-        }
-    }
-
-    private createDscriptorInfo (layoutData: DescriptorSetLayoutData, info: DescriptorSetLayoutInfo) {
+    private createDescriptorInfo (layoutData: DescriptorSetLayoutData, info: DescriptorSetLayoutInfo) {
         for (let i = 0; i < layoutData.descriptorBlocks.length; ++i) {
             const block = layoutData.descriptorBlocks[i];
             let slot = block.offset;
@@ -57,9 +55,7 @@ export class WebLayoutGraphBuilder implements LayoutGraphBuilder  {
                 const d = block.descriptors[j];
                 const binding: DescriptorSetLayoutBinding = new DescriptorSetLayoutBinding();
                 binding.binding = slot;
-                if (this.getGfxType(block.type)) {
-                    binding.descriptorType = this.getGfxType(block.type) as DescriptorType;
-                }
+                binding.descriptorType = getGfxDescriptorType(block.type);
                 binding.count = d.count;
                 binding.stageFlags = block.visibility;
                 binding.immutableSamplers = [];
@@ -71,7 +67,7 @@ export class WebLayoutGraphBuilder implements LayoutGraphBuilder  {
 
     private createDescriptorSetLayout (layoutData: DescriptorSetLayoutData) {
         const info: DescriptorSetLayoutInfo = new DescriptorSetLayoutInfo();
-        this.createDscriptorInfo(layoutData, info);
+        this.createDescriptorInfo(layoutData, info);
 
         if (this._device) {
             return this._device.createDescriptorSetLayout(info);
@@ -236,12 +232,9 @@ export class WebLayoutGraphBuilder implements LayoutGraphBuilder  {
                         level.descriptorSet = (this._device.createDescriptorSet(new DescriptorSetInfo(layout)));
                     }
                 } else {
-                    this.createDscriptorInfo(layoutData, level.descriptorSetLayoutInfo);
+                    this.createDescriptorInfo(layoutData, level.descriptorSetLayoutInfo);
                 }
             });
-        }
-        if (DEBUG) {
-            console.log(this.print());
         }
         return 0;
     }

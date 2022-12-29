@@ -1,18 +1,17 @@
 /****************************************************************************
- Copyright (c) 2022 Xiamen Yaji Software Co., Ltd.
+ Copyright (c) 2022-2023 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos.com
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated engine source code (the "Software"), a limited,
- worldwide, royalty-free, non-assignable, revocable and non-exclusive license
- to use Cocos Creator solely to develop games on your target platforms. You shall
- not use Cocos Creator software for developing other software or tools that's
- used for developing games. You are not granted to publish, distribute,
- sublicense, and/or sell copies of Cocos Creator.
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ of the Software, and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
 
- The software or tools in this License Agreement are licensed, not sold.
- Xiamen Yaji Software Co., Ltd. reserves all rights not expressly granted to you.
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
 
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -23,14 +22,14 @@
  THE SOFTWARE.
 ****************************************************************************/
 
+#include "ar/ARModule.h"
 #include <stdint.h>
 #include <memory>
 #include "math/Vec3.h"
-#include "ar/ARModule.h"
 
 #if CC_PLATFORM == CC_PLATFORM_ANDROID || CC_PLATFORM == CC_PLATFORM_MAC_IOS
     #include "ar/ARLib.h"
-    using ARAPIImpl = cc::ar::ARLib;
+using ARAPIImpl = cc::ar::ARLib;
 #elif CC_PLATFORM == CC_PLATFORM_WINDOWS
     #include "ar/IARAPI.h"
 #endif
@@ -44,11 +43,11 @@ ARModule::ARModule() {
 #if CC_PLATFORM == CC_PLATFORM_ANDROID || CC_PLATFORM == CC_PLATFORM_MAC_IOS
     _impl = std::make_unique<ARAPIImpl>();
     arModuleInstance.reset(this);
+    _texInitFlag = true;
 #endif
 }
 
 ARModule::~ARModule() {
-
 }
 
 ARModule* ARModule::get() {
@@ -84,11 +83,11 @@ int ARModule::getAPIState() {
     return _impl->getAPIState();
 }
 
-void ARModule::setCameraId(const std::string &id) {
+void ARModule::setCameraId(const std::string& id) {
     _cameraId = id;
 }
 
-const std::string &ARModule::getCameraId() const {
+const std::string& ARModule::getCameraId() const {
     return _cameraId;
 }
 
@@ -106,6 +105,14 @@ Matrix ARModule::getCameraProjectionMatrix() const {
 
 TexCoords ARModule::getCameraTexCoords() const {
     return _impl->getCameraTexCoords();
+}
+
+void ARModule::enableCameraAutoFocus(bool enable) const {
+    _impl->enableCameraAutoFocus(enable);
+}
+
+void ARModule::enableCameraDepth(bool enable) const {
+    _impl->enableCameraDepth(enable);
 }
 
 void ARModule::setDisplayGeometry(uint32_t rotation, uint32_t width, uint32_t height) const {
@@ -126,6 +133,17 @@ void* ARModule::getCameraTextureRef() const {
 
 uint8_t* ARModule::getCameraDepthBuffer() const {
     return _impl->getCameraDepthBuffer();
+}
+
+bool ARModule::getTexInitFlag() const {
+    return _texInitFlag;
+}
+void ARModule::resetTexInitFlag() {
+    _texInitFlag = false;
+}
+
+void ARModule::enableLightEstimate(bool enable) const {
+    _impl->enableLightEstimate(enable);
 }
 
 LightVal ARModule::getMainLightDirection() const {
@@ -206,7 +224,7 @@ float* ARModule::getUpdatedSceneMesh() const {
     return _impl->getUpdatedSceneMesh();
 }
 
-int* ARModule::getRemovedSceneMesh() const {
+float* ARModule::getRemovedSceneMesh() const {
     return _impl->getRemovedSceneMesh();
 }
 
@@ -236,8 +254,8 @@ void ARModule::addImageToLib(const std::string& imageName) const {
     _impl->addImageToLib(imageName);
 }
 
-void ARModule::addImageToLibWithSize(const std::string& imageName, float withInMeters) const {
-    _impl->addImageToLibWithSize(imageName, withInMeters);
+void ARModule::addImageToLibWithSize(const std::string& imageName, float widthInMeters) const {
+    _impl->addImageToLibWithSize(imageName, widthInMeters);
 }
 
 void ARModule::setImageMaxTrackingNumber(int number) const {

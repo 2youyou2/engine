@@ -416,6 +416,54 @@ static bool js_cc_ar_ARModule_getCameraTexCoords(se::State& s)
 }
 SE_BIND_FUNC(js_cc_ar_ARModule_getCameraTexCoords) 
 
+static bool js_cc_ar_ARModule_enableCameraAutoFocus(se::State& s)
+{
+    CC_UNUSED bool ok = true;
+    const auto& args = s.args();
+    size_t argc = args.size();
+    cc::ar::ARModule *arg1 = (cc::ar::ARModule *) NULL ;
+    bool arg2 ;
+    
+    if(argc != 1) {
+        SE_REPORT_ERROR("wrong number of arguments: %d, was expecting %d", (int)argc, 1);
+        return false;
+    }
+    arg1 = SE_THIS_OBJECT<cc::ar::ARModule>(s);
+    if (nullptr == arg1) return true;
+    
+    ok &= sevalue_to_native(args[0], &arg2);
+    SE_PRECONDITION2(ok, false, "Error processing arguments"); 
+    ((cc::ar::ARModule const *)arg1)->enableCameraAutoFocus(arg2);
+    
+    
+    return true;
+}
+SE_BIND_FUNC(js_cc_ar_ARModule_enableCameraAutoFocus) 
+
+static bool js_cc_ar_ARModule_enableCameraDepth(se::State& s)
+{
+    CC_UNUSED bool ok = true;
+    const auto& args = s.args();
+    size_t argc = args.size();
+    cc::ar::ARModule *arg1 = (cc::ar::ARModule *) NULL ;
+    bool arg2 ;
+    
+    if(argc != 1) {
+        SE_REPORT_ERROR("wrong number of arguments: %d, was expecting %d", (int)argc, 1);
+        return false;
+    }
+    arg1 = SE_THIS_OBJECT<cc::ar::ARModule>(s);
+    if (nullptr == arg1) return true;
+    
+    ok &= sevalue_to_native(args[0], &arg2);
+    SE_PRECONDITION2(ok, false, "Error processing arguments"); 
+    ((cc::ar::ARModule const *)arg1)->enableCameraDepth(arg2);
+    
+    
+    return true;
+}
+SE_BIND_FUNC(js_cc_ar_ARModule_enableCameraDepth) 
+
 static bool js_cc_ar_ARModule_setDisplayGeometry(se::State& s)
 {
     CC_UNUSED bool ok = true;
@@ -552,6 +600,73 @@ static bool js_cc_ar_ARModule_getCameraDepthBuffer(se::State& s)
     return true;
 }
 SE_BIND_FUNC(js_cc_ar_ARModule_getCameraDepthBuffer) 
+
+static bool js_cc_ar_ARModule_getTexInitFlag(se::State& s)
+{
+    CC_UNUSED bool ok = true;
+    const auto& args = s.args();
+    size_t argc = args.size();
+    cc::ar::ARModule *arg1 = (cc::ar::ARModule *) NULL ;
+    bool result;
+    
+    if(argc != 0) {
+        SE_REPORT_ERROR("wrong number of arguments: %d, was expecting %d", (int)argc, 0);
+        return false;
+    }
+    arg1 = SE_THIS_OBJECT<cc::ar::ARModule>(s);
+    if (nullptr == arg1) return true;
+    result = (bool)((cc::ar::ARModule const *)arg1)->getTexInitFlag();
+    
+    ok &= nativevalue_to_se(result, s.rval(), s.thisObject());
+    
+    
+    return true;
+}
+SE_BIND_FUNC(js_cc_ar_ARModule_getTexInitFlag) 
+
+static bool js_cc_ar_ARModule_resetTexInitFlag(se::State& s)
+{
+    CC_UNUSED bool ok = true;
+    const auto& args = s.args();
+    size_t argc = args.size();
+    cc::ar::ARModule *arg1 = (cc::ar::ARModule *) NULL ;
+    
+    if(argc != 0) {
+        SE_REPORT_ERROR("wrong number of arguments: %d, was expecting %d", (int)argc, 0);
+        return false;
+    }
+    arg1 = SE_THIS_OBJECT<cc::ar::ARModule>(s);
+    if (nullptr == arg1) return true;
+    (arg1)->resetTexInitFlag();
+    
+    
+    return true;
+}
+SE_BIND_FUNC(js_cc_ar_ARModule_resetTexInitFlag) 
+
+static bool js_cc_ar_ARModule_enableLightEstimate(se::State& s)
+{
+    CC_UNUSED bool ok = true;
+    const auto& args = s.args();
+    size_t argc = args.size();
+    cc::ar::ARModule *arg1 = (cc::ar::ARModule *) NULL ;
+    bool arg2 ;
+    
+    if(argc != 1) {
+        SE_REPORT_ERROR("wrong number of arguments: %d, was expecting %d", (int)argc, 1);
+        return false;
+    }
+    arg1 = SE_THIS_OBJECT<cc::ar::ARModule>(s);
+    if (nullptr == arg1) return true;
+    
+    ok &= sevalue_to_native(args[0], &arg2);
+    SE_PRECONDITION2(ok, false, "Error processing arguments"); 
+    ((cc::ar::ARModule const *)arg1)->enableLightEstimate(arg2);
+    
+    
+    return true;
+}
+SE_BIND_FUNC(js_cc_ar_ARModule_enableLightEstimate) 
 
 static bool js_cc_ar_ARModule_getMainLightDirection(se::State& s)
 {
@@ -1070,6 +1185,7 @@ SE_BIND_FUNC(js_cc_ar_ARModule_enableFaceTracking)
 bool js_register_cc_ar_ARModule(se::Object* obj) {
     auto* cls = se::Class::create("ARModule", obj, nullptr, _SE(js_new_cc_ar_ARModule)); 
     
+    cls->defineStaticProperty("__isJSB", se::Value(true), se::PropertyAttribute::READ_ONLY | se::PropertyAttribute::DONT_ENUM | se::PropertyAttribute::DONT_DELETE);
     
     cls->defineFunction("config", _SE(js_cc_ar_ARModule_config)); 
     cls->defineFunction("getSupportMask", _SE(js_cc_ar_ARModule_getSupportMask)); 
@@ -1084,11 +1200,16 @@ bool js_register_cc_ar_ARModule(se::Object* obj) {
     cls->defineFunction("getCameraViewMatrix", _SE(js_cc_ar_ARModule_getCameraViewMatrix)); 
     cls->defineFunction("getCameraProjectionMatrix", _SE(js_cc_ar_ARModule_getCameraProjectionMatrix)); 
     cls->defineFunction("getCameraTexCoords", _SE(js_cc_ar_ARModule_getCameraTexCoords)); 
+    cls->defineFunction("enableCameraAutoFocus", _SE(js_cc_ar_ARModule_enableCameraAutoFocus)); 
+    cls->defineFunction("enableCameraDepth", _SE(js_cc_ar_ARModule_enableCameraDepth)); 
     cls->defineFunction("setDisplayGeometry", _SE(js_cc_ar_ARModule_setDisplayGeometry)); 
     cls->defineFunction("setCameraClip", _SE(js_cc_ar_ARModule_setCameraClip)); 
     cls->defineFunction("setCameraTextureName", _SE(js_cc_ar_ARModule_setCameraTextureName)); 
     cls->defineFunction("getCameraTextureRef", _SE(js_cc_ar_ARModule_getCameraTextureRef)); 
     cls->defineFunction("getCameraDepthBuffer", _SE(js_cc_ar_ARModule_getCameraDepthBuffer)); 
+    cls->defineFunction("getTexInitFlag", _SE(js_cc_ar_ARModule_getTexInitFlag)); 
+    cls->defineFunction("resetTexInitFlag", _SE(js_cc_ar_ARModule_resetTexInitFlag)); 
+    cls->defineFunction("enableLightEstimate", _SE(js_cc_ar_ARModule_enableLightEstimate)); 
     cls->defineFunction("getMainLightDirection", _SE(js_cc_ar_ARModule_getMainLightDirection)); 
     cls->defineFunction("getMainLightIntensity", _SE(js_cc_ar_ARModule_getMainLightIntensity)); 
     cls->defineFunction("tryHitAttachAnchor", _SE(js_cc_ar_ARModule_tryHitAttachAnchor)); 

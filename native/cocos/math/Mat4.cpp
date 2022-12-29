@@ -1,7 +1,7 @@
 /**
  Copyright 2013 BlackBerry Inc.
  Copyright (c) 2013-2016 Chukong Technologies Inc.
- Copyright (c) 2017-2021 Xiamen Yaji Software Co., Ltd.
+ Copyright (c) 2017-2023 Xiamen Yaji Software Co., Ltd.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -111,7 +111,7 @@ void Mat4::createLookAt(float eyePositionX, float eyePositionY, float eyePositio
 void Mat4::createPerspective(float fieldOfView, float aspectRatio, float zNearPlane, float zFarPlane,
                              bool isFieldOfViewY, float minClipZ, float projectionSignY, int orientation, Mat4 *dst) {
     CC_ASSERT(dst);
-    CC_ASSERT(zFarPlane != zNearPlane);
+    CC_ASSERT_NE(zFarPlane, zNearPlane);
     CC_ASSERT(fieldOfView != 0.0F);
 
     const float f = 1.0F / tanf(fieldOfView / 2.0F);
@@ -151,9 +151,9 @@ void Mat4::createOrthographicOffCenter(float left, float right, float bottom, fl
 
 void Mat4::createOrthographicOffCenter(float left, float right, float bottom, float top, float zNearPlane, float zFarPlane, float minClipZ, float projectionSignY, int orientation, Mat4 *dst) {
     CC_ASSERT(dst);
-    CC_ASSERT(right != left);
-    CC_ASSERT(top != bottom);
-    CC_ASSERT(zFarPlane != zNearPlane);
+    CC_ASSERT_NE(right, left);
+    CC_ASSERT_NE(top, bottom);
+    CC_ASSERT_NE(zFarPlane, zNearPlane);
 
     const ccstd::array<float, 4> &preTransform = PRE_TRANSFORMS[orientation];
     const float lr = 1.F / (left - right);

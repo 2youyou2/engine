@@ -1,18 +1,17 @@
 /****************************************************************************
- Copyright (c) 2022 Xiamen Yaji Software Co., Ltd.
+ Copyright (c) 2022-2023 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos.com
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated engine source code (the "Software"), a limited,
- worldwide, royalty-free, non-assignable, revocable and non-exclusive license
- to use Cocos Creator solely to develop games on your target platforms. You shall
- not use Cocos Creator software for developing other software or tools that's
- used for developing games. You are not granted to publish, distribute,
- sublicense, and/or sell copies of Cocos Creator.
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ of the Software, and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
 
- The software or tools in this License Agreement are licensed, not sold.
- Xiamen Yaji Software Co., Ltd. reserves all rights not expressly granted to you.
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
 
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -48,19 +47,24 @@ public:
     void update();
     int getAPIState();
 
-    void setCameraId(const std::string &id);
-    const std::string &getCameraId() const;
+    void setCameraId(const std::string& id);
+    const std::string& getCameraId() const;
     Pose getCameraPose() const;
     Matrix getCameraViewMatrix() const;
     Matrix getCameraProjectionMatrix() const;
     TexCoords getCameraTexCoords() const;
 
+    void enableCameraAutoFocus(bool enable) const;
+    void enableCameraDepth(bool enable) const;
     void setDisplayGeometry(uint32_t rotation, uint32_t width, uint32_t height) const;
     void setCameraClip(float near, float far) const;
     void setCameraTextureName(int id) const;
     void* getCameraTextureRef() const;
     uint8_t* getCameraDepthBuffer() const;
+    bool getTexInitFlag() const;
+    void resetTexInitFlag();
 
+    void enableLightEstimate(bool enable) const;
     LightVal getMainLightDirection() const;
     LightVal getMainLightIntensity() const;
 
@@ -88,7 +92,7 @@ public:
     void enableSceneMesh(bool enable) const;
     float* getAddedSceneMesh() const;
     float* getUpdatedSceneMesh() const;
-    int* getRemovedSceneMesh() const;
+    float* getRemovedSceneMesh() const;
     int* requireSceneMesh() const;
     float* getSceneMeshVertices(int meshRef) const;
     int* getSceneMeshTriangleIndices(int meshRef) const;
@@ -97,7 +101,7 @@ public:
     // image recognition & tracking
     void enableImageTracking(bool enable) const;
     void addImageToLib(const std::string& name) const;
-    void addImageToLibWithSize(const std::string& name, float withInMeters) const;
+    void addImageToLibWithSize(const std::string& name, float widthInMeters) const;
     void setImageMaxTrackingNumber(int number) const;
     float* getAddedImagesInfo() const;
     float* getUpdatedImagesInfo() const;
@@ -120,6 +124,7 @@ public:
 private:
     std::unique_ptr<IARAPI> _impl;
     std::string _cameraId;
+    bool _texInitFlag{false};
 };
 
 static std::unique_ptr<ARModule> arModuleInstance;

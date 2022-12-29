@@ -1,9 +1,35 @@
+/*
+ Copyright (c) 2022-2023 Xiamen Yaji Software Co., Ltd.
+
+ https://www.cocos.com/
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ of the Software, and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+*/
+
 import { minigame } from 'pal/minigame';
 import { systemInfo } from 'pal/system-info';
+import { TAOBAO } from 'internal:constants';
 import { EventTarget } from '../../../cocos/core/event';
 import { AudioEvent, AudioPCMDataView, AudioState, AudioType } from '../type';
 import { clamp, clamp01 } from '../../../cocos/core';
 import { enqueueOperation, OperationInfo, OperationQueueable } from '../operation-queue';
+import { OS } from '../../system-info/enum-type';
 
 export class OneShotAudioMinigame {
     private _innerAudioContext: InnerAudioContext;
@@ -84,7 +110,6 @@ export class AudioPlayerMinigame implements OperationQueueable {
             this._state = AudioState.PLAYING;
             eventTarget.emit(AudioEvent.PLAYED);
             if (this._needSeek) {
-                this._needSeek = false;
                 this.seek(this._cacheTime).catch((e) => {});
             }
         };
@@ -107,6 +132,10 @@ export class AudioPlayerMinigame implements OperationQueueable {
             // Reset all properties
             this._resetSeekCache();
             eventTarget.emit(AudioEvent.STOPPED);
+            const currentTime = this._innerAudioContext ? this._innerAudioContext.currentTime : 0;
+            if (currentTime !== 0) {
+                this._innerAudioContext.seek(0);
+            }
         };
         innerAudioContext.onStop(this._onStop);
         this._onSeeked = () => {
@@ -114,7 +143,11 @@ export class AudioPlayerMinigame implements OperationQueueable {
             this._seeking = false;
             if (this._needSeek) {
                 this._needSeek = false;
-                this.seek(this._cacheTime).catch((e) => {});
+                if (this._cacheTime.toFixed(3) !== this._innerAudioContext.currentTime.toFixed(3)) {
+                    this.seek(this._cacheTime).catch((e) => {});
+                } else {
+                    this._needSeek = false;
+                }
             }
         };
         innerAudioContext.onSeeked(this._onSeeked);
@@ -239,7 +272,7 @@ export class AudioPlayerMinigame implements OperationQueueable {
         return this._innerAudioContext.duration;
     }
     get currentTime (): number {
-        if (this._state !== AudioState.PLAYING) {
+        if (this._state !== AudioState.PLAYING || this._needSeek || this._seeking) {
             return this._cacheTime;
         }
         return this._innerAudioContext.currentTime;
@@ -291,6 +324,14 @@ export class AudioPlayerMinigame implements OperationQueueable {
 
     @enqueueOperation
     stop (): Promise<void> {
+        // NOTE: on Taobao, it is designed that innerAudioContext is useless after calling stop.
+        // so we implement stop as pase + seek.
+        if (TAOBAO) {
+            this._innerAudioContext.pause();
+            this._innerAudioContext.seek(0);
+            this._onStop?.();
+            return Promise.resolve();
+        }
         return new Promise((resolve) => {
             this._eventTarget.once(AudioEvent.STOPPED, resolve);
             this._innerAudioContext.stop();

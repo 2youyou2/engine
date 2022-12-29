@@ -216,6 +216,7 @@
             "overrides": {
                 "cocos/rendering/index.ts": "cocos/rendering/index.jsb.ts",
                 "cocos/rendering/render-pipeline.ts": "cocos/rendering/render-pipeline.jsb.ts",
+                "cocos/rendering/render-stage.ts": "cocos/rendering/render-stage.jsb.ts",
                 "cocos/rendering/geometry-renderer.ts": "cocos/rendering/geometry-renderer.jsb.ts",
                 "cocos/rendering/custom/index.ts": "cocos/rendering/custom/index.jsb.ts",
                 "cocos/render-scene/core/native-pools.ts": "cocos/render-scene/core/native-pools.jsb.ts",
@@ -390,6 +391,12 @@
             "ccGlobal": true,
             "internal": false
         },
+        "TAOBAO": {
+            "comment": "Running in the taobao creative app.",
+            "type": "boolean",
+            "value": false,
+            "internal": false
+        },
         "BYTEDANCE": {
             "comment": "Running in the ByteDance's mini game.",
             "type": "boolean",
@@ -499,7 +506,7 @@
         "MINIGAME": {
             "comment": "Running in mini game.",
             "type": "boolean",
-            "value": "$WECHAT || $BAIDU || $XIAOMI || $ALIPAY || $BYTEDANCE",
+            "value": "$WECHAT || $BAIDU || $XIAOMI || $ALIPAY || $TAOBAO || $BYTEDANCE",
             "ccGlobal": true,
             "internal": false
         },
