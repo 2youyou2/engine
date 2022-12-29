@@ -122,6 +122,7 @@ class ModelBakeSettings extends EventTarget {
      */
     public static readonly BAKE_TO_REFLECTION_PROBE_CHANGED = 'bake_to_reflection_probe_changed';
 
+    @group({ id: 'LightMap', name: 'LightMapSettings' })
     @serializable
     public texture: Texture2D|null = null;
     @serializable
