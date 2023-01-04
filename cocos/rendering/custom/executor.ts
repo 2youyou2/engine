@@ -883,9 +883,7 @@ class DevicePreSceneTask extends WebSceneTask {
         const devicePass = this._currentQueue.devicePass;
         const submitMap = devicePass.submitMap;
         const context = devicePass.context;
-        let firstPass = true;
         if (this.camera._submitInfo) {
-            firstPass = false;
             this._submitInfo = this.camera._submitInfo as SubmitInfo;
         } else {
             // culling
@@ -894,6 +892,7 @@ class DevicePreSceneTask extends WebSceneTask {
             // submitMap.set(this.camera, this._submitInfo);
 
             this._submitInfo = this.camera._submitInfo = new SubmitInfo()
+            this.camera._submitInfo.firstPass = true
         }
 
         submitMap.set(this.camera, this._submitInfo);
@@ -907,56 +906,57 @@ class DevicePreSceneTask extends WebSceneTask {
             return;
         }
 
-        if (firstPass) {
-            // reflection probe
-            if (this.graphScene.scene!.flags & SceneFlags.REFLECTION_PROBE && !this._submitInfo.reflectionProbe) {
-                this._submitInfo.reflectionProbe = new RenderReflectionProbeQueue(this._currentQueue.devicePass.context.pipeline);
-                const probes = ReflectionProbeManager.probeManager.getProbes();
-                for (let i = 0; i < probes.length; i++) {
-                    if (probes[i].hasFrameBuffer(this._currentQueue.devicePass.framebuffer)) {
-                        this._submitInfo.reflectionProbe.gatherRenderObjects(probes[i], this.camera.scene!, this._cmdBuff);
-                        break;
-                    }
+        let firstPass = this.camera._submitInfo.firstPass;
+        this.camera._submitInfo.firstPass = false;
+
+        // reflection probe
+        if (this.graphScene.scene!.flags & SceneFlags.REFLECTION_PROBE && !this._submitInfo.reflectionProbe && firstPass) {
+            this._submitInfo.reflectionProbe = new RenderReflectionProbeQueue(this._currentQueue.devicePass.context.pipeline);
+            const probes = ReflectionProbeManager.probeManager.getProbes();
+            for (let i = 0; i < probes.length; i++) {
+                if (probes[i].hasFrameBuffer(this._currentQueue.devicePass.framebuffer)) {
+                    this._submitInfo.reflectionProbe.gatherRenderObjects(probes[i], this.camera.scene!, this._cmdBuff);
+                    break;
                 }
-                return;
             }
-            // If it is not empty, it means that it has been added and will not be traversed.
-            const isEmpty = !this._submitInfo.opaqueList.length
-                            && !this._submitInfo.transparentList.length
-                            && !this._submitInfo.instances.size
-                            && !this._submitInfo.batches.size;
-            if (isEmpty) {
-                for (const ro of this.sceneData.renderObjects) {
-                    const subModels = ro.model.subModels;
-                    for (const subModel of subModels) {
-                        const passes = subModel.passes;
-                        for (const p of passes) {
-                            if (((isEnableEffect()) ? p.phaseID : p.phase) !== this._currentQueue.phaseID) continue;
-                            const batchingScheme = p.batchingScheme;
-                            if (batchingScheme === BatchingSchemes.INSTANCING) {
-                                const instancedBuffer = p.getInstancedBuffer();
-                                instancedBuffer.merge(subModel, passes.indexOf(p));
-                                this._submitInfo.instances.add(instancedBuffer);
-                            } else if (batchingScheme === BatchingSchemes.VB_MERGING) {
-                                const batchedBuffer = p.getBatchedBuffer();
-                                batchedBuffer.merge(subModel, passes.indexOf(p), ro.model);
-                                this._submitInfo.batches.add(batchedBuffer);
-                            } else {
-                                this._insertRenderList(ro, subModels.indexOf(subModel), passes.indexOf(p));
-                                this._insertRenderList(ro, subModels.indexOf(subModel), passes.indexOf(p), true);
-                            }
+            return;
+        }
+        // If it is not empty, it means that it has been added and will not be traversed.
+        const isEmpty = !this._submitInfo.opaqueList.length
+                        && !this._submitInfo.transparentList.length
+                        && !this._submitInfo.instances.size
+                        && !this._submitInfo.batches.size;
+        if (isEmpty && firstPass) {
+            for (const ro of this.sceneData.renderObjects) {
+                const subModels = ro.model.subModels;
+                for (const subModel of subModels) {
+                    const passes = subModel.passes;
+                    for (const p of passes) {
+                        if (((isEnableEffect()) ? p.phaseID : p.phase) !== this._currentQueue.phaseID) continue;
+                        const batchingScheme = p.batchingScheme;
+                        if (batchingScheme === BatchingSchemes.INSTANCING) {
+                            const instancedBuffer = p.getInstancedBuffer();
+                            instancedBuffer.merge(subModel, passes.indexOf(p));
+                            this._submitInfo.instances.add(instancedBuffer);
+                        } else if (batchingScheme === BatchingSchemes.VB_MERGING) {
+                            const batchedBuffer = p.getBatchedBuffer();
+                            batchedBuffer.merge(subModel, passes.indexOf(p), ro.model);
+                            this._submitInfo.batches.add(batchedBuffer);
+                        } else {
+                            this._insertRenderList(ro, subModels.indexOf(subModel), passes.indexOf(p));
+                            this._insertRenderList(ro, subModels.indexOf(subModel), passes.indexOf(p), true);
                         }
                     }
                 }
-
-                let cameraInstances = (this.camera as any).instances as Set<InstancedBuffer>
-                if (cameraInstances) {
-                    for (const i of cameraInstances) {
-                        this._submitInfo.instances.add(i);
-                    }
-                }
-                this._instancedSort();
             }
+
+            let cameraInstances = (this.camera as any).instances as Set<InstancedBuffer>
+            if (cameraInstances) {
+                for (const i of cameraInstances) {
+                    this._submitInfo.instances.add(i);
+                }
+            }
+            this._instancedSort();
         }
         
         const sceneFlag = this._graphScene.scene!.flags;
