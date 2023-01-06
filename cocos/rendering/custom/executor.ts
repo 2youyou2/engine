@@ -499,12 +499,12 @@ class RenderPassLayoutInfo {
                         if (descriptorID === block.descriptors[i].descriptorID) {
                             layoutData.descriptorSet!.bindTexture(block.offset + i, gfxTex);
                             
-                            if (descriptorName === 'light_cluster_InfoTexture' ||
-                                descriptorName === 'light_cluster_Texture' ||
-                                descriptorName === 'depthBuffer') {
-                                samplerInfo.minFilter = Filter.POINT
-                                samplerInfo.magFilter = Filter.POINT
-                            }
+                            // if (descriptorName === 'light_cluster_InfoTexture' ||
+                            //     descriptorName === 'light_cluster_Texture' ||
+                            //     descriptorName === 'depthBuffer') {
+                            //     samplerInfo.minFilter = Filter.POINT
+                            //     samplerInfo.magFilter = Filter.POINT
+                            // }
                             if (descriptorName === 'bloomTexture' ||
                                 descriptorName === 'outputResultMap') {
                                 samplerInfo.addressU = Address.CLAMP;
