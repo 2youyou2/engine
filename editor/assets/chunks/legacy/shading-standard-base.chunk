@@ -27,7 +27,7 @@ float GGXMobile (float roughness, float NoH, vec3 H, vec3 N) {
   float OneMinusNoHSqr = dot(NxH, NxH);
   float a = roughness * roughness;
   float n = NoH * a;
-  float p = a / max(0.001, OneMinusNoHSqr + n * n);
+  float p = a / (OneMinusNoHSqr + n * n);
   return p * p;
 }
 
