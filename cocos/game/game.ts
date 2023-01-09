@@ -31,7 +31,7 @@ import { ConfigOrientation } from 'pal/screen-adapter';
 import assetManager, { IAssetManagerOptions } from '../asset/asset-manager/asset-manager';
 import { EventTarget, AsyncDelegate, sys, macro, VERSION, cclegacy, screen, Settings, settings, assert, garbageCollectionManager, DebugMode, warn, log, _resetDebugSetting } from '../core';
 import { input } from '../input';
-import { deviceManager } from '../gfx';
+import { deviceManager, LegacyRenderMode } from '../gfx';
 import { SplashScreen } from './splash-screen';
 import { RenderPipeline } from '../rendering';
 import { Layers, Node } from '../scene-graph';
@@ -42,8 +42,6 @@ import { IBundleOptions } from '../asset/asset-manager/shared';
 import { ICustomJointTextureLayout } from '../3d/skeletal-animation/skeletal-animation-utils';
 import { IPhysicsConfig } from '../physics/framework/physics-config';
 import { effectSettings } from '../core/effect-settings';
-import { audioManager } from '../audio/audio-manager';
-
 /**
  * @zh
  * 游戏配置。
@@ -193,10 +191,9 @@ export class Game extends EventTarget {
      * 在原生平台，它对应的是应用被切换到后台事件，下拉菜单和上拉状态栏等不一定会触发这个事件，这取决于系统行为。
      * @example
      * ```ts
-     * import { game, audioEngine } from 'cc';
+     * import { game } from 'cc';
      * game.on(Game.EVENT_HIDE, function () {
-     *     audioEngine.pauseMusic();
-     *     audioEngine.pauseAllEffects();
+     *
      * });
      * ```
      */
@@ -290,6 +287,25 @@ export class Game extends EventTarget {
      * @zh 调用restart后，触发事件
      */
     public static readonly EVENT_RESTART = 'game_on_restart';
+
+    /**
+     * @en Triggered when the game is paused.<br>
+     * @zh 游戏暂停时触发该事件。<br>
+     * @example
+     * ```ts
+     * import { game } from 'cc';
+     * game.on(Game.EVENT_PAUSE, function () {
+     *     //pause audio or video
+     * });
+     * ```
+     */
+    public static readonly EVENT_PAUSE = 'game_on_pause';
+
+    /**
+     * @en Triggered when the game is resumed.<br>
+     * @zh 游戏恢复时触发该事件。<br>
+     */
+    public static readonly EVENT_RESUME = 'game_on_resume';
 
     /**
      * @en Web Canvas 2d API as renderer backend.
@@ -559,7 +575,7 @@ export class Game extends EventTarget {
         if (this._paused) { return; }
         this._paused = true;
         this._pacer?.stop();
-        audioManager.pause();
+        this.emit(Game.EVENT_PAUSE);
     }
 
     /**
@@ -573,7 +589,7 @@ export class Game extends EventTarget {
         input._clearEvents();
         this._paused = false;
         this._pacer?.start();
-        audioManager.resume();
+        this.emit(Game.EVENT_RESUME);
     }
 
     /**
@@ -758,6 +774,11 @@ export class Game extends EventTarget {
             .then(() => {
                 // initialize custom render pipeline
                 if (!cclegacy.rendering || !cclegacy.rendering.enableEffectImport) {
+                    return;
+                }
+                const renderMode = settings.querySettings(Settings.Category.RENDERING, 'renderMode');
+                if (renderMode === LegacyRenderMode.HEADLESS) {
+                    cclegacy.rendering.init(deviceManager.gfxDevice, null);
                     return;
                 }
                 const data = effectSettings.data;
