@@ -62,7 +62,7 @@ export class ReflectionProbe {
     protected _visibility = CAMERA_DEFAULT_MASK;
     protected _probeType = ProbeType.CUBE;
     protected _cubemap: TextureCube | null = null;
-    protected _size = new Vec3(1, 1, 1);
+    protected readonly _size = new Vec3(1, 1, 1);
 
     /**
      * @en Render cubemap's camera
