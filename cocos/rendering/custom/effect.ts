@@ -374,7 +374,7 @@ export function buildDeferredLayout (ppl: Pipeline) {
 
 
     // 1.=== Bloom prefilter ===
-    const bloomPrefilterID = lg.addRenderStage('Bloom_Prefilter', BloomStage.PREFILTER);
+    const bloomPrefilterID = lg.addRenderStage('bloom-prefilter', BloomStage.PREFILTER);
     lg.addRenderPhase('Queue', bloomPrefilterID);
     const bloomPrefilterDescriptors = lg.layoutGraph.getDescriptors(bloomPrefilterID);
     // unifom
@@ -408,7 +408,7 @@ export function buildDeferredLayout (ppl: Pipeline) {
     }
 
     // 4.=== Bloom combine ===
-    const bloomCombineSampleID = lg.addRenderStage('Bloom_Combine', BloomStage.COMBINE);
+    const bloomCombineSampleID = lg.addRenderStage('bloom-combine', BloomStage.COMBINE);
     lg.addRenderPhase('Queue', bloomCombineSampleID);
     const bloomCombineSampleDescriptors = lg.layoutGraph.getDescriptors(bloomCombineSampleID);
 
