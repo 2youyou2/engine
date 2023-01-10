@@ -75,8 +75,6 @@ export class WebSceneTask implements SceneTask {
     }
 
     protected _sceneCulling () {
-        if (!this.camera || this.camera.culled) { return; }
-        this.camera.culled = true;
         const scene = this.renderScene;
         const camera = this.camera;
         const mainLight = scene!.mainLight;
