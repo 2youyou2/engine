@@ -34,7 +34,7 @@ import intersect from '../../core/geometry/intersect';
 import { Sphere } from '../../core/geometry/sphere';
 import { AccessFlagBit, Attribute, Buffer, BufferInfo, BufferUsageBit, BufferViewInfo, Color, ColorAttachment, CommandBuffer, DepthStencilAttachment, DescriptorSet, DescriptorSetInfo, Device, deviceManager, Format, Framebuffer,
     FramebufferInfo, GeneralBarrierInfo, InputAssemblerInfo, LoadOp, MemoryUsageBit, PipelineState, Rect, RenderPass, RenderPassInfo, Sampler, SamplerInfo, StoreOp, SurfaceTransform, Swapchain, Texture, TextureInfo,
-    TextureType, TextureUsageBit, Viewport, Filter, Address } from '../../gfx';
+    TextureType, TextureUsageBit, Viewport } from '../../gfx';
 import { legacyCC } from '../../core/global-exports';
 import { Vec3 } from '../../core/math/vec3';
 import { Vec4 } from '../../core/math/vec4';
@@ -514,8 +514,6 @@ class RenderPassLayoutInfo {
                 }
             }
         }
-
-        this._descriptorSet?.update()
     }
     get descriptorSet () { return this._descriptorSet; }
     get layoutID () { return this._layoutID; }
