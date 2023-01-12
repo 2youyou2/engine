@@ -367,7 +367,6 @@ export class ReflectionProbe {
 
     public updateCameraDir (faceIdx: number) {
         this.cameraNode.setRotationFromEuler(cameraDir[faceIdx]);
-        this.cameraNode.updateWorldTransform();
         this.camera.update(true);
     }
 
