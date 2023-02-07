@@ -82,6 +82,7 @@ struct RenderGraphVisitorContext {
     boost::container::pmr::memory_resource* scratch = nullptr;
     gfx::RenderPass* currentPass = nullptr;
     LayoutGraphData::vertex_descriptor currentPassLayoutID = LayoutGraphData::null_vertex();
+    Mat4 currentProjMatrix{};
 };
 
 void clear(gfx::RenderPassInfo& info) {
@@ -799,7 +800,8 @@ void updateCameraUniformBufferAndDescriptorSet(
     }
 }
 
-void submitUICommands(gfx::RenderPass* renderPass,
+void submitUICommands(
+    gfx::RenderPass* renderPass,
     uint32_t layoutPassID,
     scene::Camera* camera,
     gfx::CommandBuffer* cmdBuff) {
@@ -829,6 +831,58 @@ void submitUICommands(gfx::RenderPass* renderPass,
             cmdBuff->draw(inputAssembler);
         }
     }
+}
+
+void submitProfilerCommands(
+    RenderGraphVisitorContext& ctx,
+    const RasterPass& rasterPass) {
+    const auto* profiler = ctx.ppl->getProfiler();
+    if (!profiler || !profiler->isEnabled()) {
+        return;
+    }
+    auto* renderPass = ctx.currentPass;
+    auto* cmdBuff = ctx.cmdBuff;
+    const auto& submodel = profiler->getSubModels()[0];
+    auto* pass = submodel->getPass(0);
+    auto* ia = submodel->getInputAssembler();
+    auto* pso = pipeline::PipelineStateManager::getOrCreatePipelineState(
+        pass, submodel->getShader(0), ia, renderPass);
+
+    // current pass
+    RenderData user(ctx.scratch);
+    NativeSetter setter(ctx.lg, user);
+    setter.setMat4("cc_matProj", ctx.currentProjMatrix);
+
+    // profiler pass
+    gfx::Viewport profilerViewport{};
+    gfx::Rect profilerScissor{};
+    profilerViewport.width = profilerScissor.width = rasterPass.width;
+    profilerViewport.height = profilerScissor.height = rasterPass.height;
+    cmdBuff->setViewport(profilerViewport);
+    cmdBuff->setScissor(profilerScissor);
+
+    cmdBuff->bindPipelineState(pso);
+    {
+        auto& layout = get(LayoutGraphData::Layout, ctx.lg, pass->getPassID());
+        auto iter = layout.descriptorSets.find(UpdateFrequency::PER_PASS);
+        if (iter != layout.descriptorSets.end()) {
+            auto& set = iter->second;
+            auto& node = ctx.context.layoutGraphResources.at(pass->getPassID());
+            PmrFlatMap<NameLocalID, ResourceGraph::vertex_descriptor> resourceIndex(ctx.scratch);
+            initPerPassDescriptorSet(
+                ctx.resourceGraph,
+                ctx.device, ctx.cmdBuff,
+                *ctx.context.defaultResource, ctx.lg,
+                resourceIndex, set, user, node);
+        } else {
+            CC_EXPECTS(false);
+            // TODO(zhouzhenglong): set descriptor set to empty
+        }
+    }
+    cmdBuff->bindDescriptorSet(static_cast<uint32_t>(pipeline::SetIndex::MATERIAL), pass->getDescriptorSet());
+    cmdBuff->bindDescriptorSet(static_cast<uint32_t>(pipeline::SetIndex::LOCAL), submodel->getDescriptorSet());
+    cmdBuff->bindInputAssembler(ia);
+    cmdBuff->draw(ia);
 }
 
 struct RenderGraphVisitor : boost::dfs_visitor<> {
@@ -1002,6 +1056,7 @@ struct RenderGraphVisitor : boost::dfs_visitor<> {
         CC_EXPECTS(camera);
         if (camera) { // update camera data
             updateCameraUniformBufferAndDescriptorSet(ctx, sceneID);
+            ctx.currentProjMatrix = camera->getMatProj();
         }
         const auto* scene = camera->getScene();
         const auto& queues = ctx.sceneQueues.at(scene);
@@ -1030,7 +1085,7 @@ struct RenderGraphVisitor : boost::dfs_visitor<> {
         }
         if (any(sceneData.flags & SceneFlags::UI)) {
             submitUICommands(ctx.currentPass,
-                ctx.currentPassLayoutID, camera, ctx.cmdBuff);
+                             ctx.currentPassLayoutID, camera, ctx.cmdBuff);
         }
     }
     void begin(const Blit& blit, RenderGraph::vertex_descriptor vertID) const {
@@ -1039,6 +1094,7 @@ struct RenderGraphVisitor : boost::dfs_visitor<> {
         CC_EXPECTS(blit.material->getPasses());
         if (blit.camera) {
             updateCameraUniformBufferAndDescriptorSet(ctx, vertID);
+            ctx.currentProjMatrix = blit.camera->getMatProj();
         }
         // get pass
         auto& pass = *blit.material->getPasses()->at(static_cast<size_t>(blit.passID));
@@ -1140,9 +1196,10 @@ struct RenderGraphVisitor : boost::dfs_visitor<> {
     void begin(const gfx::Viewport& pass, RenderGraph::vertex_descriptor vertID) const {
     }
     void end(const RasterPass& pass) const {
-        std::ignore = pass;
-        auto* cmdBuff = ctx.cmdBuff;
-        cmdBuff->endRenderPass();
+        if (pass.showStatistics) {
+            submitProfilerCommands(ctx, pass);
+        }
+        ctx.cmdBuff->endRenderPass();
         ctx.currentPass = nullptr;
         ctx.currentPassLayoutID = LayoutGraphData::null_vertex();
     }
@@ -1415,12 +1472,14 @@ float computeSortingDepth(const scene::Camera& camera, const scene::Model& model
 }
 
 void addRenderObject(
+    LayoutGraphData::vertex_descriptor shadowCasterlayoutID,
     const scene::Camera& camera, const scene::Model& model, NativeRenderQueue& queue) {
     const bool bDrawTransparent = any(queue.sceneFlags & SceneFlags::TRANSPARENT_OBJECT);
     bool bDrawOpaqueOrCutout = any(queue.sceneFlags & (SceneFlags::OPAQUE_OBJECT | SceneFlags::CUTOUT_OBJECT));
     if (!bDrawTransparent && !bDrawOpaqueOrCutout) {
         bDrawOpaqueOrCutout = true;
     }
+    const bool bDrawShadowCaster = any(queue.sceneFlags & SceneFlags::SHADOW_CASTER);
 
     const auto& subModels = model.getSubModels();
     const auto subModelCount = subModels.size();
@@ -1432,6 +1491,7 @@ void addRenderObject(
             auto& pass = *passes[passIdx];
             const bool bTransparent = isTransparent(pass);
             const bool bOpaqueOrCutout = !bTransparent;
+            const bool bShadowCaster = pass.getPhaseID() == shadowCasterlayoutID;
 
             if (!bDrawTransparent && bTransparent) {
                 // skip transparent object
@@ -1443,6 +1503,17 @@ void addRenderObject(
                 continue;
             }
 
+            // skip irrelavent passes
+            if (queue.layoutPassID != pass.getPassID()) {
+                continue;
+            }
+
+            // skip shadow caster
+            if (!bDrawShadowCaster && bShadowCaster) {
+                continue;
+            }
+
+            // add object to queue
             if (pass.getBatchingScheme() == scene::BatchingSchemes::INSTANCING) {
                 auto& instancedBuffer = *pass.getInstancedBuffer();
                 instancedBuffer.merge(subModel, passIdx);
@@ -1464,6 +1535,7 @@ void addRenderObject(
 }
 
 void octreeCulling(
+    LayoutGraphData::vertex_descriptor shadowCasterlayoutID,
     const scene::Octree* octree,
     const scene::RenderScene* scene,
     const scene::Skybox* skyBox,
@@ -1485,7 +1557,7 @@ void octreeCulling(
         }
         const auto visibility = camera.getVisibility();
         if (isInstanceVisible(model, visibility) && isPointInstanceAndNotSkybox(model, skyBox)) {
-            addRenderObject(camera, model, queue);
+            addRenderObject(shadowCasterlayoutID, camera, model, queue);
         }
     }
 
@@ -1499,11 +1571,12 @@ void octreeCulling(
         if (scene->isCulledByLod(&camera, &model)) {
             continue;
         }
-        addRenderObject(camera, model, queue);
+        addRenderObject(shadowCasterlayoutID, camera, model, queue);
     }
 }
 
 void frustumCulling(
+    LayoutGraphData::vertex_descriptor shadowCasterlayoutID,
     const scene::RenderScene* scene,
     const scene::Camera& camera,
     NativeRenderQueue& queue) {
@@ -1531,12 +1604,12 @@ void frustumCulling(
             const auto* modelWorldBounds = model.getWorldBounds();
             // object has no volume
             if (!modelWorldBounds) {
-                addRenderObject(camera, model, queue);
+                addRenderObject(shadowCasterlayoutID, camera, model, queue);
                 continue;
             }
             // frustum culling
             if (modelWorldBounds->aabbFrustum(camera.getFrustum())) {
-                addRenderObject(camera, model, queue);
+                addRenderObject(shadowCasterlayoutID, camera, model, queue);
             }
         }
     }
@@ -1544,6 +1617,7 @@ void frustumCulling(
 
 void mergeSceneFlags(
     const RenderGraph& rg,
+    const LayoutGraphData& lg,
     ccstd::pmr::unordered_map<
         const scene::RenderScene*,
         ccstd::pmr::unordered_map<scene::Camera*, NativeRenderQueue>>&
@@ -1552,10 +1626,21 @@ void mergeSceneFlags(
         if (!holds<SceneTag>(vertID, rg)) {
             continue;
         }
+        const auto queueID = parent(vertID, rg);
+        CC_ENSURES(queueID != RenderGraph::null_vertex());
+        const auto passID = parent(queueID, rg);
+        CC_ENSURES(passID != RenderGraph::null_vertex());
+        const auto& layoutName = get(RenderGraph::Layout, rg, passID);
+        CC_ENSURES(!layoutName.empty());
+        const auto layoutID = locate(LayoutGraphData::null_vertex(), layoutName, lg);
+        CC_ENSURES(layoutID != LayoutGraphData::null_vertex());
+
         const auto& sceneData = get(SceneTag{}, vertID, rg);
         const auto* scene = sceneData.camera->getScene();
         if (scene) {
-            sceneQueues[scene][sceneData.camera].sceneFlags |= sceneData.flags;
+            auto& queue = sceneQueues[scene][sceneData.camera];
+            queue.sceneFlags |= sceneData.flags;
+            queue.layoutPassID = layoutID;
         }
     }
 }
@@ -1571,6 +1656,7 @@ void extendResourceLifetime(const NativeRenderQueue& queue, ResourceGroup& group
 }
 
 void buildRenderQueues(
+    LayoutGraphData::vertex_descriptor shadowCasterlayoutID,
     const pipeline::PipelineSceneData& sceneData,
     NativeRenderContext& context,
     ccstd::pmr::unordered_map<
@@ -1605,9 +1691,9 @@ void buildRenderQueues(
 
             // culling
             if (octree && octree->isEnabled()) {
-                octreeCulling(octree, scene, skybox, *camera, queue);
+                octreeCulling(shadowCasterlayoutID, octree, scene, skybox, *camera, queue);
             } else {
-                frustumCulling(scene, *camera, queue);
+                frustumCulling(shadowCasterlayoutID, scene, *camera, queue);
             }
 
             queue.sort();
@@ -1658,8 +1744,14 @@ void NativePipeline::executeRenderGraph(const RenderGraph& rg) {
         ccstd::pmr::unordered_map<scene::Camera*, NativeRenderQueue>>
         sceneQueues(scratch);
     {
-        mergeSceneFlags(rg, sceneQueues);
-        buildRenderQueues(*ppl.getPipelineSceneData(), ppl.nativeContext, sceneQueues);
+        mergeSceneFlags(rg, lg, sceneQueues);
+        const auto shadowCasterLayoutID = locate("/default/shadow-caster", lg);
+        CC_ENSURES(shadowCasterLayoutID != LayoutGraphData::null_vertex());
+        buildRenderQueues(
+            shadowCasterLayoutID,
+            *ppl.getPipelineSceneData(),
+            ppl.nativeContext,
+            sceneQueues);
     }
 
     // Execute all valid passes
