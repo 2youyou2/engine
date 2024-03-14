@@ -1614,6 +1614,9 @@ void cmdFuncGLES3CreateFramebuffer(GLES3Device *device, GLES3GPUFramebuffer *gpu
                 gpuFBO->resolveFramebuffer.bindColor(resolveView, resolveColorIndex++, resolveDesc);
             }
             continue;
+        } else if (view->gpuTexture->glSamples > 1) {
+            gpuFBO->framebuffer.bindColorMultiSample(view, colorIndex, view->gpuTexture->glSamples, desc);
+            continue;
         }
         gpuFBO->framebuffer.bindColor(view, colorIndex, desc);
     }
@@ -1646,7 +1649,10 @@ void cmdFuncGLES3CreateFramebuffer(GLES3Device *device, GLES3GPUFramebuffer *gpu
                 gpuFBO->framebuffer.bindDepthStencil(view, desc);
                 gpuFBO->resolveFramebuffer.bindDepthStencil(resolveView, resolveDesc);
             }
-        } else {
+        } else if (view->gpuTexture->glSamples > 1) {
+            gpuFBO->framebuffer.bindDepthStencilMultiSample(view, view->gpuTexture->glSamples, desc);
+        }
+        else {
             gpuFBO->framebuffer.bindDepthStencil(view, desc);
         }
     }

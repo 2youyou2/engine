@@ -74,7 +74,9 @@ bool RenderWindow::initialize(gfx::Device *device, IRenderWindowInfo &info) {
                                             gfx::TextureUsageBit::COLOR_ATTACHMENT | gfx::TextureUsageBit::SAMPLED | gfx::TextureUsageBit::TRANSFER_SRC,
                                             colorAttachment.format,
                                             _width,
-                                            _height};
+                                            _height,
+                                            gfx::TextureFlagBit::NONE, 1, 1,
+                                            colorAttachment.sampleCount};
             if (info.externalFlag.has_value()) {
                 if (hasFlag(info.externalFlag.value(), gfx::TextureFlagBit::EXTERNAL_NORMAL)) {
                     textureInfo.flags |= info.externalFlag.value();
@@ -94,7 +96,10 @@ bool RenderWindow::initialize(gfx::Device *device, IRenderWindowInfo &info) {
                                                           gfx::TextureUsageBit::DEPTH_STENCIL_ATTACHMENT | gfx::TextureUsageBit::SAMPLED,
                                                           info.renderPassInfo.depthStencilAttachment.format,
                                                           _width,
-                                                          _height});
+                                                          _height,
+                                                          gfx::TextureFlagBit::NONE,1,1,
+                                                          info.renderPassInfo.depthStencilAttachment.sampleCount
+            });
         }
     }
 
