@@ -481,6 +481,14 @@ scene::RenderWindow *Root::createWindow(scene::IRenderWindowInfo &info) {
     return window;
 }
 
+scene::RenderWindow *Root::createWindowWithFramebuffer(cc::gfx::Framebuffer *fb) {
+    IntrusivePtr<scene::RenderWindow> window = ccnew scene::RenderWindow();
+
+    window->setFrameBuffer(fb);
+    _renderWindows.emplace_back(window);
+    return window;
+}
+
 void Root::destroyWindow(scene::RenderWindow *window) {
     auto it = std::find(_renderWindows.begin(), _renderWindows.end(), window);
     if (it != _renderWindows.end()) {

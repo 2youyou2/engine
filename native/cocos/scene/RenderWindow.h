@@ -57,6 +57,8 @@ public:
     bool initialize(gfx::Device *device, IRenderWindowInfo &info);
     void destroy();
 
+    void setFrameBuffer(gfx::Framebuffer *fb);
+
     /**
      * @en Resize window.
      * @zh 重置窗口大小。

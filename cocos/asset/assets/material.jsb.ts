@@ -152,6 +152,8 @@ matProto.setProperty = function (name: string, val: MaterialPropertyFull | Mater
         wrapSetProperty(this.setPropertyTextureBase, this, name, val, passIdx);
     } else if (val instanceof Texture) {
         wrapSetProperty(this.setPropertyGFXTexture, this, name, val, passIdx);
+    }  else if ((val as any) instanceof cclegacy.gfx.Texture) {
+        wrapSetProperty(this.setPropertyGFXTexture, this, name, val, passIdx);
     } else if (val === null) {
         if (passIdx) {
             this.setPropertyNull(name, passIdx);

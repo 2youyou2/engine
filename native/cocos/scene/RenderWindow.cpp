@@ -107,6 +107,19 @@ bool RenderWindow::initialize(gfx::Device *device, IRenderWindowInfo &info) {
     return true;
 }
 
+void RenderWindow::setFrameBuffer(gfx::Framebuffer *fb) {
+    _frameBuffer = fb;
+    for (auto *tex : fb->getColorTextures()) {
+        if (tex == nullptr) continue;
+
+        _width = tex->getWidth();
+        _height = tex->getHeight();
+
+        _colorTextures.pushBack(tex);
+    }
+    _depthStencilTexture = fb->getDepthStencilTexture();
+}
+
 void RenderWindow::destroy() {
     clearCameras();
 

@@ -113,6 +113,7 @@ public:
      * @param info GFX 窗口描述信息
      */
     scene::RenderWindow *createWindow(scene::IRenderWindowInfo &);
+    scene::RenderWindow *createWindowWithFramebuffer(cc::gfx::Framebuffer* fb);
 
     /**
      * @zh

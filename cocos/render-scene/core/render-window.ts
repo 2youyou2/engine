@@ -29,6 +29,7 @@ import {
 } from '../../gfx';
 import { Root } from '../../root';
 import { Camera } from '../scene';
+import { cclegacy } from '../../core';
 
 export interface IRenderWindowInfo {
     title?: string;
@@ -165,6 +166,15 @@ export class RenderWindow {
         ));
 
         return true;
+    }
+
+    setFrameBuffer (fb: Framebuffer) {
+        this._framebuffer = fb;
+        this._colorTextures = fb.colorTextures as Texture[];
+        this._depthStencilTexture = fb.depthStencilTexture;
+        this._width = fb.width;
+        this._height = fb.height;
+        this._device = cclegacy.director.root.device;
     }
 
     public destroy (): void {
