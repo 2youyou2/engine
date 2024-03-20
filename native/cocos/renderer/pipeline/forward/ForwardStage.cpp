@@ -154,7 +154,36 @@ void ForwardStage::render(scene::Camera *camera) {
     _planarShadowQueue->gatherShadowPasses(camera, cmdBuff);
 
     auto framebuffer = camera->getWindow()->getFramebuffer();
+
     auto renderPass = framebuffer->getRenderPass();
+    {
+        auto renderPassInfo = gfx::RenderPassInfo();
+        auto clearFlags = camera->getClearFlag();
+
+        gfx::ColorAttachment colorAttachment;
+        for (auto& color : renderPass->getColorAttachments()) {
+            colorAttachment.format = color.format;
+            colorAttachment.loadOp = gfx::LoadOp::CLEAR;
+            if (!(clearFlags & gfx::ClearFlagBit::COLOR)) {
+                colorAttachment.loadOp = gfx::LoadOp::LOAD;
+            }
+
+            renderPassInfo.colorAttachments.emplace_back(colorAttachment);
+        }
+
+        gfx::DepthStencilAttachment depthStencilAttachment;
+        depthStencilAttachment.format = renderPass->getDepthStencilAttachment().format;
+        depthStencilAttachment.depthLoadOp = gfx::LoadOp::CLEAR;
+        depthStencilAttachment.stencilLoadOp = gfx::LoadOp::CLEAR;
+        if (!(clearFlags & gfx::ClearFlagBit::DEPTH_STENCIL)) {
+            depthStencilAttachment.depthLoadOp = gfx::LoadOp::LOAD;
+            depthStencilAttachment.stencilLoadOp = gfx::LoadOp::LOAD;
+        }
+
+        renderPassInfo.depthStencilAttachment = std::move(depthStencilAttachment);
+
+        renderPass = _device->createRenderPass(renderPassInfo);
+    }
 
     //auto forwardSetup = [&](framegraph::PassNodeBuilder &builder, RenderData &data) {
 //        if (hasFlag(static_cast<gfx::ClearFlags>(camera->getClearFlag()), gfx::ClearFlagBit::COLOR)) {
