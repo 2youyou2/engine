@@ -866,8 +866,8 @@ static void textureStorage(GLES3Device *device, GLES3GPUTexture *gpuTexture) {
 }
 
 static bool useRenderBuffer(const GLES3Device *device, Format format, TextureUsage usage) {
-    return !device->isTextureExclusive(format) &&
-        hasAllFlags(TextureUsage::COLOR_ATTACHMENT | TextureUsage::DEPTH_STENCIL_ATTACHMENT, usage);
+    //return hasAllFlags(TextureUsage::COLOR_ATTACHMENT | TextureUsage::DEPTH_STENCIL_ATTACHMENT, usage) && !device->isTextureExclusive(format);
+    return !device->isTextureExclusive(format) && !!(usage & (TextureUsage::COLOR_ATTACHMENT | TextureUsage::DEPTH_STENCIL_ATTACHMENT));
 }
 
 void cmdFuncGLES3CreateTexture(GLES3Device *device, GLES3GPUTexture *gpuTexture) {
@@ -877,7 +877,7 @@ void cmdFuncGLES3CreateTexture(GLES3Device *device, GLES3GPUTexture *gpuTexture)
 
     bool supportRenderBufferMS = device->constantRegistry()->mMSRT > MSRTSupportLevel::NONE;
     gpuTexture->useRenderBuffer = useRenderBuffer(device, gpuTexture->format, gpuTexture->usage) &&
-        (gpuTexture->glSamples <= 1 || supportRenderBufferMS);
+        (gpuTexture->glSamples > 1 && supportRenderBufferMS);
 
     if (gpuTexture->glSamples > 1) {
         // Allocate render buffer when binding a framebuffer if the MSRT extension is not present.
@@ -3152,7 +3152,7 @@ void GLES3GPUFramebufferObject::finalize(GLES3GPUStateCache *cache) {
 
     auto bindAttachment = [](GLenum attachment, GLint samples, const GLES3GPUTextureView *view) {
         auto *texture = view->gpuTexture;
-        if (samples > 1) {
+        if (samples > 1 && !texture->useRenderBuffer) {
             CC_ASSERT(view->gpuTexture->glTexture != 0);
             GL_CHECK(glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER,
                                                           attachment,

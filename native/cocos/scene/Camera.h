@@ -151,6 +151,34 @@ struct ICameraInfo {
     CameraUsage usage{CameraUsage::GAME};
 };
 
+
+
+class BlitTexture {
+public:
+    BlitTexture() {}
+
+    BlitTexture(gfx::Texture *src, gfx::Texture *dst, gfx::TextureBlitList regions, gfx::Filter filter) {
+        _src = src;
+        _dst = dst;
+        _regions = regions;
+        _filter = filter;
+    }
+
+    const gfx::Texture *getSrc() const { return _src; }
+    gfx::Texture *getSrc() { return _src; }
+    const gfx::Texture *getDst() const { return _dst; }
+    gfx::Texture *getDst() { return _dst; }
+    const gfx::TextureBlitList &getRegions() const { return _regions; }
+    const gfx::Filter getFilter() const  { return _filter; }
+
+private:
+    gfx::Texture *_src = nullptr;
+    gfx::Texture *_dst = nullptr;
+    gfx::TextureBlitList _regions;
+    gfx::Filter _filter = gfx::Filter::POINT;
+};
+
+
 class Camera : public RefCounted {
 public:
     static constexpr int32_t SKYBOX_FLAG{static_cast<int32_t>(gfx::ClearFlagBit::STENCIL) << 1};
@@ -368,6 +396,10 @@ public:
 
     float getClipSpaceMinz() const;
 
+    void setBlitTextures(ccstd::vector<BlitTexture> blits) { _blitTextures = blits; }
+    const ccstd::vector<BlitTexture>& getBlitTextures() const { return _blitTextures; }
+    ccstd::vector<BlitTexture> &getBlitTextures() { return _blitTextures; }
+
 protected:
     void setExposure(float ev100);
 
@@ -434,6 +466,8 @@ private:
     IXRInterface *_xr{nullptr};
 
     uint32_t _systemWindowId{0};
+
+    ccstd::vector<BlitTexture> _blitTextures;
 
     CC_DISALLOW_COPY_MOVE_ASSIGN(Camera);
 };

@@ -196,6 +196,14 @@ export class ForwardStage extends RenderStage {
         this._planarQueue.recordCommandBuffer(device, renderPass, cmdBuff);
         this._renderQueues[1].recordCommandBuffer(device, renderPass, cmdBuff);
         camera.geometryRenderer?.render(renderPass, cmdBuff, pipeline.pipelineSceneData);
+
+        let blitTextures = (camera as any).blitTextures
+        if (blitTextures) {
+            blitTextures.forEach((blit: any) => {
+                cmdBuff.blitTexture(blit.src, blit.dst, blit.regions, blit.filter);
+            })
+        }
+
         this._uiPhase.render(camera, renderPass);
         renderProfiler(device, renderPass, cmdBuff, pipeline.profiler, camera);
         cmdBuff.endRenderPass();

@@ -161,8 +161,8 @@ void ForwardStage::render(scene::Camera *camera) {
         auto clearFlags = camera->getClearFlag();
 
         gfx::ColorAttachment colorAttachment;
-        for (auto& color : renderPass->getColorAttachments()) {
-            colorAttachment.format = color.format;
+        for (auto &tex : framebuffer->getColorTextures()) {
+            colorAttachment.format = tex->getFormat();
             colorAttachment.loadOp = gfx::LoadOp::CLEAR;
             if (!(clearFlags & gfx::ClearFlagBit::COLOR)) {
                 colorAttachment.loadOp = gfx::LoadOp::LOAD;
@@ -171,16 +171,19 @@ void ForwardStage::render(scene::Camera *camera) {
             renderPassInfo.colorAttachments.emplace_back(colorAttachment);
         }
 
-        gfx::DepthStencilAttachment depthStencilAttachment;
-        depthStencilAttachment.format = renderPass->getDepthStencilAttachment().format;
-        depthStencilAttachment.depthLoadOp = gfx::LoadOp::CLEAR;
-        depthStencilAttachment.stencilLoadOp = gfx::LoadOp::CLEAR;
-        if (!(clearFlags & gfx::ClearFlagBit::DEPTH_STENCIL)) {
-            depthStencilAttachment.depthLoadOp = gfx::LoadOp::LOAD;
-            depthStencilAttachment.stencilLoadOp = gfx::LoadOp::LOAD;
-        }
+        if (framebuffer->getDepthStencilTexture()) {
+            gfx::DepthStencilAttachment depthStencilAttachment;
+            depthStencilAttachment.format = framebuffer->getDepthStencilTexture()->getFormat();
+            depthStencilAttachment.depthLoadOp = gfx::LoadOp::CLEAR;
+            depthStencilAttachment.stencilLoadOp = gfx::LoadOp::CLEAR;
+            if (!(clearFlags & gfx::ClearFlagBit::DEPTH_STENCIL)) {
+                depthStencilAttachment.depthLoadOp = gfx::LoadOp::LOAD;
+                depthStencilAttachment.stencilLoadOp = gfx::LoadOp::LOAD;
+            }
 
-        renderPassInfo.depthStencilAttachment = std::move(depthStencilAttachment);
+            renderPassInfo.depthStencilAttachment = std::move(depthStencilAttachment);
+        }
+        
 
         renderPass = _device->createRenderPass(renderPassInfo);
     }
@@ -302,6 +305,11 @@ void ForwardStage::render(scene::Camera *camera) {
             cmdBuff->bindDescriptorSet(globalSet, _pipeline->getDescriptorSet(), 1, &offset);
             _planarShadowQueue->recordCommandBuffer(_device, renderPass, cmdBuff);
             _renderQueues[1]->recordCommandBuffer(_device, camera, renderPass, cmdBuff);
+        }
+
+        auto &blitTextures = camera->getBlitTextures();
+        for (auto& blit : blitTextures) {
+            cmdBuff->blitTexture(blit.getSrc(), blit.getDst(), blit.getRegions(), blit.getFilter());
         }
 
 #if CC_USE_GEOMETRY_RENDERER
