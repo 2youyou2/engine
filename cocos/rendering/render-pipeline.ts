@@ -291,14 +291,10 @@ export abstract class RenderPipeline extends Asset implements IPipelineEvent, Pi
         return true;
     }
 
-    public createRenderPass (clearFlags: ClearFlags, colorFmt: Format, depthFmt: Format): RenderPass {
+    public createRenderPass (clearFlags: ClearFlags, colorFmt: Format, depthFmt?: Format): RenderPass {
         const device = this._device;
         const colorAttachment = new ColorAttachment();
-        const depthStencilAttachment = new DepthStencilAttachment();
         colorAttachment.format = colorFmt;
-        depthStencilAttachment.format = depthFmt;
-        depthStencilAttachment.stencilStoreOp = StoreOp.DISCARD;
-        depthStencilAttachment.depthStoreOp = StoreOp.DISCARD;
 
         if (!(clearFlags & ClearFlagBit.COLOR)) {
             if (clearFlags & SKYBOX_FLAG) {
@@ -312,14 +308,21 @@ export abstract class RenderPipeline extends Asset implements IPipelineEvent, Pi
             }
         }
 
-        if ((clearFlags & ClearFlagBit.DEPTH_STENCIL) !== ClearFlagBit.DEPTH_STENCIL) {
-            if (!(clearFlags & ClearFlagBit.DEPTH)) depthStencilAttachment.depthLoadOp = LoadOp.LOAD;
-            if (!(clearFlags & ClearFlagBit.STENCIL)) depthStencilAttachment.stencilLoadOp = LoadOp.LOAD;
+        let depthStencilAttachment
+        if (depthFmt) {
+            depthStencilAttachment = new DepthStencilAttachment();
+            depthStencilAttachment.format = depthFmt;
+            depthStencilAttachment.stencilStoreOp = StoreOp.DISCARD;
+            depthStencilAttachment.depthStoreOp = StoreOp.DISCARD;
+            if ((clearFlags & ClearFlagBit.DEPTH_STENCIL) !== ClearFlagBit.DEPTH_STENCIL) {
+                if (!(clearFlags & ClearFlagBit.DEPTH)) depthStencilAttachment.depthLoadOp = LoadOp.LOAD;
+                if (!(clearFlags & ClearFlagBit.STENCIL)) depthStencilAttachment.stencilLoadOp = LoadOp.LOAD;
+            }
+            depthStencilAttachment.barrier = device.getGeneralBarrier(new GeneralBarrierInfo(
+                AccessFlagBit.DEPTH_STENCIL_ATTACHMENT_WRITE,
+                AccessFlagBit.DEPTH_STENCIL_ATTACHMENT_WRITE,
+            ));
         }
-        depthStencilAttachment.barrier = device.getGeneralBarrier(new GeneralBarrierInfo(
-            AccessFlagBit.DEPTH_STENCIL_ATTACHMENT_WRITE,
-            AccessFlagBit.DEPTH_STENCIL_ATTACHMENT_WRITE,
-        ));
 
         const renderPassInfo = new RenderPassInfo([colorAttachment], depthStencilAttachment);
 
@@ -331,7 +334,7 @@ export abstract class RenderPipeline extends Asset implements IPipelineEvent, Pi
         const hash = murmurhash2_32_gc(`${fbHash}_${clearFlags}`, 666);
         let renderPass = this._renderPasses.get(hash);
         if (renderPass) { return renderPass; }
-        renderPass = this.createRenderPass(clearFlags, fbo.colorTextures[0]!.format, fbo.depthStencilTexture!.format);
+        renderPass = this.createRenderPass(clearFlags, fbo.colorTextures[0]!.format, fbo.depthStencilTexture ? fbo.depthStencilTexture!.format : undefined);
         this._renderPasses.set(hash, renderPass);
         return renderPass;
     }
