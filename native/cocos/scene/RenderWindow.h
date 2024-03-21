@@ -57,8 +57,6 @@ public:
     bool initialize(gfx::Device *device, IRenderWindowInfo &info);
     void destroy();
 
-    void setFrameBuffer(gfx::Framebuffer *fb);
-
     /**
      * @en Resize window.
      * @zh 重置窗口大小。
@@ -121,6 +119,7 @@ public:
      * @zh 帧缓冲对象。
      */
     inline gfx::Framebuffer *getFramebuffer() const { return _frameBuffer.get(); }
+    void setFrameBuffer(gfx::Framebuffer *fb);
 
     inline const ccstd::vector<IntrusivePtr<Camera>> &getCameras() const { return _cameras; }
 

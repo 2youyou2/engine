@@ -155,8 +155,12 @@ void ForwardStage::render(scene::Camera *camera) {
 
     auto framebuffer = camera->getWindow()->getFramebuffer();
 
-    auto renderPass = framebuffer->getRenderPass();
-    {
+    auto renderPass = camera->getRenderPass();
+    if (!renderPass) {
+        renderPass = framebuffer->getRenderPass();
+    }
+
+    /*{
         auto renderPassInfo = gfx::RenderPassInfo();
         auto clearFlags = camera->getClearFlag();
 
@@ -186,7 +190,7 @@ void ForwardStage::render(scene::Camera *camera) {
         
 
         renderPass = _device->createRenderPass(renderPassInfo);
-    }
+    }*/
 
     //auto forwardSetup = [&](framegraph::PassNodeBuilder &builder, RenderData &data) {
 //        if (hasFlag(static_cast<gfx::ClearFlags>(camera->getClearFlag()), gfx::ClearFlagBit::COLOR)) {

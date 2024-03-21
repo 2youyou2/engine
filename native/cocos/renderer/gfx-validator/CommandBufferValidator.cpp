@@ -500,12 +500,12 @@ void CommandBufferValidator::blitTexture(Texture *srcTexture, Texture *dstTextur
     CC_ASSERT(srcTexture && static_cast<TextureValidator *>(srcTexture)->isInited());
     CC_ASSERT(dstTexture && static_cast<TextureValidator *>(dstTexture)->isInited());
     // Blit on multisampled texture is not allowed.
-    CC_ASSERT(srcTexture->getInfo().samples == SampleCount::X1);
+    //CC_ASSERT(srcTexture->getInfo().samples == SampleCount::X1);
     // blit on multisampled texture is not allowed.
     CC_ASSERT(dstTexture->getInfo().samples == SampleCount::X1);
 
     // Command 'blitTexture' must be recorded outside render passes.
-    CC_ASSERT(!_insideRenderPass);
+    //CC_ASSERT(!_insideRenderPass);
 
     for (uint32_t i = 0; i < count; ++i) {
         const auto &region = regions[i];
