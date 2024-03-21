@@ -160,180 +160,41 @@ void ForwardStage::render(scene::Camera *camera) {
         renderPass = framebuffer->getRenderPass();
     }
 
-    /*{
-        auto renderPassInfo = gfx::RenderPassInfo();
-        auto clearFlags = camera->getClearFlag();
-
-        gfx::ColorAttachment colorAttachment;
-        for (auto &tex : framebuffer->getColorTextures()) {
-            colorAttachment.format = tex->getFormat();
-            colorAttachment.loadOp = gfx::LoadOp::CLEAR;
-            if (!(clearFlags & gfx::ClearFlagBit::COLOR)) {
-                colorAttachment.loadOp = gfx::LoadOp::LOAD;
-            }
-
-            renderPassInfo.colorAttachments.emplace_back(colorAttachment);
-        }
-
-        if (framebuffer->getDepthStencilTexture()) {
-            gfx::DepthStencilAttachment depthStencilAttachment;
-            depthStencilAttachment.format = framebuffer->getDepthStencilTexture()->getFormat();
-            depthStencilAttachment.depthLoadOp = gfx::LoadOp::CLEAR;
-            depthStencilAttachment.stencilLoadOp = gfx::LoadOp::CLEAR;
-            if (!(clearFlags & gfx::ClearFlagBit::DEPTH_STENCIL)) {
-                depthStencilAttachment.depthLoadOp = gfx::LoadOp::LOAD;
-                depthStencilAttachment.stencilLoadOp = gfx::LoadOp::LOAD;
-            }
-
-            renderPassInfo.depthStencilAttachment = std::move(depthStencilAttachment);
-        }
-        
-
-        renderPass = _device->createRenderPass(renderPassInfo);
-    }*/
-
-    //auto forwardSetup = [&](framegraph::PassNodeBuilder &builder, RenderData &data) {
-//        if (hasFlag(static_cast<gfx::ClearFlags>(camera->getClearFlag()), gfx::ClearFlagBit::COLOR)) {
-//            _clearColors[0].x = camera->getClearColor().x;
-//            _clearColors[0].y = camera->getClearColor().y;
-//            _clearColors[0].z = camera->getClearColor().z;
-//        }
-//        _clearColors[0].w = camera->getClearColor().w;
-//        // color
-//// for inserting ar background before forward stage
-//#if CC_USE_AR_MODULE
-//        framegraph::RenderTargetAttachment::Descriptor colorAttachmentInfo;
-//        colorAttachmentInfo.usage = framegraph::RenderTargetAttachment::Usage::COLOR;
-//        colorAttachmentInfo.clearColor = _clearColors[0];
-//        colorAttachmentInfo.loadOp = gfx::LoadOp::CLEAR;
-//        auto clearFlags = static_cast<gfx::ClearFlagBit>(camera->getClearFlag());
-//
-//        data.outputTex = framegraph::TextureHandle(builder.readFromBlackboard(RenderPipeline::fgStrHandleOutColorTexture));
-//        if (!data.outputTex.isValid()) {
-//            framegraph::Texture::Descriptor colorTexInfo;
-//            colorTexInfo.format = sceneData->isHDR() ? gfx::Format::RGBA16F : gfx::Format::RGBA8;
-//            colorTexInfo.usage = gfx::TextureUsageBit::COLOR_ATTACHMENT;
-//            colorTexInfo.width = static_cast<uint32_t>(static_cast<float>(camera->getWindow()->getWidth()) * shadingScale);
-//            colorTexInfo.height = static_cast<uint32_t>(static_cast<float>(camera->getWindow()->getHeight()) * shadingScale);
-//            if (shadingScale != 1.F) {
-//                colorTexInfo.usage |= gfx::TextureUsageBit::TRANSFER_SRC;
-//            }
-//            data.outputTex = builder.create(RenderPipeline::fgStrHandleOutColorTexture, colorTexInfo);
-//
-//            if (!hasFlag(clearFlags, gfx::ClearFlagBit::COLOR)) {
-//                if (hasFlag(clearFlags, static_cast<gfx::ClearFlagBit>(skyboxFlag))) {
-//                    colorAttachmentInfo.loadOp = gfx::LoadOp::DISCARD;
-//                } else {
-//                    colorAttachmentInfo.loadOp = gfx::LoadOp::LOAD;
-//                }
-//            }
-//        } else {
-//            colorAttachmentInfo.loadOp = gfx::LoadOp::LOAD;
-//        }
-//#else
-//
-//        framegraph::Texture::Descriptor colorTexInfo;
-//        colorTexInfo.format = sceneData->isHDR() ? gfx::Format::RGBA16F : gfx::Format::RGBA8;
-//        colorTexInfo.usage = gfx::TextureUsageBit::COLOR_ATTACHMENT;
-//        colorTexInfo.width = static_cast<uint32_t>(static_cast<float>(camera->getWindow()->getWidth()) * shadingScale);
-//        colorTexInfo.height = static_cast<uint32_t>(static_cast<float>(camera->getWindow()->getHeight()) * shadingScale);
-//        if (shadingScale != 1.F) {
-//            colorTexInfo.usage |= gfx::TextureUsageBit::TRANSFER_SRC;
-//        }
-//
-//        auto colorTex = framebuffer->getColorTextures().at(0);
-//        if (colorTex != nullptr) {
-//            colorTexInfo.samples = colorTex->getInfo().samples;
-//        }
-//
-//        data.outputTex = builder.create(RenderPipeline::fgStrHandleOutColorTexture, colorTexInfo);
-//        framegraph::RenderTargetAttachment::Descriptor colorAttachmentInfo;
-//        colorAttachmentInfo.usage = framegraph::RenderTargetAttachment::Usage::COLOR;
-//        colorAttachmentInfo.clearColor = _clearColors[0];
-//        colorAttachmentInfo.loadOp = gfx::LoadOp::CLEAR;
-//        auto clearFlags = static_cast<gfx::ClearFlagBit>(camera->getClearFlag());
-//        if (!hasFlag(clearFlags, gfx::ClearFlagBit::COLOR)) {
-//            if (hasFlag(clearFlags, static_cast<gfx::ClearFlagBit>(skyboxFlag))) {
-//                colorAttachmentInfo.loadOp = gfx::LoadOp::DISCARD;
-//            } else {
-//                colorAttachmentInfo.loadOp = gfx::LoadOp::LOAD;
-//            }
-//        }
-//#endif
-//
-//        colorAttachmentInfo.beginAccesses = colorAttachmentInfo.endAccesses = gfx::AccessFlagBit::COLOR_ATTACHMENT_WRITE;
-//
-//        data.outputTex = builder.write(data.outputTex, colorAttachmentInfo);
-//        builder.writeToBlackboard(RenderPipeline::fgStrHandleOutColorTexture, data.outputTex);
-//        // depth
-//
-//        gfx::TextureInfo depthTexInfo{
-//            gfx::TextureType::TEX2D,
-//            gfx::TextureUsageBit::DEPTH_STENCIL_ATTACHMENT,
-//            gfx::Format::DEPTH_STENCIL,
-//            static_cast<uint32_t>(static_cast<float>(camera->getWindow()->getWidth()) * shadingScale),
-//            static_cast<uint32_t>(static_cast<float>(camera->getWindow()->getHeight()) * shadingScale),
-//        };
-//
-//        framegraph::RenderTargetAttachment::Descriptor depthAttachmentInfo;
-//        depthAttachmentInfo.usage = framegraph::RenderTargetAttachment::Usage::DEPTH_STENCIL;
-//        depthAttachmentInfo.loadOp = gfx::LoadOp::CLEAR;
-//        depthAttachmentInfo.clearDepth = camera->getClearDepth();
-//        depthAttachmentInfo.clearStencil = camera->getClearStencil();
-//        depthAttachmentInfo.beginAccesses = gfx::AccessFlagBit::DEPTH_STENCIL_ATTACHMENT_WRITE;
-//        depthAttachmentInfo.endAccesses = gfx::AccessFlagBit::DEPTH_STENCIL_ATTACHMENT_WRITE;
-//#if !CC_USE_AR_MODULE
-//        if (static_cast<gfx::ClearFlagBit>(clearFlags & gfx::ClearFlagBit::DEPTH_STENCIL) != gfx::ClearFlagBit::DEPTH_STENCIL && (!hasFlag(clearFlags, gfx::ClearFlagBit::DEPTH) || !hasFlag(clearFlags, gfx::ClearFlagBit::STENCIL))) {
-//            depthAttachmentInfo.loadOp = gfx::LoadOp::LOAD;
-//        }
-//#endif
-//        data.depth = builder.create(RenderPipeline::fgStrHandleOutDepthTexture, depthTexInfo);
-//        data.depth = builder.write(data.depth, depthAttachmentInfo);
-//        builder.writeToBlackboard(RenderPipeline::fgStrHandleOutDepthTexture, data.depth);
-//        builder.setViewport(pipeline->getViewport(camera), pipeline->getScissor(camera));
-//    };
 
     cmdBuff->beginRenderPass(renderPass, framebuffer, _renderArea,
                                _clearColors, camera->getClearDepth(), camera->getClearStencil());
 
     auto offset = _pipeline->getPipelineUBO()->getCurrentCameraUBOOffset();
-    //auto forwardExec = [this, camera, offset, pipeline](const RenderData & /*data*/, const framegraph::DevicePassResourceTable &table) {
-        //auto *renderPass = table.getRenderPass();
-        //auto *cmdBuff = _pipeline->getCommandBuffers()[0];
+
+    cmdBuff->bindDescriptorSet(globalSet, _pipeline->getDescriptorSet(), 1, &offset);
+    if (!_pipeline->getPipelineSceneData()->getRenderObjects().empty()) {
+        _renderQueues[0]->recordCommandBuffer(_device, camera, renderPass, cmdBuff);
+        _instancedQueue->recordCommandBuffer(_device, renderPass, cmdBuff);
+        _additiveLightQueue->recordCommandBuffer(_device, camera, renderPass, cmdBuff);
+
         cmdBuff->bindDescriptorSet(globalSet, _pipeline->getDescriptorSet(), 1, &offset);
-        if (!_pipeline->getPipelineSceneData()->getRenderObjects().empty()) {
-            _renderQueues[0]->recordCommandBuffer(_device, camera, renderPass, cmdBuff);
-            _instancedQueue->recordCommandBuffer(_device, renderPass, cmdBuff);
-            _additiveLightQueue->recordCommandBuffer(_device, camera, renderPass, cmdBuff);
+        _planarShadowQueue->recordCommandBuffer(_device, renderPass, cmdBuff);
+        _renderQueues[1]->recordCommandBuffer(_device, camera, renderPass, cmdBuff);
+    }
 
-            cmdBuff->bindDescriptorSet(globalSet, _pipeline->getDescriptorSet(), 1, &offset);
-            _planarShadowQueue->recordCommandBuffer(_device, renderPass, cmdBuff);
-            _renderQueues[1]->recordCommandBuffer(_device, camera, renderPass, cmdBuff);
-        }
-
-        auto &blitTextures = camera->getBlitTextures();
-        for (auto& blit : blitTextures) {
-            cmdBuff->blitTexture(blit.getSrc(), blit.getDst(), blit.getRegions(), blit.getFilter());
-        }
+    auto &blitTextures = camera->getBlitTextures();
+    for (auto& blit : blitTextures) {
+        cmdBuff->blitTexture(blit.getSrc(), blit.getDst(), blit.getRegions(), blit.getFilter());
+    }
 
 #if CC_USE_GEOMETRY_RENDERER
-        if (camera->getGeometryRenderer()) {
-            camera->getGeometryRenderer()->render(renderPass, cmdBuff, pipeline->getPipelineSceneData());
-        }
+    if (camera->getGeometryRenderer()) {
+        camera->getGeometryRenderer()->render(renderPass, cmdBuff, pipeline->getPipelineSceneData());
+    }
 #endif
 
-        _uiPhase->render(camera, renderPass);
-        renderProfiler(renderPass, cmdBuff, _pipeline->getProfiler(), camera);
+    _uiPhase->render(camera, renderPass);
+    renderProfiler(renderPass, cmdBuff, _pipeline->getProfiler(), camera);
 #if CC_USE_DEBUG_RENDERER
-        renderDebugRenderer(renderPass, cmdBuff, _pipeline->getPipelineSceneData(), camera);
+    renderDebugRenderer(renderPass, cmdBuff, _pipeline->getPipelineSceneData(), camera);
 #endif
-    //};
 
-       cmdBuff->endRenderPass();
-
-    // add pass
-    //pipeline->getFrameGraph().addPass<RenderData>(static_cast<uint32_t>(ForwardInsertPoint::IP_FORWARD), ForwardPipeline::fgStrHandleForwardPass, forwardSetup, forwardExec);
-    //pipeline->getFrameGraph().presentFromBlackboard(RenderPipeline::fgStrHandleOutColorTexture, camera->getWindow()->getFramebuffer()->getColorTextures()[0], true);
+    cmdBuff->endRenderPass();
 }
 
 } // namespace pipeline

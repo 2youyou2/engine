@@ -199,6 +199,17 @@ Object.defineProperty(cameraProto, 'matViewProjInv', {
     }
 });
 
+Object.defineProperty(cameraProto, 'blitTextures', {
+    configurable: true,
+    enumerable: true,
+    get () {
+        return this.getBlitTextures();
+    },
+    set (v) {
+        this.setBlitTextures(v)
+    }
+});
+
 const oldInitialize = cameraProto.initialize;
 
 cameraProto.initialize = function initialize() {
