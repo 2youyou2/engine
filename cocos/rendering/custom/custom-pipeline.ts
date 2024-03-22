@@ -48,51 +48,59 @@ export class CustomPipelineBuilder implements PipelineBuilder {
             if (camera.scene === null) {
                 continue;
             }
-            const isGameView = camera.cameraUsage === CameraUsage.GAME
-                || camera.cameraUsage === CameraUsage.GAME_VIEW;
-            if (!isGameView) {
-                // forward pass
-                buildForwardPass(camera, ppl, isGameView);
-                // reflection probe pass
-                buildReflectionProbePasss(camera, ppl);
-                continue;
-            }
-            // TODO: There is currently no effective way to judge the ui camera. Let’s do this first.
-            if (!isUICamera(camera)) {
-                const hasDeferredTransparencyObjects = hasSkinObject(ppl);
-                // forward pass
-                const forwardInfo = buildForwardPass(camera, ppl, isGameView, !hasDeferredTransparencyObjects);
-                // reflection probe pass
-                buildReflectionProbePasss(camera, ppl);
-                const area = getRenderArea(camera, camera.window.width, camera.window.height);
-                const width = area.width;
-                const height = area.height;
-                if (!ppl.containsResource('copyTexTest')) {
-                    ppl.addRenderTarget('copyTexTest', Format.RGBA16F, width, height, ResourceResidency.PERSISTENT);
-                }
-                copyPair.source = forwardInfo.rtName;
-                copyPair.target = 'copyTexTest';
-                buildCopyPass(ppl, pairs);
 
-                // skin pass
-                const skinInfo = buildSSSSPass(camera, ppl, 'copyTexTest', forwardInfo.dsName);
-                // deferred transparency objects
-                const deferredTransparencyInfo = buildTransparencyPass(camera, ppl, skinInfo.rtName, skinInfo.dsName, hasDeferredTransparencyObjects);
-                // hbao pass
-                const hbaoInfo = buildHBAOPasses(camera, ppl, deferredTransparencyInfo.rtName, deferredTransparencyInfo.dsName);
-                // tone map pass
-                const toneMappingInfo =  buildToneMappingPass(camera, ppl, hbaoInfo.rtName, hbaoInfo.dsName);
-                // fxaa pass
-                const fxaaInfo = buildFxaaPass(camera, ppl, toneMappingInfo.rtName, toneMappingInfo.dsName);
-                // bloom passes
-                // todo: bloom need to be rendered before tone-mapping
-                const bloomInfo = buildBloomPass(camera, ppl, fxaaInfo.rtName);
-                // Present Pass
-                buildPostprocessPass(camera, ppl, bloomInfo.rtName);
-                continue;
+            if (isUICamera(camera)) {
+                buildUIPass(camera, ppl);
             }
-            // render ui
-            buildUIPass(camera, ppl);
+            else {
+                buildForwardPass(camera, ppl, false);
+            }
+
+            // const isGameView = camera.cameraUsage === CameraUsage.GAME
+            //     || camera.cameraUsage === CameraUsage.GAME_VIEW;
+            // if (!isGameView) {
+            //     // forward pass
+            //     buildForwardPass(camera, ppl, isGameView);
+            //     // reflection probe pass
+            //     buildReflectionProbePasss(camera, ppl);
+            //     continue;
+            // }
+            // // TODO: There is currently no effective way to judge the ui camera. Let’s do this first.
+            // if (!isUICamera(camera)) {
+            //     const hasDeferredTransparencyObjects = hasSkinObject(ppl);
+            //     // forward pass
+            //     const forwardInfo = buildForwardPass(camera, ppl, isGameView, !hasDeferredTransparencyObjects);
+            //     // reflection probe pass
+            //     buildReflectionProbePasss(camera, ppl);
+            //     const area = getRenderArea(camera, camera.window.width, camera.window.height);
+            //     const width = area.width;
+            //     const height = area.height;
+            //     if (!ppl.containsResource('copyTexTest')) {
+            //         ppl.addRenderTarget('copyTexTest', Format.RGBA16F, width, height, ResourceResidency.PERSISTENT);
+            //     }
+            //     copyPair.source = forwardInfo.rtName;
+            //     copyPair.target = 'copyTexTest';
+            //     buildCopyPass(ppl, pairs);
+
+            //     // skin pass
+            //     const skinInfo = buildSSSSPass(camera, ppl, 'copyTexTest', forwardInfo.dsName);
+            //     // deferred transparency objects
+            //     const deferredTransparencyInfo = buildTransparencyPass(camera, ppl, skinInfo.rtName, skinInfo.dsName, hasDeferredTransparencyObjects);
+            //     // hbao pass
+            //     const hbaoInfo = buildHBAOPasses(camera, ppl, deferredTransparencyInfo.rtName, deferredTransparencyInfo.dsName);
+            //     // tone map pass
+            //     const toneMappingInfo =  buildToneMappingPass(camera, ppl, hbaoInfo.rtName, hbaoInfo.dsName);
+            //     // fxaa pass
+            //     const fxaaInfo = buildFxaaPass(camera, ppl, toneMappingInfo.rtName, toneMappingInfo.dsName);
+            //     // bloom passes
+            //     // todo: bloom need to be rendered before tone-mapping
+            //     const bloomInfo = buildBloomPass(camera, ppl, fxaaInfo.rtName);
+            //     // Present Pass
+            //     buildPostprocessPass(camera, ppl, bloomInfo.rtName);
+            //     continue;
+            // }
+            // // render ui
+            // buildUIPass(camera, ppl);
         }
     }
 }
