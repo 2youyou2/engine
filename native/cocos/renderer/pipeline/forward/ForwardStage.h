@@ -48,6 +48,8 @@ public:
     void destroy() override;
     void render(scene::Camera *camera) override;
 
+    gfx::RenderPass *ForwardStage::getOrCreateRenderPass(gfx::ClearFlags clearFlags, gfx::Framebuffer *framebuffer);
+
 private:
     void dispenseRenderObject2Queues();
     static RenderStageInfo initInfo;
@@ -61,6 +63,8 @@ private:
     UIPhase *_uiPhase{nullptr};
     gfx::Rect _renderArea;
     uint32_t _phaseID{0};
+
+    std::unordered_map<gfx::ClearFlags, gfx::RenderPass *> _renderPasses;
 };
 
 } // namespace pipeline

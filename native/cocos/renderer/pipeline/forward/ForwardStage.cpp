@@ -87,6 +87,12 @@ void ForwardStage::destroy() {
     CC_SAFE_DELETE(_additiveLightQueue);
     CC_SAFE_DESTROY_AND_DELETE(_planarShadowQueue);
     CC_SAFE_DELETE(_uiPhase);
+
+    for (auto rp : _renderPasses) {
+        CC_SAFE_DESTROY_AND_DELETE(rp.second);
+    }
+    _renderPasses.clear();
+
     RenderStage::destroy();
 }
 
@@ -133,6 +139,43 @@ void ForwardStage::dispenseRenderObject2Queues() {
     }
 }
 
+gfx::RenderPass *ForwardStage::getOrCreateRenderPass(gfx::ClearFlags clearFlags, gfx::Framebuffer *framebuffer) {
+    if (_renderPasses.count(clearFlags)) {
+        return _renderPasses[clearFlags];
+    }
+
+    auto renderPassInfo = gfx::RenderPassInfo();
+    gfx::ColorAttachment colorAttachment;
+    for (auto &tex : framebuffer->getColorTextures()) {
+        colorAttachment.format = tex->getFormat();
+        colorAttachment.loadOp = gfx::LoadOp::CLEAR;
+        if (!(clearFlags & gfx::ClearFlagBit::COLOR)) {
+            colorAttachment.loadOp = gfx::LoadOp::LOAD;
+        }
+
+        renderPassInfo.colorAttachments.emplace_back(colorAttachment);
+    }
+
+    if (framebuffer->getDepthStencilTexture()) {
+        gfx::DepthStencilAttachment depthStencilAttachment;
+        depthStencilAttachment.format = framebuffer->getDepthStencilTexture()->getFormat();
+        depthStencilAttachment.depthLoadOp = gfx::LoadOp::CLEAR;
+        depthStencilAttachment.stencilLoadOp = gfx::LoadOp::CLEAR;
+        if (!(clearFlags & gfx::ClearFlagBit::DEPTH_STENCIL)) {
+            depthStencilAttachment.depthLoadOp = gfx::LoadOp::LOAD;
+            depthStencilAttachment.stencilLoadOp = gfx::LoadOp::LOAD;
+        }
+
+        renderPassInfo.depthStencilAttachment = std::move(depthStencilAttachment);
+    }
+
+    auto renderPass = _device->createRenderPass(renderPassInfo);
+
+    _renderPasses[clearFlags] = renderPass;
+
+    return renderPass;
+}
+
 void ForwardStage::render(scene::Camera *camera) {
     CC_PROFILE(ForwardStageRender);
     struct RenderData {
@@ -157,9 +200,16 @@ void ForwardStage::render(scene::Camera *camera) {
 
     auto renderPass = camera->getRenderPass();
     if (!renderPass) {
-        renderPass = framebuffer->getRenderPass();
+        renderPass = getOrCreateRenderPass(camera->getClearFlag(), framebuffer);
+        //renderPass = framebuffer->getRenderPass();
     }
 
+    if (hasFlag(static_cast<gfx::ClearFlags>(camera->getClearFlag()), gfx::ClearFlagBit::COLOR)) {
+        _clearColors[0].x = camera->getClearColor().x;
+        _clearColors[0].y = camera->getClearColor().y;
+        _clearColors[0].z = camera->getClearColor().z;
+    }
+    _clearColors[0].w = camera->getClearColor().w;
 
     cmdBuff->beginRenderPass(renderPass, framebuffer, _renderArea,
                                _clearColors, camera->getClearDepth(), camera->getClearStencil());
