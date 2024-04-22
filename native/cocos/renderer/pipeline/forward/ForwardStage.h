@@ -48,7 +48,7 @@ public:
     void destroy() override;
     void render(scene::Camera *camera) override;
 
-    gfx::RenderPass *ForwardStage::getOrCreateRenderPass(gfx::ClearFlags clearFlags, gfx::Framebuffer *framebuffer);
+    gfx::RenderPass *getOrCreateRenderPass(gfx::ClearFlags clearFlags, gfx::Framebuffer *framebuffer);
 
 private:
     void dispenseRenderObject2Queues();
