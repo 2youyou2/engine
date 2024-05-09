@@ -324,8 +324,8 @@ export class RenderAdditiveLightQueue {
                     const buffer = pass.getInstancedBuffer(l);
                     buffer.merge(subModel, lightPassIdx);
                     buffer.dynamicOffsets[0] = this._lightBufferStride;
-                    if (!this._instancedQueues[l]) { this._instancedQueues[l] = new RenderInstancedQueue(); }
-                    this._instancedQueues[l].queue.add(buffer);
+                    if (!this._instancedQueues[lightIdx]) { this._instancedQueues[lightIdx] = new RenderInstancedQueue(); }
+                    this._instancedQueues[lightIdx].queue.add(buffer);
                 } break;
                 default:
                     lp!.lights.push(light);

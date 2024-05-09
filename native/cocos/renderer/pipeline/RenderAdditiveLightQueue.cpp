@@ -71,6 +71,9 @@ void RenderAdditiveLightQueue::recordCommandBuffer(gfx::Device *device, scene::C
         const auto *light = _instancedLightPass.lights[i];
         _dynamicOffsets[0] = _instancedLightPass.dynamicOffsets[i];
         auto *globalDescriptorSet = _pipeline->getGlobalDSManager()->getOrCreateDescriptorSet(light);
+        if (_instancedQueues[i] == nullptr) {
+            continue;
+        }
         _instancedQueues[i]->recordCommandBuffer(device, renderPass, cmdBuffer, globalDescriptorSet, offset, &_dynamicOffsets);
     }
 
@@ -115,6 +118,8 @@ void RenderAdditiveLightQueue::gatherLightPasses(const scene::Camera *camera, gf
     updateUBOs(camera, cmdBuffer);
     updateLightDescriptorSet(camera, cmdBuffer);
 
+    _instancedQueues.resize(_validPunctualLights.size());
+
     const auto &renderObjects = _pipeline->getPipelineSceneData()->getRenderObjects();
     for (const auto &renderObject : renderObjects) {
         const auto *const model = renderObject.model;
@@ -153,13 +158,17 @@ void RenderAdditiveLightQueue::gatherLightPasses(const scene::Camera *camera, gf
         _instancedLightPass.dynamicOffsets.emplace_back(_lightBufferStride * l);
     }
     for (const auto &instancedQueue : _instancedQueues) {
-        instancedQueue->uploadBuffers(cmdBuffer);
+        if (instancedQueue != nullptr) {
+            instancedQueue->uploadBuffers(cmdBuffer);
+        }
     }
 }
 
 void RenderAdditiveLightQueue::clear() {
     for (const auto &instancedQueue : _instancedQueues) {
-        instancedQueue->clear();
+        if (instancedQueue != nullptr) {
+            instancedQueue->clear();
+        }
     }
     _instancedQueues.clear();
 
@@ -201,32 +210,37 @@ void RenderAdditiveLightQueue::addRenderQueue(scene::SubModel *subModel, const s
         lightPass.subModel = subModel;
         lightPass.pass = pass;
         lightPass.shader = subModel->getShader(lightPassIdx);
-        lightPass.dynamicOffsets.resize(lightCount);
+        //lightPass.dynamicOffsets.resize(lightCount);
+        lightPass.dynamicOffsets.clear();
     }
+
 
     for (uint32_t i = 0; i < lightCount; ++i) {
         const auto lightIdx = _lightIndices[i];
         const auto *light = _validPunctualLights[lightIdx];
         const auto visibility = light->getVisibility();
+
         if ((visibility & model->getNode()->getLayer()) == model->getNode()->getLayer()) {
             switch (batchingScheme) {
                 case scene::BatchingSchemes::INSTANCING: {
                     auto *buffer = pass->getInstancedBuffer(i);
                     buffer->merge(subModel, lightPassIdx);
                     buffer->setDynamicOffset(0, _lightBufferStride);
-                    if (i >= _instancedQueues.size()) {
-                        _instancedQueues.emplace_back(ccnew RenderInstancedQueue());
+                    if (_instancedQueues[lightIdx] == nullptr) {
+                        _instancedQueues[lightIdx] = ccnew RenderInstancedQueue();
                     }
-                    _instancedQueues[i]->add(buffer);
+                    _instancedQueues[lightIdx]->add(buffer);
                 } break;
                 case scene::BatchingSchemes::NONE: {
                     lightPass.lights.emplace_back(light);
-                    lightPass.dynamicOffsets[i] = _lightBufferStride * lightIdx;
+                    //lightPass.dynamicOffsets[i] = _lightBufferStride * lightIdx;
+                    lightPass.dynamicOffsets.emplace_back(_lightBufferStride * lightIdx);
                 } break;
             }
-        } else {
-            lightPass.dynamicOffsets.clear();
         }
+        /*else {
+            lightPass.dynamicOffsets.clear();
+        }*/
     }
 
     if (batchingScheme == scene::BatchingSchemes::NONE) {
