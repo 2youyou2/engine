@@ -1,5 +1,11 @@
 // Copyright (c) 2017-2020 Xiamen Yaji Software Co., Ltd.
 
+#define GLOBAL_LIGHTS_PER_PASS 8
+
+#ifndef GLOBAL_LIGHTING_PASS
+#define GLOBAL_LIGHTING_PASS 1
+#endif
+
 #pragma define NUMCASCADES 4
 #pragma builtin(global)
 layout(set = 0, binding = 3) uniform CCCSM {
@@ -11,4 +17,18 @@ layout(set = 0, binding = 3) uniform CCCSM {
   highp vec4 cc_csmProjDepthInfo[NUMCASCADES];
   highp vec4 cc_csmProjInfo[NUMCASCADES];
   highp vec4 cc_csmSplitsInfo;            // x-> Layers.skirtRange
+
+  highp vec4 cc_global_lightPos[GLOBAL_LIGHTS_PER_PASS]; // xyz: pos, w: valid light type[0: directional light, 1: sphere light, 2: spot light, 3: point light, 4: ranged dir light, 5: unkown]
+  vec4 cc_global_lightColor[GLOBAL_LIGHTS_PER_PASS]; // xyz: color, w: intensity
+  vec4 cc_global_lightSizeRangeAngle[GLOBAL_LIGHTS_PER_PASS]; // x: size, y: range, z: cos(half outterAngle), w: enable shadow; ranged dir light: xyz is right
+  vec4 cc_global_lightDir[GLOBAL_LIGHTS_PER_PASS]; // xyz: dir, w: unused
+  vec4 cc_global_lightBoundingSizeVS[GLOBAL_LIGHTS_PER_PASS]; //xyz: ranged dir light node half scale
 };
+
+#if !CC_FORWARD_ADD && GLOBAL_LIGHTING_PASS
+  #define cc_lightPos cc_global_lightPos
+  #define cc_lightColor cc_global_lightColor
+  #define cc_lightSizeRangeAngle cc_global_lightSizeRangeAngle
+  #define cc_lightDir cc_global_lightDir
+  #define cc_lightBoundingSizeVS cc_global_lightBoundingSizeVS
+#endif

@@ -308,7 +308,16 @@ export class UBOCSM {
     public static readonly CSM_PROJ_DEPTH_INFO_OFFSET = UBOCSM.MAT_CSM_VIEW_PROJ_OFFSET + 16 * UBOCSM.CSM_LEVEL_COUNT;
     public static readonly CSM_PROJ_INFO_OFFSET = UBOCSM.CSM_PROJ_DEPTH_INFO_OFFSET + 4 * UBOCSM.CSM_LEVEL_COUNT;
     public static readonly CSM_SPLITS_INFO_OFFSET = UBOCSM.CSM_PROJ_INFO_OFFSET + 4 * UBOCSM.CSM_LEVEL_COUNT;
-    public static readonly COUNT: number = UBOCSM.CSM_SPLITS_INFO_OFFSET + 4;
+    
+    public static readonly GLOBAL_LIGHTS_PER_PASS = 8;
+    public static readonly LIGHT_POS_OFFSET = UBOCSM.CSM_SPLITS_INFO_OFFSET + 4;
+    public static readonly LIGHT_COLOR_OFFSET = UBOCSM.LIGHT_POS_OFFSET + UBOCSM.GLOBAL_LIGHTS_PER_PASS * 4;
+    public static readonly LIGHT_SIZE_RANGE_ANGLE_OFFSET = UBOCSM.LIGHT_COLOR_OFFSET + UBOCSM.GLOBAL_LIGHTS_PER_PASS * 4;
+    public static readonly LIGHT_DIR_OFFSET = UBOCSM.LIGHT_SIZE_RANGE_ANGLE_OFFSET + UBOCSM.GLOBAL_LIGHTS_PER_PASS * 4;
+    public static readonly LIGHT_BOUNDING_SIZE_VS_OFFSET = UBOCSM.LIGHT_DIR_OFFSET + UBOCSM.GLOBAL_LIGHTS_PER_PASS * 4;
+    public static readonly COUNT = UBOCSM.LIGHT_BOUNDING_SIZE_VS_OFFSET + UBOCSM.GLOBAL_LIGHTS_PER_PASS * 4;
+
+    // public static readonly COUNT: number = UBOCSM.CSM_SPLITS_INFO_OFFSET + 4;
     public static readonly SIZE = UBOCSM.COUNT * 4;
 
     public static readonly NAME = 'CCCSM';
@@ -323,6 +332,12 @@ export class UBOCSM {
         new Uniform('cc_csmProjDepthInfo', Type.FLOAT4, UBOCSM.CSM_LEVEL_COUNT),
         new Uniform('cc_csmProjInfo', Type.FLOAT4, UBOCSM.CSM_LEVEL_COUNT),
         new Uniform('cc_csmSplitsInfo', Type.FLOAT4, 1),
+
+        new Uniform('cc_global_lightPos', Type.FLOAT4, UBOCSM.GLOBAL_LIGHTS_PER_PASS),
+        new Uniform('cc_global_lightColor', Type.FLOAT4, UBOCSM.GLOBAL_LIGHTS_PER_PASS),
+        new Uniform('cc_global_lightSizeRangeAngle', Type.FLOAT4, UBOCSM.GLOBAL_LIGHTS_PER_PASS),
+        new Uniform('cc_global_lightDir', Type.FLOAT4, UBOCSM.GLOBAL_LIGHTS_PER_PASS),
+        new Uniform('cc_global_lightBoundingSizeVS', Type.FLOAT4, UBOCSM.GLOBAL_LIGHTS_PER_PASS),
     ], 1);
 }
 globalDescriptorSetLayout.layouts[UBOCSM.NAME] = UBOCSM.LAYOUT;

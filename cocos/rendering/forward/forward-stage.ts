@@ -166,7 +166,7 @@ export class ForwardStage extends RenderStage {
         }
 
         this._instancedQueue.uploadBuffers(cmdBuff);
-        this._additiveLightQueue.gatherLightPasses(camera, cmdBuff);
+        // this._additiveLightQueue.gatherLightPasses(camera, cmdBuff);
         this._planarQueue.gatherShadowPasses(camera, cmdBuff);
 
         if (camera.clearFlag & ClearFlagBit.COLOR) {
@@ -190,7 +190,7 @@ export class ForwardStage extends RenderStage {
 
         this._instancedQueue.recordCommandBuffer(device, renderPass, cmdBuff);
 
-        this._additiveLightQueue.recordCommandBuffer(device, renderPass, cmdBuff);
+        // this._additiveLightQueue.recordCommandBuffer(device, renderPass, cmdBuff);
 
         cmdBuff.bindDescriptorSet(SetIndex.GLOBAL, pipeline.descriptorSet);
         this._planarQueue.recordCommandBuffer(device, renderPass, cmdBuff);

@@ -193,7 +193,7 @@ void ForwardStage::render(scene::Camera *camera) {
     pipeline->getPipelineUBO()->updateShadowUBO(camera);
 
     _instancedQueue->uploadBuffers(cmdBuff);
-    _additiveLightQueue->gatherLightPasses(camera, cmdBuff);
+    //_additiveLightQueue->gatherLightPasses(camera, cmdBuff);
     _planarShadowQueue->gatherShadowPasses(camera, cmdBuff);
 
     auto framebuffer = camera->getWindow()->getFramebuffer();
@@ -220,7 +220,7 @@ void ForwardStage::render(scene::Camera *camera) {
     if (!_pipeline->getPipelineSceneData()->getRenderObjects().empty()) {
         _renderQueues[0]->recordCommandBuffer(_device, camera, renderPass, cmdBuff);
         _instancedQueue->recordCommandBuffer(_device, renderPass, cmdBuff);
-        _additiveLightQueue->recordCommandBuffer(_device, camera, renderPass, cmdBuff);
+        //_additiveLightQueue->recordCommandBuffer(_device, camera, renderPass, cmdBuff);
 
         cmdBuff->bindDescriptorSet(globalSet, _pipeline->getDescriptorSet(), 1, &offset);
         _planarShadowQueue->recordCommandBuffer(_device, renderPass, cmdBuff);

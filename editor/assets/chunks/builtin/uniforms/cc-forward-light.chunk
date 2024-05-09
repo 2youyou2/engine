@@ -6,6 +6,8 @@
   #define LIGHTS_PER_PASS 10
 #endif
 
+#if CC_FORWARD_ADD
+
 #if CC_ENABLE_CLUSTERED_LIGHT_CULLING == 0
 #pragma builtin(local)
 layout(set = 2, binding = 1) uniform CCForwardLight {
@@ -15,4 +17,6 @@ layout(set = 2, binding = 1) uniform CCForwardLight {
   vec4 cc_lightDir[LIGHTS_PER_PASS]; // xyz: dir, w: unused
   vec4 cc_lightBoundingSizeVS[LIGHTS_PER_PASS]; //xyz: ranged dir light node half scale
 };
+#endif
+
 #endif

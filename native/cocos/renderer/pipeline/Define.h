@@ -518,7 +518,16 @@ struct CC_DLL UBOCSM {
     static constexpr uint32_t CSM_PROJ_DEPTH_INFO_LEVELS_OFFSET = UBOCSM::MAT_CSM_VIEW_PROJ_LEVELS_OFFSET + 16 * UBOCSM::CSM_LEVEL_COUNT;
     static constexpr uint32_t CSM_PROJ_INFO_LEVELS_OFFSET = UBOCSM::CSM_PROJ_DEPTH_INFO_LEVELS_OFFSET + 4 * UBOCSM::CSM_LEVEL_COUNT;
     static constexpr uint32_t CSM_SPLITS_INFO_OFFSET = UBOCSM::CSM_PROJ_INFO_LEVELS_OFFSET + 4 * UBOCSM::CSM_LEVEL_COUNT;
-    static constexpr uint32_t COUNT = UBOCSM::CSM_SPLITS_INFO_OFFSET + 4;
+
+    static constexpr uint32_t GLOBAL_LIGHTS_PER_PASS = 8;
+    static constexpr uint32_t LIGHT_POS_OFFSET = UBOCSM::CSM_SPLITS_INFO_OFFSET + 4;
+    static constexpr uint32_t LIGHT_COLOR_OFFSET = UBOCSM::LIGHT_POS_OFFSET + UBOCSM::GLOBAL_LIGHTS_PER_PASS * 4;
+    static constexpr uint32_t LIGHT_SIZE_RANGE_ANGLE_OFFSET = UBOCSM::LIGHT_COLOR_OFFSET + UBOCSM::GLOBAL_LIGHTS_PER_PASS * 4;
+    static constexpr uint32_t LIGHT_DIR_OFFSET = UBOCSM::LIGHT_SIZE_RANGE_ANGLE_OFFSET + UBOCSM::GLOBAL_LIGHTS_PER_PASS * 4;
+    static constexpr uint32_t LIGHT_BOUNDING_SIZE_VS_OFFSET = UBOCSM::LIGHT_DIR_OFFSET + UBOCSM::GLOBAL_LIGHTS_PER_PASS * 4;
+    static constexpr uint32_t COUNT = UBOCSM::LIGHT_BOUNDING_SIZE_VS_OFFSET + UBOCSM::GLOBAL_LIGHTS_PER_PASS * 4;
+
+    //static constexpr uint32_t COUNT = UBOCSM::CSM_SPLITS_INFO_OFFSET + 4;
     static constexpr uint32_t SIZE = UBOCSM::COUNT * 4;
     static constexpr uint32_t BINDING = static_cast<uint32_t>(PipelineGlobalBindings::UBO_CSM);
     static const gfx::DescriptorSetLayoutBinding DESCRIPTOR;
