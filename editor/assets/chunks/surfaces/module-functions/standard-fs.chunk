@@ -281,26 +281,26 @@ void CCSurfacesInitializeLightingResult(inout LightingResult lightingResult)
 void CCSurfacesAccumulateLightingResult(inout LightingResult lightingResultAccumulated, in LightingResult lightingResult)
 {
   lightingResultAccumulated.directDiffuse += lightingResult.directDiffuse * lightingResult.shadow;
-  // lightingResultAccumulated.directSpecular += lightingResult.directSpecular * lightingResult.shadow * lightingResult.directGF * lightingResult.fresnel;
+  lightingResultAccumulated.directSpecular += lightingResult.directSpecular * lightingResult.shadow * lightingResult.directGF * lightingResult.fresnel;
 
-  // #if CC_SURFACES_LIGHTING_USE_MULTIPLE_LAYER_BLEND
-  //   lightingResultAccumulated.directDiffuseSubLayers += lightingResult.directDiffuseSubLayers * lightingResult.shadow;
-  //   lightingResultAccumulated.directSpecularSubLayers += lightingResult.directSpecularSubLayers * lightingResult.shadow;
-  // #endif
+  #if CC_SURFACES_LIGHTING_USE_MULTIPLE_LAYER_BLEND
+    lightingResultAccumulated.directDiffuseSubLayers += lightingResult.directDiffuseSubLayers * lightingResult.shadow;
+    lightingResultAccumulated.directSpecularSubLayers += lightingResult.directSpecularSubLayers * lightingResult.shadow;
+  #endif
 
-  // #if CC_SURFACES_LIGHTING_TRANSMIT_SPECULAR
-  //   lightingResultAccumulated.directTransmitSpecular += lightingResult.directTransmitSpecular * (vec3(1.0) - lightingResult.fresnel);
-  // #endif
-  // #if CC_SURFACES_LIGHTING_TRANSMIT_DIFFUSE
-  //   lightingResultAccumulated.directTransmitDiffuse += lightingResult.directTransmitDiffuse;
-  // #endif
-  // #if CC_SURFACES_LIGHTING_2ND_LAYER_SPECULAR
-  //   lightingResultAccumulated.direct2ndSpecular += lightingResult.direct2ndSpecular * lightingResult.shadow * lightingResult.directGF2ndSpecular * lightingResult.fresnel;
-  // #endif
-  // #if CC_SURFACES_LIGHTING_TT
-  //   lightingResultAccumulated.directTT += lightingResult.directTT * lightingResult.shadow;
-  //   lightingResultAccumulated.diffuseColorWithLightingTT = lightingResult.diffuseColorWithLightingTT;
-  // #endif
+  #if CC_SURFACES_LIGHTING_TRANSMIT_SPECULAR
+    lightingResultAccumulated.directTransmitSpecular += lightingResult.directTransmitSpecular * (vec3(1.0) - lightingResult.fresnel);
+  #endif
+  #if CC_SURFACES_LIGHTING_TRANSMIT_DIFFUSE
+    lightingResultAccumulated.directTransmitDiffuse += lightingResult.directTransmitDiffuse;
+  #endif
+  #if CC_SURFACES_LIGHTING_2ND_LAYER_SPECULAR
+    lightingResultAccumulated.direct2ndSpecular += lightingResult.direct2ndSpecular * lightingResult.shadow * lightingResult.directGF2ndSpecular * lightingResult.fresnel;
+  #endif
+  #if CC_SURFACES_LIGHTING_TT
+    lightingResultAccumulated.directTT += lightingResult.directTT * lightingResult.shadow;
+    lightingResultAccumulated.diffuseColorWithLightingTT = lightingResult.diffuseColorWithLightingTT;
+  #endif
 }
 
 

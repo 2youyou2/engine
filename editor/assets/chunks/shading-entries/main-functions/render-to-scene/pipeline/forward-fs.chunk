@@ -154,13 +154,13 @@ void main()  {
 
   #if GLOBAL_LIGHTING_PASS  
     LightingResult lightingResultAdd;
-    CCSurfacesLightingAdditive(lightingResultAdd, surfaceData, shadowBias);
-    vec4 colorAdd = CCSurfacesShadingAdditive(surfaceData, lightingResultAdd);
+    vec4 colorAdd = CCSurfacesLightingAdditive(lightingResultAdd, surfaceData, shadowBias);
+    // colorAdd = CCSurfacesShadingAdditive(surfaceData, lightingResultAdd);
     // #if !CC_USE_FLOAT_OUTPUT || CC_IS_TRANSPARENCY_PASS
     //   colorAdd.rgb = HDRToLDR(colorAdd.rgb);
     //   colorAdd.rgb = LinearToSRGB(colorAdd.rgb);
     // #endif
-    color = colorAdd;
+    color += colorAdd;
   #endif
 
   fragColorX = color;
