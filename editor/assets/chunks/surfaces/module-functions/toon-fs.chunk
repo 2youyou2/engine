@@ -118,13 +118,22 @@ void CCSurfacesAccumulateLightingResult(inout LightingResult lightingResultAccum
   }
 #endif
 
+vec4 CCSurfacesShadingAdditive(in SurfacesMaterialData surfaceData, in LightingResult lightingResult)
+{
+  vec4 color = vec4(0.);
+
+  color.xyz += lightingResult.directDiffuse * lightingResult.diffuseColorWithLighting;
+  color.xyz += lightingResult.directSpecular * lightingResult.specularColorWithLighting;
+
+  return color;
+}
+
 // Shading
 vec4 CCSurfacesShading(in SurfacesMaterialData surfaceData, in LightingResult lightingResult)
 {
   vec4 color = vec4(0.0, 0.0, 0.0, surfaceData.baseColor.a);
 #if CC_FORWARD_ADD
-  color.xyz += lightingResult.directDiffuse * lightingResult.diffuseColorWithLighting;
-  color.xyz += lightingResult.directSpecular * lightingResult.specularColorWithLighting;
+  color.xyz += CCSurfacesShadingAdditive(surfaceData, lightingResult).rgb;
 #else
   float lightmapCoef = 0.0;
 

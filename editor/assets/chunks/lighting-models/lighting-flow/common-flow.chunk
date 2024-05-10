@@ -322,9 +322,9 @@
       #endif
 
 
-      #if GLOBAL_LIGHTING_PASS
-        CCSurfacesLightingAdditive(lightingResult, surfaceData, shadowBias);
-      #endif
+      // #if GLOBAL_LIGHTING_PASS
+      //   CCSurfacesLightingAdditive(lightingResult, surfaceData, shadowBias);
+      // #endif
     }
     #if CC_ENABLE_CLUSTERED_LIGHT_CULLING
       // #todo: cluster related lighting flow, invoke after CCSurfacesLighting

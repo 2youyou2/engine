@@ -320,13 +320,10 @@ void CCSurfacesAccumulateLightingResult(inout LightingResult lightingResultAccum
   }
 #endif
 
-
-// Shading
-vec4 CCSurfacesShading(in SurfacesMaterialData surfaceData, in LightingResult lightingResult)
+vec4 CCSurfacesShadingAdditive(in SurfacesMaterialData surfaceData, in LightingResult lightingResult)
 {
-  vec4 color = vec4(0.0, 0.0, 0.0, surfaceData.baseColor.a);
+  vec4 color = vec4(0.);
 
-#if CC_FORWARD_ADD
   // shadow and fresnel has already been applied with common flow
   color.xyz += lightingResult.directDiffuse * lightingResult.diffuseColorWithLighting
     + lightingResult.directSpecular * lightingResult.specularColorWithLighting * lightingResult.directGF
@@ -349,6 +346,16 @@ vec4 CCSurfacesShading(in SurfacesMaterialData surfaceData, in LightingResult li
   #endif
   ;
 
+  return color;
+}
+
+// Shading
+vec4 CCSurfacesShading(in SurfacesMaterialData surfaceData, in LightingResult lightingResult)
+{
+  vec4 color = vec4(0.0, 0.0, 0.0, surfaceData.baseColor.a);
+
+#if CC_FORWARD_ADD
+  color.rgb += CCSurfacesShadingAdditive(surfaceData, lightingResult).rgb;
 #else
   vec3 fresnel = lightingResult.fresnel;
   vec3 invFresnel = vec3(1.0) - fresnel;
