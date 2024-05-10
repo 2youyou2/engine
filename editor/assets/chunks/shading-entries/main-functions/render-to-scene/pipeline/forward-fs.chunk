@@ -117,14 +117,6 @@ void main()  {
   vec4 color = CCSurfacesShading(surfaceData, lightingResult);
 
 
-  #if GLOBAL_LIGHTING_PASS  
-    LightingResult lightingResultAdd;
-    CCSurfacesLightingAdditive(lightingResultAdd, surfaceData, shadowBias);
-    vec4 colorAdd = CCSurfacesShadingAdditive(surfaceData, lightingResultAdd);
-    color = colorAdd;
-  #endif
-
-
   // #if CC_USE_DEBUG_VIEW && CC_SURFACES_ENABLE_DEBUG_VIEW
   //   // CSM Debug
   //   if (IS_DEBUG_VIEW_MISC_ENABLE_CSM_LAYER_COLORATION) {
@@ -158,6 +150,17 @@ void main()  {
       color.rgb = HDRToLDR(color.rgb);
       color.rgb = LinearToSRGB(color.rgb);
     #endif
+  #endif
+
+  #if GLOBAL_LIGHTING_PASS  
+    LightingResult lightingResultAdd;
+    CCSurfacesLightingAdditive(lightingResultAdd, surfaceData, shadowBias);
+    vec4 colorAdd = CCSurfacesShadingAdditive(surfaceData, lightingResultAdd);
+    // #if !CC_USE_FLOAT_OUTPUT || CC_IS_TRANSPARENCY_PASS
+    //   colorAdd.rgb = HDRToLDR(colorAdd.rgb);
+    //   colorAdd.rgb = LinearToSRGB(colorAdd.rgb);
+    // #endif
+    color = colorAdd;
   #endif
 
   fragColorX = color;

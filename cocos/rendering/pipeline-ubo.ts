@@ -236,7 +236,7 @@ export class PipelineUBO {
         for (let i = 0; i < UBOForwardLight.GLOBAL_LIGHTS_PER_PASS; i++) {
             let offset = i * 4;
             _vec4Array[3] = 1000; // set unused light type
-            bufferView.set(_vec4Array, offset + UBOForwardLight.LIGHT_SIZE_RANGE_ANGLE_OFFSET);
+            bufferView.set(_vec4Array, offset + UBOForwardLight.LIGHT_POS_OFFSET);
         }
 
         for (let l = 0; l < validPunctualLights.length; l++) {

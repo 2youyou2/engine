@@ -1,8 +1,10 @@
 #if (CC_PIPELINE_TYPE == CC_PIPELINE_TYPE_FORWARD || CC_FORCE_FORWARD_SHADING)
   #if CC_FORWARD_ADD || GLOBAL_LIGHTING_PASS
   
-  void CCSurfacesLightingAdditive(inout LightingResult lightingResultAccumulated, in SurfacesMaterialData surfaceData, in vec2 shadowBias)
+  vec4 CCSurfacesLightingAdditive(inout LightingResult lightingResultAccumulated, in SurfacesMaterialData surfaceData, in vec2 shadowBias)
   {
+    vec4 color;
+
     vec3 worldPos;
     HIGHP_VALUE_FROM_STRUCT_DEFINED(worldPos, surfaceData.worldPos);
 
@@ -163,7 +165,18 @@
 
       // accumulate per-light results
       CCSurfacesAccumulateLightingResult(lightingResultAccumulated, lightingResult);
+
+      // #if GLOBAL_LIGHTING_PASS
+      //   vec4 colorAdd = CCSurfacesShadingAdditive(surfaceData, lightingResultAccumulated);
+      //   #if !CC_USE_FLOAT_OUTPUT || CC_IS_TRANSPARENCY_PASS
+      //     colorAdd.rgb = HDRToLDR(colorAdd.rgb);
+      //     colorAdd.rgb = LinearToSRGB(colorAdd.rgb);
+      //   #endif
+      //   color += colorAdd;
+      // #endif
     }
+
+    return color;
   }
 
   #endif
