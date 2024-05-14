@@ -44,6 +44,15 @@
         continue;
       }
 
+      float testLight = 1.;
+      for (int l = 0; l < 4; l++) {
+        testLight *= cc_globalLightIndices[l] - float(i);
+      }
+
+      if (testLight != 0.) {
+        continue;
+      }
+
       vec3 lightDirWithLength = IS_RANGED_DIRECTIONAL_LIGHT(cc_lightPos[i].w) ? -normalize(cc_lightDir[i].xyz) : cc_lightPos[i].xyz - worldPos;
       
       float distToLightSqr = dot(lightDirWithLength, lightDirWithLength);

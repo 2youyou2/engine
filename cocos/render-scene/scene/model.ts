@@ -1160,6 +1160,30 @@ export class Model {
         this._localDataUpdated = true;
     }
 
+    updateLightIndices () {
+        const sv = this._localData;
+        const sceneData = (cclegacy.director.root as Root).pipeline.pipelineSceneData;
+        const lights = sceneData.validPunctualLights;
+
+        let idx = 0;
+
+        for (let i = 0; i < 4; i++) {
+            sv[UBOLocal.GLOBAL_LIGHTING_INDICES + i] = -1;
+        }
+
+        for (let i = 0; i < lights.length; i++) {
+            let l = lights[i];
+            if (((l.visibility & this.node.layer) === this.node.layer)) {
+                sv[UBOLocal.GLOBAL_LIGHTING_INDICES + idx++] = i;
+                if (idx > 3) {
+                    break;
+                }
+            }
+        }
+
+        this._localDataUpdated = true;
+    }
+
     /**
      * @en Return shader's macro patches
      * @zh 获取 shader 宏

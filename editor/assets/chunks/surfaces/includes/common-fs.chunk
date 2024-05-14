@@ -14,6 +14,7 @@
 
 // Uniforms--UBO
 #include <builtin/uniforms/cc-global>
+#include <builtin/uniforms/cc-local>
 #include <common/debug/debug-view-define>
 #if (CC_PIPELINE_TYPE == CC_PIPELINE_TYPE_FORWARD || CC_FORCE_FORWARD_SHADING)
   #if CC_FORWARD_ADD

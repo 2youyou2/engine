@@ -394,7 +394,8 @@ export class UBOLocal {
     public static readonly REFLECTION_PROBE_DATA2 = UBOLocal.REFLECTION_PROBE_DATA1 + 4;
     public static readonly REFLECTION_PROBE_BLEND_DATA1 = UBOLocal.REFLECTION_PROBE_DATA2 + 4;
     public static readonly REFLECTION_PROBE_BLEND_DATA2 = UBOLocal.REFLECTION_PROBE_BLEND_DATA1 + 4;
-    public static readonly COUNT = UBOLocal.REFLECTION_PROBE_BLEND_DATA2 + 4;
+    public static readonly GLOBAL_LIGHTING_INDICES = UBOLocal.REFLECTION_PROBE_BLEND_DATA2 + 4;
+    public static readonly COUNT = UBOLocal.GLOBAL_LIGHTING_INDICES + 4;
     public static readonly SIZE = UBOLocal.COUNT * 4;
 
     public static readonly NAME = 'CCLocal';
@@ -409,6 +410,7 @@ export class UBOLocal {
         new Uniform('cc_reflectionProbeData2', Type.FLOAT4, 1),
         new Uniform('cc_reflectionProbeBlendData1', Type.FLOAT4, 1),
         new Uniform('cc_reflectionProbeBlendData2', Type.FLOAT4, 1),
+        new Uniform('cc_globalLightIndices', Type.FLOAT4, 1),
     ], 1);
 }
 localDescriptorSetLayout.layouts[UBOLocal.NAME] = UBOLocal.LAYOUT;
