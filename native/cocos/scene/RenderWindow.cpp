@@ -109,7 +109,8 @@ bool RenderWindow::initialize(gfx::Device *device, IRenderWindowInfo &info) {
 
 void RenderWindow::setFrameBuffer(gfx::Framebuffer *fb) {
     _frameBuffer = fb;
-    for (auto *tex : fb->getColorTextures()) {
+    if (fb != nullptr) {
+        for (auto *tex : fb->getColorTextures()) {
         if (tex == nullptr) continue;
 
         _width = tex->getWidth();
@@ -118,6 +119,13 @@ void RenderWindow::setFrameBuffer(gfx::Framebuffer *fb) {
         _colorTextures.pushBack(tex);
     }
     _depthStencilTexture = fb->getDepthStencilTexture();
+    }
+    else {
+        _depthStencilTexture = nullptr;
+        _colorTextures.clear();
+        _width = 0;
+        _height = 0;
+    }
 }
 
 void RenderWindow::destroy() {
