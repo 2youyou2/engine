@@ -23,7 +23,7 @@
 */
 
 // Copyright (c) 2017-2020 Xiamen Yaji Software Co., Ltd.
-import { EDITOR } from 'internal:constants';
+import { EDITOR, JSB } from 'internal:constants';
 import { builtinResMgr } from '../../asset/asset-manager/builtin-res-mgr';
 import { Material } from '../../asset/assets/material';
 import { RenderingSubMesh } from '../../asset/assets/rendering-sub-mesh';
@@ -49,6 +49,7 @@ import { ReflectionProbeType } from '../../3d/reflection-probe/reflection-probe-
 import { LightType } from './light';
 
 const m4_1 = new Mat4();
+const tempLightIndices: number[] = [];
 
 const shadowMapPatches: IMacroPatch[] = [
     { name: 'CC_RECEIVE_SHADOW', value: true },
@@ -1171,6 +1172,10 @@ export class Model {
     }
 
     updateLightIndices () {
+        if (!this.node) {
+            return;
+        }
+
         const sv = this._localData;
         const sceneData = (cclegacy.director.root as Root).pipeline.pipelineSceneData;
         const lights = sceneData.validPunctualLights;
@@ -1202,7 +1207,29 @@ export class Model {
             }
         }
 
+        for (let i = 0; i < 4; i++) {
+            tempLightIndices[i] = sv[UBOLocal.GLOBAL_LIGHTING_INDICES + i];
+        }
+
+        // if (JSB) {
+        //     this._setInstancedAttribute(name, value);
+        // } else {
+            const subModels = this.subModels;
+            for (let i = 0; i < subModels.length; i++) {
+                const subModel = subModels[i];
+                const { attributes, views } = subModel.instancedAttributeBlock;
+                for (let i = 0; i < attributes.length; i++) {
+                    if (attributes[i].name === 'a_globalLightIndices') {
+                        views[i].set(tempLightIndices);
+                        break;
+                    }
+                }
+            }
+        // }
+
         this._localDataUpdated = true;
+
+        this.updateUBOs(0);
     }
 
     /**

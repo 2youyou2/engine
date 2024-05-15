@@ -217,6 +217,13 @@ void ForwardStage::render(scene::Camera *camera) {
     auto offset = _pipeline->getPipelineUBO()->getCurrentCameraUBOOffset();
 
     cmdBuff->bindDescriptorSet(globalSet, _pipeline->getDescriptorSet(), 1, &offset);
+
+    //auto ros = _pipeline->getPipelineSceneData()->getRenderObjects();
+    //for (auto i = ros.begin(); i != ros.end(); i++) {
+    //    auto& ro = *i;
+    //    ro.model->updateLightIndices();
+    //}
+
     if (!_pipeline->getPipelineSceneData()->getRenderObjects().empty()) {
         _renderQueues[0]->recordCommandBuffer(_device, camera, renderPass, cmdBuff);
         _instancedQueue->recordCommandBuffer(_device, renderPass, cmdBuff);

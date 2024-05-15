@@ -151,6 +151,8 @@ public:
     void updateReflectionProbeDataMap(Texture2D *texture);
     void updateReflectionProbeBlendCubemap(TextureCube *texture);
 
+    void updateLightIndices();
+
     inline void attachToScene(RenderScene *scene) {
         _scene = scene;
         _localDataUpdated = true;
@@ -301,6 +303,8 @@ protected:
 
     Vec4 _shadowBias{0.F, 0.F, -1.F, -1.F};
     Vec4 _lightmapUVParam;
+    Vec4 _lightIndices;
+    float _lightIndicesArray[4];
 
     // For JS
     // CallbacksInvoker _eventProcessor;

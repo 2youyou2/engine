@@ -1004,22 +1004,6 @@ export class MeshRenderer extends ModelRenderer {
         this._model.enabled = true;
     }
 
-    protected _onUpdateLightIndices () {
-        if (!this.model) {
-            return;
-        }
-        this.model.updateLightIndices();
-
-        let sv = this.model!._localData;
-
-        this.setInstancedAttribute('a_globalLightIndices', [
-            sv[UBOLocal.GLOBAL_LIGHTING_INDICES + 0],
-            sv[UBOLocal.GLOBAL_LIGHTING_INDICES + 1],
-            sv[UBOLocal.GLOBAL_LIGHTING_INDICES + 2],
-            sv[UBOLocal.GLOBAL_LIGHTING_INDICES + 3],
-        ]);
-    }
-
     protected _onUpdateLightingmap (): void {
         if (this.model !== null) {
             this.model.updateLightingmap(this.bakeSettings.texture, this.bakeSettings.uvParam);

@@ -42,6 +42,8 @@
 #include "scene/ReflectionProbeManager.h"
 #include "scene/RenderScene.h"
 #include "scene/SubModel.h"
+#include "scene/SphereLight.h"
+#include "scene/SpotLight.h"
 
 namespace {
 const cc::gfx::SamplerInfo LIGHTMAP_SAMPLER_HASH{
@@ -160,6 +162,14 @@ void Model::updateWorldBoundsForJSBakedSkinningModel(geometry::AABB *aabb) {
     _worldBoundsDirty = true;
 }
 
+bool cullSphereLight(const scene::SphereLight *light, const scene::Model *model) {
+    return model->getWorldBounds() && !model->getWorldBounds()->aabbAabb(light->getAABB());
+}
+
+bool cullSpotLight(const scene::SpotLight *light, const scene::Model *model) {
+    return model->getWorldBounds() && (!model->getWorldBounds()->aabbAabb(light->getAABB()) || !model->getWorldBounds()->aabbFrustum(light->getFrustum()));
+}
+
 void Model::updateUBOs(uint32_t stamp) {
     CC_PROFILE(ModelUpdateUBOs);
     if (isModelImplementedInJS()) {
@@ -240,11 +250,44 @@ void Model::updateUBOs(uint32_t stamp) {
             }
         }
 
+
         _localBuffer->update();
         const bool enableOcclusionQuery = Root::getInstance()->getPipeline()->isOcclusionQueryEnabled();
         if (enableOcclusionQuery) {
             updateWorldBoundUBOs();
         }
+
+        const ccstd::vector<const scene::Light *> &lights = pipeline->getPipelineSceneData()->getValidPunctualLights();
+
+        int idx = 0;
+
+        for (int i = 0; i < 4; i++) {
+            _lightIndicesArray[i] = -1;
+        }
+
+        for (int i = 0; i < lights.size(); i++) {
+            auto l = lights.at(i);
+            if (((l->getVisibility() & _node->getLayer()) == _node->getLayer())) {
+                if (l->getType() == cc::scene::LightType::SPHERE) {
+                    if (cullSphereLight((scene::SphereLight*)l, this)) {
+                        continue;
+                    }
+                } else if (l->getType() == cc::scene::LightType::SPOT) {
+                    if (cullSpotLight((scene::SpotLight *)l, this)) {
+                        continue;
+                    }
+                }
+
+                _lightIndicesArray[idx++] = i;
+                if (idx > 3) {
+                    break;
+                }
+            }
+        }
+
+        _lightIndices.set(_lightIndicesArray[0], _lightIndicesArray[1], _lightIndicesArray[2], _lightIndicesArray[3]);
+
+        _localBuffer->write(_lightIndices, sizeof(float) * pipeline::UBOLocal::GLOBAL_LIGHTING_INDICES);
     }
 }
 
@@ -548,6 +591,14 @@ void Model::initLocalDescriptors(index_t /*subModelIndex*/) {
                                               pipeline::UBOLocal::SIZE,
                                               gfx::BufferFlagBit::ENABLE_STAGING_WRITE});
     }
+}
+
+void Model::updateLightIndices() {
+    if (_node == nullptr) {
+        return;
+    }
+
+    _localDataUpdated = true;
 }
 
 void Model::initLocalSHDescriptors(index_t /*subModelIndex*/) {
