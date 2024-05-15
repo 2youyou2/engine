@@ -41,7 +41,7 @@ import { settings, Settings } from '../../core/settings';
 import { ReflectionProbeType } from '../reflection-probe/reflection-probe-enum';
 import { getPhaseID } from '../../rendering/pass-phase';
 import { SubModel } from '../../render-scene/scene';
-import { isEnableEffect } from '../../rendering/define';
+import { UBOLocal, isEnableEffect } from '../../rendering/define';
 import type { Model } from '../../render-scene/scene';
 
 const { ccclass, help, executeInEditMode, executionOrder, menu, visible, type,
@@ -1002,6 +1002,22 @@ export class MeshRenderer extends ModelRenderer {
             }
         }
         this._model.enabled = true;
+    }
+
+    protected _onUpdateLightIndices () {
+        if (!this.model) {
+            return;
+        }
+        this.model.updateLightIndices();
+
+        let sv = this.model!._localData;
+
+        this.setInstancedAttribute('a_globalLightIndices', [
+            sv[UBOLocal.GLOBAL_LIGHTING_INDICES + 0],
+            sv[UBOLocal.GLOBAL_LIGHTING_INDICES + 1],
+            sv[UBOLocal.GLOBAL_LIGHTING_INDICES + 2],
+            sv[UBOLocal.GLOBAL_LIGHTING_INDICES + 3],
+        ]);
     }
 
     protected _onUpdateLightingmap (): void {

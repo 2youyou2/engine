@@ -46,6 +46,7 @@ import { TextureCube } from '../../asset/assets';
 import { ShadowType } from './shadows';
 import { ProbeType, ReflectionProbe } from './reflection-probe';
 import { ReflectionProbeType } from '../../3d/reflection-probe/reflection-probe-enum';
+import { LightType } from './light';
 
 const m4_1 = new Mat4();
 
@@ -96,6 +97,15 @@ const lightmapSamplerWithMipHash = new SamplerInfo(
     Address.CLAMP,
     Address.CLAMP,
 );
+
+function cullSphereLight (light, model: Model): boolean {
+    return !!(model.worldBounds && !geometry.intersect.aabbWithAABB(model.worldBounds, light.aabb));
+}
+
+function cullSpotLight (light, model: Model): boolean {
+    return !!(model.worldBounds
+        && (!geometry.intersect.aabbWithAABB(model.worldBounds, light.aabb) || !geometry.intersect.aabbFrustum(model.worldBounds, light.frustum)));
+}
 
 /**
  * @en A representation of a model instance
@@ -1174,6 +1184,17 @@ export class Model {
         for (let i = 0; i < lights.length; i++) {
             let l = lights[i];
             if (((l.visibility & this.node.layer) === this.node.layer)) {
+                if (l.type === LightType.SPHERE) {
+                    if (cullSphereLight(l, this)) {
+                        continue;
+                    }
+                }
+                else if (l.type === LightType.SPOT) {
+                    if (cullSpotLight(l, this)) {
+                        continue;
+                    }
+                }
+
                 sv[UBOLocal.GLOBAL_LIGHTING_INDICES + idx++] = i;
                 if (idx > 3) {
                     break;

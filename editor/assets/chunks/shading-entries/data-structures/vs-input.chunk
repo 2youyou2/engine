@@ -49,6 +49,9 @@ layout(location = 2) in vec2 a_texCoord;
     in vec4 a_sh_linear_const_g;
     in vec4 a_sh_linear_const_b;
   #endif
+
+  in vec4 a_globalLightIndices;
+
 #endif
 
 #if CC_USE_MORPH

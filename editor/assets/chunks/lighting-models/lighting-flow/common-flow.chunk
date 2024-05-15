@@ -1,6 +1,9 @@
 #if (CC_PIPELINE_TYPE == CC_PIPELINE_TYPE_FORWARD || CC_FORCE_FORWARD_SHADING)
   #if CC_FORWARD_ADD || GLOBAL_LIGHTING_PASS
   
+
+  in vec4 v_globalLightIndices;
+
   vec4 CCSurfacesLightingAdditive(inout LightingResult lightingResultAccumulated, in SurfacesMaterialData surfaceData, in vec2 shadowBias)
   {
     vec4 color;
@@ -46,10 +49,11 @@
 
       float testLight = 1.;
       for (int l = 0; l < 4; l++) {
-        testLight *= cc_globalLightIndices[l] - float(i);
+        testLight *= v_globalLightIndices[l] - float(i);
       }
 
-      if (testLight != 0.) {
+      // 没有等于 i 的 light indices
+      if (abs(testLight) > 0.001) {
         continue;
       }
 

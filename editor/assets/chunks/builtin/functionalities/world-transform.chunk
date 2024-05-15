@@ -1,5 +1,15 @@
 #include <builtin/uniforms/cc-local-batched>
 
+out vec4 v_globalLightIndices;
+void CCGetLightIndices(out vec4 indices)
+{
+  #if USE_INSTANCING
+    indices = a_globalLightIndices;
+  #else
+    indices = cc_globalLightIndices;
+  #endif
+}
+
 void CCGetWorldMatrix(out mat4 matWorld)
 {
   #if USE_INSTANCING
@@ -12,7 +22,10 @@ void CCGetWorldMatrix(out mat4 matWorld)
   #else
     matWorld = cc_matWorld;
   #endif
+
+  CCGetLightIndices(v_globalLightIndices);
 }
+
 
 void CCGetWorldMatrixFull(out mat4 matWorld, out mat4 matWorldIT)
 {
@@ -37,4 +50,6 @@ void CCGetWorldMatrixFull(out mat4 matWorld, out mat4 matWorldIT)
     matWorld = cc_matWorld;
     matWorldIT = cc_matWorldIT;
   #endif
+
+  CCGetLightIndices(v_globalLightIndices);
 }
