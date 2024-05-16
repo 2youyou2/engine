@@ -151,7 +151,7 @@ public:
     void updateReflectionProbeDataMap(Texture2D *texture);
     void updateReflectionProbeBlendCubemap(TextureCube *texture);
 
-    void updateLightIndices();
+    void updateLightIndices(ccstd::vector<float> lightIndices);
 
     inline void attachToScene(RenderScene *scene) {
         _scene = scene;

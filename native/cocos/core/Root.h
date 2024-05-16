@@ -298,6 +298,8 @@ public:
 
     void frameSync();
 
+    void updateGlobalLightsUBOs(ccstd::vector<scene::Light *>& lights);
+
 private:
     void frameMoveBegin();
     void frameMoveProcess(bool isNeedUpdateScene, int32_t totalFrames);

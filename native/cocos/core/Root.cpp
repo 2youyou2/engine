@@ -50,6 +50,8 @@
 #include "scene/SpotLight.h"
 #include "scene/Skybox.h"
 
+#include "renderer/pipeline/PipelineUBO.h"
+
 namespace cc {
 
 namespace {
@@ -352,6 +354,12 @@ bool Root::setRenderPipeline(pipeline::RenderPipeline *rppl /* = nullptr*/) {
     }
 
     return true;
+}
+
+void Root::updateGlobalLightsUBOs(ccstd::vector<scene::Light*>& lights)
+{
+    auto ubo = _pipeline->getPipelineUBO();
+    ubo->updateGlobalLightsUBOs(lights);
 }
 
 void Root::onGlobalPipelineStateChanged() {

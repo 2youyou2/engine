@@ -65,7 +65,7 @@ public:
     uint32_t getCurrentCameraUBOOffset() const;
     void incCameraUBOOffset();
 
-    static void updateGlobalLightsUBOs(const RenderPipeline *pipeline, ccstd::array<float, UBOCSM::COUNT> *csmBufferView, const scene::Camera *camera);
+    void updateGlobalLightsUBOs(ccstd::vector<scene::Light *> &lights);
 
 private:
     static float getPCFRadius(const scene::Shadows *shadowInfo, const scene::DirectionalLight *dirLight);

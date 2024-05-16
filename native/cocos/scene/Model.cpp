@@ -250,44 +250,13 @@ void Model::updateUBOs(uint32_t stamp) {
             }
         }
 
+        _localBuffer->write(_lightIndices, sizeof(float) * pipeline::UBOLocal::GLOBAL_LIGHTING_INDICES);
 
         _localBuffer->update();
         const bool enableOcclusionQuery = Root::getInstance()->getPipeline()->isOcclusionQueryEnabled();
         if (enableOcclusionQuery) {
             updateWorldBoundUBOs();
         }
-
-        const ccstd::vector<const scene::Light *> &lights = pipeline->getPipelineSceneData()->getValidPunctualLights();
-
-        int idx = 0;
-
-        for (int i = 0; i < 4; i++) {
-            _lightIndicesArray[i] = -1;
-        }
-
-        for (int i = 0; i < lights.size(); i++) {
-            auto l = lights.at(i);
-            if (((l->getVisibility() & _node->getLayer()) == _node->getLayer())) {
-                if (l->getType() == cc::scene::LightType::SPHERE) {
-                    if (cullSphereLight((scene::SphereLight*)l, this)) {
-                        continue;
-                    }
-                } else if (l->getType() == cc::scene::LightType::SPOT) {
-                    if (cullSpotLight((scene::SpotLight *)l, this)) {
-                        continue;
-                    }
-                }
-
-                _lightIndicesArray[idx++] = i;
-                if (idx > 3) {
-                    break;
-                }
-            }
-        }
-
-        _lightIndices.set(_lightIndicesArray[0], _lightIndicesArray[1], _lightIndicesArray[2], _lightIndicesArray[3]);
-
-        _localBuffer->write(_lightIndices, sizeof(float) * pipeline::UBOLocal::GLOBAL_LIGHTING_INDICES);
     }
 }
 
@@ -593,10 +562,14 @@ void Model::initLocalDescriptors(index_t /*subModelIndex*/) {
     }
 }
 
-void Model::updateLightIndices() {
+void Model::updateLightIndices(ccstd::vector<float> lightIndices) {
     if (_node == nullptr) {
         return;
     }
+
+    
+    _lightIndices.set(lightIndices[0], lightIndices[1], lightIndices[2], lightIndices[3]);
+
 
     _localDataUpdated = true;
 }

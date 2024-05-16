@@ -305,8 +305,6 @@ void PipelineUBO::updateShadowUBOView(const RenderPipeline *pipeline, ccstd::arr
 
         memcpy(sv.data() + UBOShadow::SHADOW_COLOR_OFFSET, shadowInfo->getShadowColor4f().data(), sizeof(float) * 4);
     }
-
-    PipelineUBO::updateGlobalLightsUBOs(pipeline, csmBufferView, camera);
 }
 
 void PipelineUBO::updateShadowUBOLightView(const RenderPipeline *pipeline, ccstd::array<float, UBOShadow::COUNT> *shadowBufferView,
@@ -557,13 +555,16 @@ void PipelineUBO::updateMultiCameraUBO(GlobalDSManager *globalDSMgr, const ccstd
     _currentCameraUBOOffset = 0;
 }
 
-void PipelineUBO::updateGlobalLightsUBOs(const RenderPipeline *pipeline, ccstd::array<float, UBOCSM::COUNT> *csmBufferView, const scene::Camera *camera) {
-    auto _lightBufferData = csmBufferView->data();
-    const auto exposure = camera->getExposure();
-    const auto sceneData = pipeline->getPipelineSceneData();
+void PipelineUBO::updateGlobalLightsUBOs(ccstd::vector<scene::Light *> &lights) {
+
+    const auto exposure = 0.00002604165625;
+    //const auto exposure = camera->getExposure();
+
+    auto _lightBufferData = _csmUBO.data();
+    const auto sceneData = _pipeline->getPipelineSceneData();
     const auto isHDR = sceneData->isHDR();
     const auto shadowInfo = sceneData->getShadows();
-    const std::vector<const cc::scene::Light *>& validPunctualLights = sceneData->getValidPunctualLights();
+    //const std::vector<const cc::scene::Light *> &lights = sceneData->getValidPunctualLights();
 
 #define UBOForwardLight UBOCSM
     const float _lightMeterScale = 10000.0;
@@ -573,9 +574,9 @@ void PipelineUBO::updateGlobalLightsUBOs(const RenderPipeline *pipeline, ccstd::
         _lightBufferData[offset + UBOForwardLight::LIGHT_SIZE_RANGE_ANGLE_OFFSET + 3] = 1000;
     }
 
-    for (int l = 0; l < validPunctualLights.size(); l++) {
+    for (int l = 0; l < lights.size(); l++) {
         int offset = l * 4;
-        const auto *light = validPunctualLights[l];
+        const auto *light = lights[l];
 
         Vec3 position = Vec3(0.0F, 0.0F, 0.0F);
         float size = 0.F;
