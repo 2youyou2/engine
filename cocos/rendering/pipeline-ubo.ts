@@ -223,12 +223,17 @@ export class PipelineUBO {
         shadowUBO[UBOShadow.PLANAR_NORMAL_DISTANCE_INFO_OFFSET + 3] = -shadowInfo.distance;
     }
 
-    protected static  updateGlobalLightsUBOs (pipeline: PipelineRuntime, bufferView: Float32Array, camera: Camera): void {
-        const { exposure } = camera;
+    protected  updateGlobalLightsUBOs (lights: Light[]): void {
+        const pipeline = this._pipeline;
+        const bufferView = this._csmUBO;
+        // const { exposure } = camera;
+        const exposure = 0.00002604165625;
         const sceneData = pipeline.pipelineSceneData;
         const isHDR = sceneData.isHDR;
         const shadowInfo = sceneData.shadows;
         const validPunctualLights = sceneData.validPunctualLights;
+
+        // let lights: Light[] = camera.scene!.sphereLights.concat(camera.scene!.spotLights as any);
 
         let UBOForwardLight = UBOCSM;
         const _lightMeterScale = 10000.0;
@@ -239,9 +244,9 @@ export class PipelineUBO {
             bufferView.set(_vec4Array, offset + UBOForwardLight.LIGHT_POS_OFFSET);
         }
 
-        for (let l = 0; l < validPunctualLights.length; l++) {
+        for (let l = 0; l < lights.length; l++) {
             let offset = l * 4;
-            const light = validPunctualLights[l];
+            const light = lights[l];
 
             switch (light.type) {
             case LightType.SPHERE:
@@ -301,69 +306,6 @@ export class PipelineUBO {
                 }
                 bufferView.set(_vec4Array, offset + UBOForwardLight.LIGHT_COLOR_OFFSET);
                 break;
-            // case LightType.POINT:
-            //     // UBOForwardLight
-            //     Vec3.toArray(_vec4Array, (light as PointLight).position);
-            //     _vec4Array[3] = LightType.POINT;
-            //     bufferView.set(_vec4Array, offset + UBOForwardLight.LIGHT_POS_OFFSET);
-
-            //     _vec4Array[0] = 0.0;
-            //     _vec4Array[1] = (light as PointLight).range;
-            //     _vec4Array[2] = 0.0;
-            //     _vec4Array[3] = 0.0;
-            //     bufferView.set(_vec4Array, offset + UBOForwardLight.LIGHT_SIZE_RANGE_ANGLE_OFFSET);
-
-            //     // cc_lightColor
-            //     Vec3.toArray(_vec4Array, light.color);
-            //     if (light.useColorTemperature) {
-            //         const finalColor = light.finalColor;
-            //         _vec4Array[0] = finalColor.x;
-            //         _vec4Array[1] = finalColor.y;
-            //         _vec4Array[2] = finalColor.z;
-            //     }
-            //     if (isHDR) {
-            //         _vec4Array[3] = (light as PointLight).luminance * exposure * _lightMeterScale;
-            //     } else {
-            //         _vec4Array[3] = (light as PointLight).luminance;
-            //     }
-            //     bufferView.set(_vec4Array, offset + UBOForwardLight.LIGHT_COLOR_OFFSET);
-            //     break;
-            // case LightType.RANGED_DIRECTIONAL:
-            //     // UBOForwardLight
-            //     Vec3.toArray(_vec4Array, (light as RangedDirectionalLight).position);
-            //     _vec4Array[3] = LightType.RANGED_DIRECTIONAL;
-            //     bufferView.set(_vec4Array, offset + UBOForwardLight.LIGHT_POS_OFFSET);
-
-            //     Vec3.toArray(_vec4Array, (light as RangedDirectionalLight).right);
-            //     _vec4Array[3] = 0;
-            //     bufferView.set(_vec4Array, offset + UBOForwardLight.LIGHT_SIZE_RANGE_ANGLE_OFFSET);
-
-            //     Vec3.toArray(_vec4Array, (light as RangedDirectionalLight).direction);
-            //     _vec4Array[3] = 0;
-            //     bufferView.set(_vec4Array, offset + UBOForwardLight.LIGHT_DIR_OFFSET);
-
-            //     // eslint-disable-next-line no-case-declarations
-            //     const scale = (light as RangedDirectionalLight).scale;
-            //     _v3.set(scale.x * 0.5, scale.y * 0.5, scale.z * 0.5);
-            //     Vec3.toArray(_vec4Array, _v3);
-            //     _vec4Array[3] = 0;
-            //     bufferView.set(_vec4Array, offset + UBOForwardLight.LIGHT_BOUNDING_SIZE_VS_OFFSET);
-
-            //     // cc_lightColor
-            //     Vec3.toArray(_vec4Array, light.color);
-            //     if (light.useColorTemperature) {
-            //         const finalColor = light.finalColor;
-            //         _vec4Array[0] = finalColor.x;
-            //         _vec4Array[1] = finalColor.y;
-            //         _vec4Array[2] = finalColor.z;
-            //     }
-            //     if (isHDR) {
-            //         _vec4Array[3] = (light as RangedDirectionalLight).illuminance * exposure;
-            //     } else {
-            //         _vec4Array[3] = (light as RangedDirectionalLight).illuminance;
-            //     }
-            //     bufferView.set(_vec4Array, offset + UBOForwardLight.LIGHT_COLOR_OFFSET);
-            //     break;
             default:
             }
         }
@@ -472,7 +414,7 @@ export class PipelineUBO {
         }
 
 
-        this.updateGlobalLightsUBOs(pipeline, csmBufferView, camera);
+        // this.updateGlobalLightsUBOs(pipeline, csmBufferView, camera);
     }
 
     public static updateShadowUBOLightView (pipeline: PipelineRuntime, shadowBufferView: Float32Array, light: Light, level: number): void {

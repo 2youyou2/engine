@@ -99,15 +99,6 @@ const lightmapSamplerWithMipHash = new SamplerInfo(
     Address.CLAMP,
 );
 
-function cullSphereLight (light, model: Model): boolean {
-    return !!(model.worldBounds && !geometry.intersect.aabbWithAABB(model.worldBounds, light.aabb));
-}
-
-function cullSpotLight (light, model: Model): boolean {
-    return !!(model.worldBounds
-        && (!geometry.intersect.aabbWithAABB(model.worldBounds, light.aabb) || !geometry.intersect.aabbFrustum(model.worldBounds, light.frustum)));
-}
-
 /**
  * @en A representation of a model instance
  * The base model class, which is the core component of [[MeshRenderer]],
@@ -1171,61 +1162,16 @@ export class Model {
         this._localDataUpdated = true;
     }
 
-    updateLightIndices () {
+    updateLightIndices (lightIndices: number[]) {
         if (!this.node) {
             return;
         }
 
         const sv = this._localData;
-        const sceneData = (cclegacy.director.root as Root).pipeline.pipelineSceneData;
-        const lights = sceneData.validPunctualLights;
 
-        let idx = 0;
-
-        for (let i = 0; i < 4; i++) {
-            sv[UBOLocal.GLOBAL_LIGHTING_INDICES + i] = -1;
+        for (let i = 0; i < lightIndices.length; i++) {
+            sv[UBOLocal.GLOBAL_LIGHTING_INDICES + i] = lightIndices[i];
         }
-
-        for (let i = 0; i < lights.length; i++) {
-            let l = lights[i];
-            if (((l.visibility & this.node.layer) === this.node.layer)) {
-                if (l.type === LightType.SPHERE) {
-                    if (cullSphereLight(l, this)) {
-                        continue;
-                    }
-                }
-                else if (l.type === LightType.SPOT) {
-                    if (cullSpotLight(l, this)) {
-                        continue;
-                    }
-                }
-
-                sv[UBOLocal.GLOBAL_LIGHTING_INDICES + idx++] = i;
-                if (idx > 3) {
-                    break;
-                }
-            }
-        }
-
-        for (let i = 0; i < 4; i++) {
-            tempLightIndices[i] = sv[UBOLocal.GLOBAL_LIGHTING_INDICES + i];
-        }
-
-        // if (JSB) {
-        //     this._setInstancedAttribute(name, value);
-        // } else {
-            const subModels = this.subModels;
-            for (let i = 0; i < subModels.length; i++) {
-                const subModel = subModels[i];
-                const { attributes, views } = subModel.instancedAttributeBlock;
-                for (let i = 0; i < attributes.length; i++) {
-                    if (attributes[i].name === 'a_globalLightIndices') {
-                        views[i].set(tempLightIndices);
-                        break;
-                    }
-                }
-            }
-        // }
 
         this._localDataUpdated = true;
 

@@ -136,8 +136,6 @@ export class ForwardStage extends RenderStage {
             const ro = renderObjects[i];
             const subModels = ro.model.subModels;
 
-            ro.model.updateLightIndices();
-
             for (m = 0; m < subModels.length; ++m) {
                 const subModel = subModels[m];
                 const passes = subModel.passes;
