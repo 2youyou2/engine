@@ -301,7 +301,7 @@ struct CC_DLL UBOLocal {
     static constexpr uint32_t REFLECTION_PROBE_DATA2 = UBOLocal::REFLECTION_PROBE_DATA1 + 4;
     static constexpr uint32_t REFLECTION_PROBE_BLEND_DATA1 = UBOLocal::REFLECTION_PROBE_DATA2 + 4;
     static constexpr uint32_t REFLECTION_PROBE_BLEND_DATA2 = UBOLocal::REFLECTION_PROBE_BLEND_DATA1 + 4;
-    static constexpr uint32_t GLOBAL_LIGHTING_INDICES = UBOLocal::REFLECTION_PROBE_BLEND_DATA1 + 4;
+    static constexpr uint32_t GLOBAL_LIGHTING_INDICES = UBOLocal::REFLECTION_PROBE_BLEND_DATA2 + 4;
     static constexpr uint32_t COUNT = UBOLocal::GLOBAL_LIGHTING_INDICES + 4;
     static constexpr uint32_t SIZE = UBOLocal::COUNT * 4;
     static constexpr uint32_t BINDING = static_cast<uint32_t>(ModelLocalBindings::UBO_LOCAL);
