@@ -362,6 +362,10 @@ void Root::updateGlobalLightsUBOs(ccstd::vector<scene::Light*>& lights)
     ubo->updateGlobalLightsUBOs(lights);
 }
 
+uint32_t Root::getPhase(const ccstd::string &phase) {
+    return cc::pipeline::getPhaseID(phase);
+}
+
 void Root::onGlobalPipelineStateChanged() {
     for (const auto &scene : _scenes) {
         scene->onGlobalPipelineStateChanged();

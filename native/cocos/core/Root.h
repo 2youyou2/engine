@@ -300,6 +300,8 @@ public:
 
     void updateGlobalLightsUBOs(ccstd::vector<scene::Light *>& lights);
 
+    uint32_t getPhase(const ccstd::string &phase);
+
 private:
     void frameMoveBegin();
     void frameMoveProcess(bool isNeedUpdateScene, int32_t totalFrames);
