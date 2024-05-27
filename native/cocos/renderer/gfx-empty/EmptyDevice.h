@@ -77,6 +77,8 @@ public:
     void copyTextureToBuffers(Texture *src, uint8_t *const *buffers, const BufferTextureCopy *region, uint32_t count) override;
     void getQueryPoolResults(QueryPool *queryPool) override;
 
+    void blitFramebuffer(Framebuffer *src, Framebuffer *dst, const Rect *srcRect, const Rect *dstRect, Filter filter) override {}
+
 protected:
     static EmptyDevice *instance;
 

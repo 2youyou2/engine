@@ -140,6 +140,39 @@ bool js_gfx_Device_copyTextureToBuffers(se::State &s) { // NOLINT(readability-id
 }
 SE_BIND_FUNC(js_gfx_Device_copyTextureToBuffers)
 
+bool js_gfx_Device_blitFramebuffer(se::State &s) { // NOLINT(readability-identifier-naming)
+    auto *cobj = static_cast<cc::gfx::Device *>(s.nativeThisObject());
+    SE_PRECONDITION2(cobj, false, "Invalid Native Object");
+
+    const auto &args = s.args();
+    size_t argc = args.size();
+    CC_UNUSED bool ok = true;
+    if (argc == 5) {
+        cc::gfx::Framebuffer* arg0 = nullptr;
+        ok &= seval_to_native_ptr(args[0], &arg0);
+
+        cc::gfx::Framebuffer* arg1 = nullptr;
+        ok &= seval_to_native_ptr(args[1], &arg1);
+
+        cc::gfx::Rect arg2;
+        ok &= sevalue_to_native(args[2], &arg2, s.thisObject());
+
+        cc::gfx::Rect arg3;
+        ok &= sevalue_to_native(args[3], &arg3, s.thisObject());
+
+        cc::gfx::Filter arg4;
+        ok &= sevalue_to_native(args[4], &arg4, s.thisObject());
+
+        SE_PRECONDITION2(ok, false, "Error processing arguments");
+        cobj->blitFramebuffer(arg0, arg1, &arg2, &arg3, arg4);
+        return true;
+    }
+
+    SE_REPORT_ERROR("wrong number of arguments: %d, was expecting %d", (int)argc, 5);
+    return false;
+}
+SE_BIND_FUNC(js_gfx_Device_blitFramebuffer)
+
 bool js_gfx_Device_copyTexImagesToTexture(se::State &s) { // NOLINT(readability-identifier-naming)
     auto *cobj = static_cast<cc::gfx::Device *>(s.nativeThisObject());
     SE_PRECONDITION2(cobj, false, "Invalid Native Object");
@@ -491,6 +524,7 @@ bool register_all_gfx_manual(se::Object *obj) {
     __jsb_cc_gfx_Device_proto->defineFunction("copyBuffersToTexture", _SE(js_gfx_Device_copyBuffersToTexture));
     __jsb_cc_gfx_Device_proto->defineFunction("copyTextureToBuffers", _SE(js_gfx_Device_copyTextureToBuffers));
     __jsb_cc_gfx_Device_proto->defineFunction("copyTexImagesToTexture", _SE(js_gfx_Device_copyTexImagesToTexture));
+    __jsb_cc_gfx_Device_proto->defineFunction("blitFramebuffer", _SE(js_gfx_Device_blitFramebuffer));
 
     __jsb_cc_gfx_Device_proto->defineFunction("createBuffer", _SE(js_gfx_Device_createBuffer));
     __jsb_cc_gfx_Device_proto->defineFunction("createTexture", _SE(js_gfx_Device_createTexture));

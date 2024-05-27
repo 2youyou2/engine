@@ -316,6 +316,16 @@ void DeviceValidator::copyTextureToBuffers(Texture *src, uint8_t *const *buffers
     _actor->copyTextureToBuffers(textureValidator->getActor(), buffers, regions, count);
 }
 
+void DeviceValidator::blitFramebuffer(Framebuffer *src, Framebuffer *dst, const Rect *srcRect, const Rect *dstRect, Filter filter) {
+    auto *srcValidator = static_cast<FramebufferValidator *>(src);
+    auto *dstValidator = static_cast<FramebufferValidator *>(dst);
+
+    /////////// execute ///////////
+
+    _actor->blitFramebuffer(srcValidator->getActor(), dstValidator->getActor(), srcRect, dstRect, filter);
+}
+
+
 void DeviceValidator::flushCommands(CommandBuffer *const *cmdBuffs, uint32_t count) {
     if (!count) return;
 

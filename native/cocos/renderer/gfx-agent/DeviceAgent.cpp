@@ -387,6 +387,23 @@ void DeviceAgent::copyTextureToBuffers(Texture *srcTexture, uint8_t *const *buff
     _mainMessageQueue->kickAndWait();
 }
 
+void DeviceAgent::blitFramebuffer(Framebuffer *src, Framebuffer *dst, const Rect *srcRect, const Rect *dstRect, Filter filter) {
+    ENQUEUE_MESSAGE_6(
+        _mainMessageQueue,
+        DeviceCopyTextureToBuffers,
+        actor, getActor(),
+        src, static_cast<FramebufferAgent *>(src)->getActor(),
+        dst, static_cast<FramebufferAgent *>(dst)->getActor(),
+        srcRect, srcRect,
+        dstRect, dstRect,
+        filter, filter,
+        {
+            actor->blitFramebuffer(src, dst, srcRect, dstRect, filter);
+        });
+
+    _mainMessageQueue->kickAndWait();
+}
+
 void DeviceAgent::flushCommands(CommandBuffer *const *cmdBuffs, uint32_t count) {
     if (!_multithreaded) return; // all command buffers are immediately executed
 

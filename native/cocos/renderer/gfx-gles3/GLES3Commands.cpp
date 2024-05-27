@@ -2992,6 +2992,44 @@ void cmdFuncGLES3BlitTexture(GLES3Device *device, GLES3GPUTextureView *gpuTextur
     }
 }
 
+void cmdFuncGLES3BlitFramebuffer(GLES3Device *device, GLES3GPUFramebuffer *src, GLES3GPUFramebuffer *dst, const Rect *srcRect, const Rect *dstRect, Filter filter) {
+    GLES3GPUStateCache *cache = device->stateCache();
+
+    GLuint srcFramebuffer = src->framebuffer.getHandle();
+    if (cache->glReadFramebuffer != srcFramebuffer) {
+        GL_CHECK(glBindFramebuffer(GL_READ_FRAMEBUFFER, srcFramebuffer));
+        cache->glReadFramebuffer = srcFramebuffer;
+    }
+
+    GLuint dstFramebuffer = dst->framebuffer.getHandle();
+    if (cache->glDrawFramebuffer != dstFramebuffer) {
+        GL_CHECK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dstFramebuffer));
+        cache->glDrawFramebuffer = dstFramebuffer;
+    }
+
+    int mask = 0;
+    if (src->gpuColorViews.size() > 0) {
+        mask |= GL_COLOR_BUFFER_BIT;
+    }
+
+    if (src->gpuDepthStencilView) {
+        mask |= getColorBufferMask(src->gpuDepthStencilView->gpuTexture->format);
+    }
+
+    GL_CHECK(glBlitFramebuffer(
+        srcRect->x,
+        srcRect->y,
+        srcRect->x + srcRect->width,
+        srcRect->y + srcRect->height,
+        dstRect->x,
+        dstRect->y,
+        dstRect->x + dstRect->width,
+        dstRect->y + dstRect->height,
+        mask,
+        GLES3_FILTERS[(uint32_t)filter])
+    );
+}
+
 void cmdFuncGLES3ExecuteCmds(GLES3Device *device, GLES3CmdPackage *cmdPackage) {
     if (!cmdPackage->cmds.size()) return;
 

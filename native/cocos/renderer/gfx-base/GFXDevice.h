@@ -98,6 +98,8 @@ public:
     virtual void copyTextureToBuffers(Texture *src, uint8_t *const *buffers, const BufferTextureCopy *region, uint32_t count) = 0;
     virtual void getQueryPoolResults(QueryPool *queryPool) = 0;
 
+    virtual void blitFramebuffer(Framebuffer *src, Framebuffer *dst, const Rect *srcRect, const Rect *dstRect, Filter filter) = 0;
+
     inline void copyTextureToBuffers(Texture *src, BufferSrcList &buffers, const BufferTextureCopyList &regions);
     inline void copyBuffersToTexture(const BufferDataList &buffers, Texture *dst, const BufferTextureCopyList &regions);
     inline void flushCommands(const ccstd::vector<CommandBuffer *> &cmdBuffs);

@@ -84,6 +84,8 @@ public:
     void copyTextureToBuffers(Texture *src, uint8_t *const *buffers, const BufferTextureCopy *region, uint32_t count) override;
     void getQueryPoolResults(QueryPool *queryPool) override;
 
+    void blitFramebuffer(Framebuffer *src, Framebuffer *dst, const Rect *srcRect, const Rect *dstRect, Filter filter) override;
+
     void flushCommands(CommandBuffer *const *cmdBuffs, uint32_t count) override;
     MemoryStatus &getMemoryStatus() override { return _actor->getMemoryStatus(); }
     uint32_t getNumDrawCalls() const override { return _actor->getNumDrawCalls(); }

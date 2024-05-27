@@ -612,6 +612,15 @@ void GLES3Device::copyTextureToBuffers(Texture *srcTexture, uint8_t *const *buff
     cmdFuncGLES3CopyTextureToBuffers(this, static_cast<GLES3Texture *>(srcTexture)->gpuTextureView(), buffers, regions, count);
 }
 
+void GLES3Device::blitTexture(Texture *src, Texture *dst, const TextureBlit *regions, uint32_t count, Filter filter) {
+    CC_PROFILE(GLES3BlitTexture);
+    cmdFuncGLES3BlitTexture(this, static_cast<GLES3Texture *>(src)->gpuTextureView(), static_cast<GLES3Texture *>(dst)->gpuTextureView(), regions, count,filter);
+}
+void GLES3Device::blitFramebuffer(Framebuffer* src, Framebuffer* dst, const Rect* srcRect, const Rect* dstRect, Filter filter) {
+    CC_PROFILE(GLES3BlitFramebuffer);
+    cmdFuncGLES3BlitFramebuffer(this, static_cast<GLES3Framebuffer *>(src)->gpuFBO(), static_cast<GLES3Framebuffer *>(dst)->gpuFBO(), srcRect, dstRect, filter);
+}
+
 void GLES3Device::getQueryPoolResults(QueryPool *queryPool) {
     CC_PROFILE(GLES3DeviceGetQueryPoolResults);
     auto *cmdBuff = static_cast<GLES3CommandBuffer *>(getCommandBuffer());

@@ -56,9 +56,9 @@ import {
     CommandBufferType, DescriptorSetLayoutInfo, DescriptorSetInfo,
     PipelineLayoutInfo, BufferViewInfo, CommandBufferInfo, BufferInfo, FramebufferInfo, InputAssemblerInfo,
     QueueInfo, RenderPassInfo, SamplerInfo, ShaderInfo, TextureInfo, TextureViewInfo, DeviceInfo, GeneralBarrierInfo, TextureBarrierInfo,
-    BufferBarrierInfo, QueueType, API, Feature, BufferTextureCopy, SwapchainInfo, FormatFeature, Format, FormatFeatureBit,
+    BufferBarrierInfo, QueueType, API, Feature, BufferTextureCopy, SwapchainInfo, FormatFeature, Format, FormatFeatureBit, TextureBlit, Filter, Rect,
 } from '../base/define';
-import { WebGL2CmdFuncCopyTextureToBuffers, WebGL2CmdFuncCopyBuffersToTexture, WebGL2CmdFuncCopyTexImagesToTexture } from './webgl2-commands';
+import { WebGL2CmdFuncCopyTextureToBuffers, WebGL2CmdFuncCopyBuffersToTexture, WebGL2CmdFuncCopyTexImagesToTexture, WebGL2CmdFuncBlitTexture, WebGL2CmdFuncBlitFramebuffer } from './webgl2-commands';
 import { GeneralBarrier } from '../base/states/general-barrier';
 import { TextureBarrier } from '../base/states/texture-barrier';
 import { BufferBarrier } from '../base/states/buffer-barrier';
@@ -629,6 +629,38 @@ export class WebGL2Device extends Device {
             texImages,
             (texture as WebGL2Texture).gpuTexture,
             regions,
+        );
+    }
+
+    public blitTexture (
+        srcTex: Readonly<Texture>,
+        dstTex: Texture,
+        regions: Readonly<TextureBlit[]>,
+        filter: Filter
+    ): void {
+        WebGL2CmdFuncBlitTexture(
+            this,
+            (srcTex as WebGL2Texture).gpuTexture,
+            (dstTex as WebGL2Texture).gpuTexture,
+            regions,
+            filter
+        );
+    }
+
+    public blitFramebuffer (
+        srcFramebuffer: Readonly<Framebuffer>,
+        dstFramebuffer: Framebuffer,
+        srcRect: Readonly<Rect>,
+        dstRect: Readonly<Rect>,
+        filter: Filter
+    ): void {
+        WebGL2CmdFuncBlitFramebuffer(
+            this,
+            (srcFramebuffer as WebGL2Framebuffer).gpuFramebuffer,
+            (dstFramebuffer as WebGL2Framebuffer).gpuFramebuffer,
+            srcRect,
+            dstRect,
+            filter
         );
     }
 }

@@ -128,6 +128,9 @@ protected:
     void copyTextureToBuffers(Texture *src, uint8_t *const *buffers, const BufferTextureCopy *region, uint32_t count) override;
     void getQueryPoolResults(QueryPool *queryPool) override;
 
+    void blitTexture(Texture *src, Texture *dst, const TextureBlit *regions, uint32_t count, Filter filter);
+    void blitFramebuffer(Framebuffer *src, Framebuffer *dst, const Rect *srcRect, const Rect *dstRect, Filter filter) override;
+
     void bindContext(bool bound) override;
 
     void initFormatFeature();
