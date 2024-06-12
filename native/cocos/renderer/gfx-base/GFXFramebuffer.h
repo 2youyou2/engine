@@ -47,6 +47,9 @@ public:
     inline Texture *getDepthStencilTexture() const { return _depthStencilTexture; }
     inline Texture *getDepthStencilResolveTexture() const { return _depthStencilResolveTexture; }
 
+    inline void setIsCustomFrameBuffer(bool isCustom) { _isCustomFrameBuffer = isCustom; }
+    bool isCustomFrameBuffer () { return _isCustomFrameBuffer; }
+
 protected:
     virtual void doInit(const FramebufferInfo &info) = 0;
     virtual void doDestroy() = 0;
@@ -58,6 +61,8 @@ protected:
     // weak reference
     Texture *_depthStencilTexture{nullptr};
     Texture *_depthStencilResolveTexture{nullptr};
+
+    bool _isCustomFrameBuffer = false;
 };
 
 } // namespace gfx

@@ -200,8 +200,12 @@ void ForwardStage::render(scene::Camera *camera) {
 
     auto renderPass = camera->getRenderPass();
     if (!renderPass) {
-        renderPass = getOrCreateRenderPass(camera->getClearFlag(), framebuffer);
-        //renderPass = framebuffer->getRenderPass();
+        if (framebuffer->isCustomFrameBuffer()) {
+            renderPass = framebuffer->getRenderPass();
+        }
+        else {
+            renderPass = getOrCreateRenderPass(camera->getClearFlag(), framebuffer);
+        }
     }
 
     if (hasFlag(static_cast<gfx::ClearFlags>(camera->getClearFlag()), gfx::ClearFlagBit::COLOR)) {

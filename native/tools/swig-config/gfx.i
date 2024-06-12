@@ -206,6 +206,7 @@ namespace cc { namespace gfx {
 %attribute(cc::gfx::Framebuffer, cc::gfx::RenderPass*, renderPass, getRenderPass);
 %attribute(cc::gfx::Framebuffer, cc::gfx::TextureList&, colorTextures, getColorTextures);
 %attribute(cc::gfx::Framebuffer, cc::gfx::Texture*, depthStencilTexture, getDepthStencilTexture);
+%attribute(cc::gfx::Framebuffer, bool, isCustomFrameBuffer, isCustomFrameBuffer, setIsCustomFrameBuffer);
 
 // Buffer
 %attribute(cc::gfx::Buffer, cc::gfx::BufferUsage, usage, getUsage);
