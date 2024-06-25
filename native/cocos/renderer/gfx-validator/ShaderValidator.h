@@ -37,6 +37,10 @@ public:
 
     inline bool isInited() const { return _inited; }
 
+    void doCompileGpuShader() {
+        _actor->doCompileGpuShader();
+    }
+
 protected:
     void doInit(const ShaderInfo &info) override;
     void doDestroy() override;

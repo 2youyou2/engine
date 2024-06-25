@@ -87,6 +87,7 @@ public:
     inline void setValue(const ccstd::string &name, int32_t value) { _macros[name] = value; }
     inline void setValue(const ccstd::string &name, bool value) { _macros[name] = value; }
     inline void setValue(const ccstd::string &name, const ccstd::string &value) { _macros[name] = value; }
+    inline void clearValue() { _macros.clear(); }
     inline GlobalDSManager *getGlobalDSManager() const { return _globalDSManager; }
     inline gfx::DescriptorSet *getDescriptorSet() const { return _descriptorSet; }
     gfx::DescriptorSetLayout *getDescriptorSetLayout() const;

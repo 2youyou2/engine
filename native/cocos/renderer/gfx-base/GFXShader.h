@@ -49,6 +49,12 @@ public:
     inline const UniformStorageImageList &getImages() const { return _images; }
     inline const UniformInputAttachmentList &getSubpassInputs() const { return _subpassInputs; }
 
+    virtual void compileGpuShader() {
+        doCompileGpuShader();
+    }
+
+    virtual void doCompileGpuShader() = 0;
+
 protected:
     virtual void doInit(const ShaderInfo &info) = 0;
     virtual void doDestroy() = 0;

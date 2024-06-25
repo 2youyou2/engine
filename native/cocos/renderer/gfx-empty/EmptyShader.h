@@ -34,6 +34,8 @@ public:
 protected:
     void doInit(const ShaderInfo &info) override;
     void doDestroy() override;
+
+    void doCompileGpuShader() {}
 };
 
 } // namespace gfx

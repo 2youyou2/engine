@@ -66,6 +66,20 @@ void GLES3Shader::doInit(const ShaderInfo & /*info*/) {
     }
 }
 
+void GLES3Shader::doCompileGpuShader() {
+    if (_gpuShader->glProgram == 0) {
+        //auto gpuPipelineLayout = static_cast<GLES3PipelineLayout *>(_pipelineLayout)->gpuPipelineLayout();
+        cmdFuncGLES3CreateShader(GLES3Device::getInstance(), _gpuShader, nullptr);
+        CC_ASSERT(_gpuShader->glProgram);
+
+        // Clear shader source after they're uploaded to GPU
+        for (auto &stage : _gpuShader->gpuStages) {
+            stage.source.clear();
+            stage.source.shrink_to_fit();
+        }
+    }
+}
+
 void GLES3Shader::doDestroy() {
     if (_gpuShader) {
         cmdFuncGLES3DestroyShader(GLES3Device::getInstance(), _gpuShader);

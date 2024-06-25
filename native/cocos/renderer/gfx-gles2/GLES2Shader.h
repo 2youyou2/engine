@@ -39,6 +39,8 @@ public:
 
     GLES2GPUShader *gpuShader() const;
 
+    void doCompileGpuShader(){}
+
 protected:
     void doInit(const ShaderInfo &info) override;
     void doDestroy() override;
