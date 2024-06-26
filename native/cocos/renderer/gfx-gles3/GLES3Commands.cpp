@@ -993,22 +993,23 @@ GLuint GLES3GPUSampler::getGLSampler(uint16_t minLod, uint16_t maxLod) {
 }
 
 bool cmdFuncGLES3CreateProgramByBinary(GLES3Device *device, GLES3GPUShader *gpuShader, GLES3GPUPipelineLayout *pipelineLayout) {
-    if (pipelineLayout == nullptr) {
-        return false;
-    }
-
     auto *pipelineCache = device->pipelineCache();
     if (pipelineCache == nullptr || gpuShader->hash == INVALID_SHADER_HASH) {
         return false;
     }
 
     ccstd::hash_t hash = gpuShader->hash;
-    ccstd::hash_combine(hash, pipelineLayout->hash);
+    if (pipelineLayout != nullptr) {
+        ccstd::hash_combine(hash, pipelineLayout->hash);
+    }
 
     auto *item = pipelineCache->fetchBinary(gpuShader->name, hash);
     if (item != nullptr) {
         GL_CHECK(gpuShader->glProgram = glCreateProgram());
         GL_CHECK(glProgramBinary(gpuShader->glProgram, item->format, item->data.data(), item->data.size()));
+
+        CC_LOG_INFO("Binary Shader '%s' compilation succeeded.", gpuShader->name.c_str());
+
         return true;
     }
     return false;
@@ -1049,6 +1050,8 @@ bool cmdFuncGLES3CreateProgramBySource(GLES3Device *device, GLES3GPUShader *gpuS
         const char *source = shaderSource.c_str();
         GL_CHECK(glShaderSource(gpuStage.glShader, 1, (const GLchar **)&source, nullptr));
         GL_CHECK(glCompileShader(gpuStage.glShader));
+
+        CC_LOG_INFO("Shader '%s' compilation succeeded.", gpuShader->name.c_str());
 
         GL_CHECK(glGetShaderiv(gpuStage.glShader, GL_COMPILE_STATUS, &status));
         if (status != GL_TRUE) {
@@ -1129,7 +1132,6 @@ void cmdFuncGLES3CreateShader(GLES3Device *device, GLES3GPUShader *gpuShader, GL
             return;
         }
     }
-    CC_LOG_INFO("Shader '%s' compilation succeeded.", gpuShader->name.c_str());
 
     GLint attrMaxLength = 0;
     GLint attrCount = 0;

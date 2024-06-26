@@ -31,9 +31,11 @@
 #include "GLES3GPUObjects.h"
 #include "gfx-base/GFXUtil.h"
 
+#include "platform/FileUtils.h"
+
 namespace cc::gfx {
 
-//#define PIPELINE_CACHE_FORCE_INCREMENTAL
+#define PIPELINE_CACHE_FORCE_INCREMENTAL
 
 #if defined(_WIN32) && !defined(PIPELINE_CACHE_FORCE_INCREMENTAL)
     #define PIPELINE_CACHE_FULL
@@ -64,7 +66,22 @@ void saveItem(BinaryOutputArchive &archive, GLES3GPUProgramBinary *binary) {
 } // namespace
 
 GLES3PipelineCache::GLES3PipelineCache() {
-    _savePath = getPipelineCacheFolder() + fileName;
+    _savePath = FileUtils::getInstance()->fullPathForFilename("pipeline_cache_gles3.bin");
+
+    if (_savePath != "") {
+        auto d = FileUtils::getInstance()->getDataFromFile(_savePath);
+
+        _savePath = getPipelineCacheFolder() + fileName;
+        _savePath = std::string("/storage/emulated/0") + fileName;
+
+        FileUtils::getInstance()->writeDataToFile(d, _savePath);
+    }
+
+    if (_savePath == "") {
+        _savePath = getPipelineCacheFolder() + fileName;
+        // for android pull data
+        _savePath = std::string("/storage/emulated/0") + fileName;
+    }
 }
 
 GLES3PipelineCache::~GLES3PipelineCache() { // NOLINT
@@ -79,6 +96,7 @@ bool GLES3PipelineCache::loadCache() {
         CC_LOG_INFO("Load program cache, no cached files.");
         return false;
     }
+
 
     uint32_t magic = 0;
     uint32_t version = 0;
@@ -174,7 +192,7 @@ void GLES3PipelineCache::init() {
     if (!success) {
         // discard cache content.
         std::ofstream stream(_savePath, std::ios::binary | std::ios::trunc);
-#ifdef PIPELINE_CACHE_INCREMENTAL
+#if defined(PIPELINE_CACHE_INCREMENTAL)
         if (stream.is_open()) {
             BinaryOutputArchive archive(stream);
             saveHeader(archive);
@@ -185,7 +203,7 @@ void GLES3PipelineCache::init() {
 
 void GLES3PipelineCache::addBinary(GLES3GPUProgramBinary *binary) {
     _programCaches[binary->name] = binary;
-#ifdef PIPELINE_CACHE_INCREMENTAL
+#if defined(PIPELINE_CACHE_INCREMENTAL)
     saveCacheIncremental(binary);
 #endif
     _dirty = true;
