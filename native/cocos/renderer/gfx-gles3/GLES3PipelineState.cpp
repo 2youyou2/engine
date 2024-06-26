@@ -97,7 +97,7 @@ void updateGPUShaderSourceByRenderPass(GLES3GPUShader *gpuShader, GLES3GPURender
 }
 
 void initGpuShader(GLES3GPUShader *gpuShader, GLES3GPUPipelineLayout *gpuPipelineLayout, GLES3GPURenderPass *renderPass, uint32_t subpassIndex) {
-    //updateGPUShaderSourceByRenderPass(gpuShader, renderPass, subpassIndex);
+    updateGPUShaderSourceByRenderPass(gpuShader, renderPass, subpassIndex);
     cmdFuncGLES3CreateShader(GLES3Device::getInstance(), gpuShader, gpuPipelineLayout);
     CC_ASSERT(gpuShader->glProgram);
 

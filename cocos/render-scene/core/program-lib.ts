@@ -535,6 +535,7 @@ export class ProgramLib {
         }
 
         const macroArray = prepareDefines(defines, tmpl.defines);
+        macroArray.sort()
         const prefix = pipeline.constantMacros + tmpl.constantMacros
             + macroArray.reduce((acc, cur): string => `${acc}#define ${cur.name} ${cur.value}\n`, '');
 

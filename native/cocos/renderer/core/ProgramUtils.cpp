@@ -140,6 +140,9 @@ ccstd::string getVariantKey(const IProgramInfo &tmpl, const MacroRecord &defines
             }
             const auto &value = itDef->second;
             auto mapped = tmplDef.map(value);
+            if (!mapped) {
+                continue;
+            }
             auto offset = tmplDef.offset;
             key << offset << mapped << "|";
         }

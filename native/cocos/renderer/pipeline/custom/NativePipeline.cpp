@@ -1217,6 +1217,13 @@ const MacroRecord &NativePipeline::getMacros() const {
     return macros;
 }
 
+void NativePipeline::setMacros(MacroRecord &v) {
+    macros.clear();
+    for (auto pair : v) {
+        macros[pair.first] = pair.second;
+    }
+}
+
 pipeline::GlobalDSManager *NativePipeline::getGlobalDSManager() const {
     return globalDSManager.get();
 }

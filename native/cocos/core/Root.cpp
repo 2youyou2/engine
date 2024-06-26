@@ -207,6 +207,9 @@ public:
     const MacroRecord &getMacros() const override {
         return pipeline->getMacros();
     }
+    void setMacros(MacroRecord &v) override {
+        return pipeline->setMacros(v);
+    }
     pipeline::GlobalDSManager *getGlobalDSManager() const override {
         return pipeline->getGlobalDSManager();
     }
