@@ -72,7 +72,7 @@ GLES3PipelineCache::GLES3PipelineCache() {
         auto d = FileUtils::getInstance()->getDataFromFile(_savePath);
 
         _savePath = getPipelineCacheFolder() + fileName;
-        _savePath = std::string("/storage/emulated/0") + fileName;
+        //_savePath = std::string("/storage/emulated/0") + fileName;
 
         FileUtils::getInstance()->writeDataToFile(d, _savePath);
     }
@@ -80,7 +80,7 @@ GLES3PipelineCache::GLES3PipelineCache() {
     if (_savePath == "") {
         _savePath = getPipelineCacheFolder() + fileName;
         // for android pull data
-        _savePath = std::string("/storage/emulated/0") + fileName;
+        //_savePath = std::string("/storage/emulated/0") + fileName;
     }
 }
 
