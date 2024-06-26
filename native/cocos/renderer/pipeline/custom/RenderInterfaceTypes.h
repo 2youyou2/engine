@@ -125,6 +125,7 @@ public:
      * @zh 获得用户宏列表
      */
     virtual const MacroRecord &getMacros() const = 0;
+    virtual void setMacros(MacroRecord &v) = 0;
     /**
      * @en Get global descriptor set manager
      * @zh 获得全局(Global)级别描述符集(DescriptorSet)管理器

@@ -101,6 +101,13 @@ bool RenderPipeline::activate(gfx::Swapchain * /*swapchain*/) {
     return true;
 }
 
+void RenderPipeline::setMacros(MacroRecord &v) {
+    _macros.clear();
+    for (auto pair : v) {
+        _macros[pair.first] = pair.second;
+    }
+}
+
 void RenderPipeline::render(const ccstd::vector<scene::Camera *> &cameras) {
     for (auto const &flow : _flows) {
         for (auto *camera : cameras) {

@@ -101,7 +101,7 @@ using namespace cc::render;
 //  4. 'Attribute Section' should be placed before 'Import Section' and 'Include Section'
 //
 %attribute(cc::render::PipelineRuntime, cc::gfx::Device*, device, getDevice);
-%attribute(cc::render::PipelineRuntime, cc::MacroRecord&, macros, getMacros);
+%attribute(cc::render::PipelineRuntime, cc::MacroRecord&, macros, getMacros, setMacros);
 %attribute(cc::render::PipelineRuntime, cc::pipeline::GlobalDSManager*, globalDSManager, getGlobalDSManager);
 %attribute(cc::render::PipelineRuntime, cc::gfx::DescriptorSetLayout*, descriptorSetLayout, getDescriptorSetLayout);
 %attribute(cc::render::PipelineRuntime, cc::gfx::DescriptorSet*, descriptorSet, getDescriptorSet);

@@ -1328,6 +1328,7 @@ public:
     void render(const ccstd::vector<scene::Camera*> &cameras) override;
     gfx::Device *getDevice() const override;
     const MacroRecord &getMacros() const override;
+    void setMacros(MacroRecord &v)override;
     pipeline::GlobalDSManager *getGlobalDSManager() const override;
     gfx::DescriptorSetLayout *getDescriptorSetLayout() const override;
     gfx::DescriptorSet *getDescriptorSet() const override;

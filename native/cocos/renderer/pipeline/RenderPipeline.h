@@ -84,6 +84,7 @@ public:
     inline void setTag(uint32_t tag) { _tag = tag; }
     inline const ccstd::unordered_map<ccstd::string, InternalBindingInst> &getGlobalBindings() const { return _globalBindings; }
     inline const MacroRecord &getMacros() const { return _macros; }
+    void setMacros(MacroRecord &v);
     inline void setValue(const ccstd::string &name, int32_t value) { _macros[name] = value; }
     inline void setValue(const ccstd::string &name, bool value) { _macros[name] = value; }
     inline void setValue(const ccstd::string &name, const ccstd::string &value) { _macros[name] = value; }
