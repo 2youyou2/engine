@@ -23,6 +23,7 @@
 ****************************************************************************/
 
 #include "GLES3PipelineCache.h"
+#include "GLES3Device.h"
 
 #include <fstream>
 
@@ -36,12 +37,16 @@
 namespace cc::gfx {
 
 #define PIPELINE_CACHE_FORCE_INCREMENTAL
+#define ENABLE_SAVE_CACHE 1
 
-#if defined(_WIN32) && !defined(PIPELINE_CACHE_FORCE_INCREMENTAL)
-    #define PIPELINE_CACHE_FULL
-#else
-    #define PIPELINE_CACHE_INCREMENTAL
+#if ENABLE_SAVE_CACHE
+    #if defined(_WIN32) && !defined(PIPELINE_CACHE_FORCE_INCREMENTAL)
+        #define PIPELINE_CACHE_FULL
+    #else
+        #define PIPELINE_CACHE_INCREMENTAL
+    #endif
 #endif
+
 
 namespace {
 const char *fileName = "/pipeline_cache_gles3.bin";
@@ -66,21 +71,22 @@ void saveItem(BinaryOutputArchive &archive, GLES3GPUProgramBinary *binary) {
 } // namespace
 
 GLES3PipelineCache::GLES3PipelineCache() {
-    _savePath = FileUtils::getInstance()->fullPathForFilename("pipeline_cache_gles3.bin");
+    std::string internalPath = GLES3Device::getInstance()->getRenderer() + "_pipeline_cache_gles3.bin";
+    std::replace(internalPath.begin(), internalPath.end(), ' ', '_');
+    std::replace(internalPath.begin(), internalPath.end(), '(', '_');
+    std::replace(internalPath.begin(), internalPath.end(), ')', '_');
+    CC_LOG_INFO("GLES3PipelineCache internal path : %s", internalPath.c_str());
 
-    if (_savePath != "") {
-        auto d = FileUtils::getInstance()->getDataFromFile(_savePath);
+    std::string findedInternalPath = FileUtils::getInstance()->fullPathForFilename(internalPath);
+    CC_LOG_INFO("GLES3PipelineCache finded internal path : %s", findedInternalPath.c_str());
 
-        _savePath = getPipelineCacheFolder() + fileName;
-        //_savePath = std::string("/storage/emulated/0") + fileName;
+    _savePath = getPipelineCacheFolder() + fileName;
+    //_savePath = std::string("/storage/emulated/0") + fileName;
+    CC_LOG_INFO("GLES3PipelineCache path : %s", _savePath.c_str());
 
+    if (!FileUtils::getInstance()->isFileExist(_savePath) && findedInternalPath != "") {
+        auto d = FileUtils::getInstance()->getDataFromFile(internalPath);
         FileUtils::getInstance()->writeDataToFile(d, _savePath);
-    }
-
-    if (_savePath == "") {
-        _savePath = getPipelineCacheFolder() + fileName;
-        // for android pull data
-        //_savePath = std::string("/storage/emulated/0") + fileName;
     }
 }
 
@@ -88,6 +94,10 @@ GLES3PipelineCache::~GLES3PipelineCache() { // NOLINT
 #ifdef PIPELINE_CACHE_FULL
     saveCacheFull();
 #endif
+
+//    auto d = FileUtils::getInstance()->getDataFromFile(_savePath);
+//    std::string exteral_path = std::string("/storage/emulated/0") + fileName;
+//    FileUtils::getInstance()->writeDataToFile(d, exteral_path);
 }
 
 bool GLES3PipelineCache::loadCache() {
@@ -125,6 +135,7 @@ bool GLES3PipelineCache::loadCache() {
 
         // skip length if not valid.
         if (!checkProgramFormat(format)) {
+            CC_LOG_INFO("GLES3PipelineCache checkProgramFormat failed : %d", format);
             archive.move(dataLength + nameLength + sizeof(GLES3GPUProgramBinary::hash));
             continue;
         }
@@ -187,6 +198,11 @@ void GLES3PipelineCache::init() {
 
     _programBinaryFormats.resize(shaderBinaryFormats);
     GL_CHECK(glGetIntegerv(GL_PROGRAM_BINARY_FORMATS, _programBinaryFormats.data()));
+
+    CC_LOG_INFO("GLES3PipelineCache supported programBinaryFormats length %d.", _programBinaryFormats.size());
+    for (auto i : _programBinaryFormats) {
+        CC_LOG_INFO("GLES3PipelineCache supported programBinaryFormats %d.", i);
+    }
 
     bool success = loadCache();
     if (!success) {
