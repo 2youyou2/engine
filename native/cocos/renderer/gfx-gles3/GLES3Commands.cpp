@@ -1051,7 +1051,9 @@ bool cmdFuncGLES3CreateProgramBySource(GLES3Device *device, GLES3GPUShader *gpuS
         GL_CHECK(glShaderSource(gpuStage.glShader, 1, (const GLchar **)&source, nullptr));
         GL_CHECK(glCompileShader(gpuStage.glShader));
 
-        CC_LOG_INFO("Shader '%s' compilation succeeded.", gpuShader->name.c_str());
+        if (glShaderStage == GL_FRAGMENT_SHADER) {
+            CC_LOG_INFO("Shader '%s' compilation succeeded.", gpuShader->name.c_str());
+        }
 
         GL_CHECK(glGetShaderiv(gpuStage.glShader, GL_COMPILE_STATUS, &status));
         if (status != GL_TRUE) {

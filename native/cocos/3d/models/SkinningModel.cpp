@@ -81,7 +81,10 @@ void SkinningModel::bindSkeleton(Skeleton *skeleton, Node *skinningRoot, Mesh *m
 
     if (!skeleton || !skinningRoot || !mesh) return;
     auto jointCount = static_cast<uint32_t>(skeleton->getJoints().size());
-    _realTimeTextureMode = pipeline::SkinningJointCapacity::jointUniformCapacity < jointCount;
+    _realTimeTextureMode = false;
+    if (pipeline::SkinningJointCapacity::jointUniformCapacity < jointCount) {
+        _realTimeTextureMode = true;
+    }
     setTransform(skinningRoot);
     auto boneSpaceBounds = mesh->getBoneSpaceBounds(skeleton);
     const auto &jointMaps = mesh->getStruct().jointMaps;

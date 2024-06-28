@@ -433,6 +433,10 @@ void ProgramLib::destroyShaderByDefines(const MacroRecord &defines) {
     }
 }
 
+bool compareIMacroInfo(IMacroInfo& a, IMacroInfo& b) {
+    return a.name.compare(b.name) >= 0;
+}
+
 gfx::Shader *ProgramLib::getGFXShader(gfx::Device *device, const ccstd::string &name, MacroRecord &defines,
                                       render::PipelineRuntime *pipeline, ccstd::string *keyOut) {
     for (const auto &it : pipeline->getMacros()) {
@@ -467,6 +471,9 @@ gfx::Shader *ProgramLib::getGFXShader(gfx::Device *device, const ccstd::string &
     }
 
     ccstd::vector<IMacroInfo> macroArray = render::prepareDefines(defines, tmpl.defines);
+
+    std::sort(macroArray.begin(), macroArray.end(), compareIMacroInfo);
+
     std::stringstream ss;
     ss << std::endl;
     for (const auto &m : macroArray) {

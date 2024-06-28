@@ -218,7 +218,11 @@ ccstd::vector<IMacroInfo> prepareDefines(const MacroRecord &records, const ccstd
         const auto &name = tmp.name;
         auto it = records.find(name);
         auto value = mapDefine(tmp, it == records.end() ? ccstd::nullopt : ccstd::optional<MacroValue>(it->second));
-        bool isDefault = it == records.end() || (ccstd::holds_alternative<ccstd::string>(it->second) && ccstd::get<ccstd::string>(it->second) == "0");
+        bool isDefault = it == records.end() ||
+                         (ccstd::holds_alternative<ccstd::string>(it->second) && ccstd::get<ccstd::string>(it->second) == "0") ||
+                         (ccstd::holds_alternative<bool>(it->second) && !ccstd::get<bool>(it->second)) ||
+                         (ccstd::holds_alternative<int32_t>(it->second) && !ccstd::get<int32_t>(it->second))
+            ;
         macros.emplace_back();
         auto &info = macros.back();
         info.name = name;
