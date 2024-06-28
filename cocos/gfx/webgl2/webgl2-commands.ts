@@ -1605,6 +1605,13 @@ export function WebGL2CmdFuncCreateShader (device: WebGL2Device, gpuShader: IWeb
             gl.shaderSource(gpuStage.glShader, `#version 300 es\n${gpuStage.source}`);
             gl.compileShader(gpuStage.glShader);
 
+            if (glShaderType === gl.FRAGMENT_SHADER) {
+                if (window.onGLShaderCompiled) {
+                    window.onGLShaderCompiled(gpuShader);
+                }
+                console.log(`Compile Shader ${gpuStage.type}: ${gpuShader.name}`)
+            }
+
             if (!gl.getShaderParameter(gpuStage.glShader, gl.COMPILE_STATUS)) {
                 error(`${shaderTypeStr} in '${gpuShader.name}' compilation failed.`);
                 error('Shader source dump:', gpuStage.source.replace(/^|\n/g, (): string => `\n${lineNumber++} `));
