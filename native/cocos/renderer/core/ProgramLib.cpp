@@ -434,7 +434,7 @@ void ProgramLib::destroyShaderByDefines(const MacroRecord &defines) {
 }
 
 bool compareIMacroInfo(IMacroInfo& a, IMacroInfo& b) {
-    return a.name.compare(b.name) >= 0;
+    return a.name.compare(b.name) <= 0;
 }
 
 gfx::Shader *ProgramLib::getGFXShader(gfx::Device *device, const ccstd::string &name, MacroRecord &defines,
