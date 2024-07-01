@@ -79,6 +79,7 @@ public:
 
     void blitFramebuffer(Framebuffer *src, Framebuffer *dst, const Rect *srcRect, const Rect *dstRect, Filter filter) override {}
 
+    virtual std::vector<std::string> &getCompiledShaderNames() { return std::vector<std::string>(); }
 protected:
     static EmptyDevice *instance;
 

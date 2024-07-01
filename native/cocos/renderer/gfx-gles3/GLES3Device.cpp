@@ -539,6 +539,10 @@ CommandBuffer *GLES3Device::createCommandBuffer(const CommandBufferInfo &info, b
     return ccnew GLES3CommandBuffer;
 }
 
+void GLES3Device::addCompiledShaderNames(std::string &name) {
+    _compiledShaderNames.push_back(name);
+}
+
 Queue *GLES3Device::createQueue() {
     return ccnew GLES3Queue;
 }

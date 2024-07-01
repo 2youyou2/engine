@@ -1135,6 +1135,8 @@ void cmdFuncGLES3CreateShader(GLES3Device *device, GLES3GPUShader *gpuShader, GL
         }
     }
 
+    device->addCompiledShaderNames(gpuShader->name);
+
     GLint attrMaxLength = 0;
     GLint attrCount = 0;
     GL_CHECK(glGetProgramiv(gpuShader->glProgram, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &attrMaxLength));

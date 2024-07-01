@@ -1609,6 +1609,7 @@ export function WebGL2CmdFuncCreateShader (device: WebGL2Device, gpuShader: IWeb
                 if (window.onGLShaderCompiled) {
                     window.onGLShaderCompiled(gpuShader);
                 }
+                device.addCompiledShaderNames(gpuShader.name);
                 console.log(`Compile Shader ${gpuStage.type}: ${gpuShader.name}`)
             }
 

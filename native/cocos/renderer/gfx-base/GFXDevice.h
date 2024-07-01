@@ -131,6 +131,8 @@ public:
         return SampleCount::X1;
     };
 
+    virtual std::vector<std::string> &getCompiledShaderNames() = 0;
+
 protected:
     static Device *instance;
     static bool isSupportDetachDeviceThread;

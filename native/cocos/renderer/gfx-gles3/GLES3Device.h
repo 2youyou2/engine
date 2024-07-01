@@ -97,7 +97,16 @@ public:
 
     inline bool isTextureExclusive(const Format &format) const { return _textureExclusive[static_cast<size_t>(format)]; };
     SampleCount getMaxSampleCount(Format format, TextureUsage usage, TextureFlags flags) const override;
+
+    void addCompiledShaderNames(std::string& name);
+    virtual std::vector<std::string> &getCompiledShaderNames() override {
+        return _compiledShaderNames;
+    }
+
+
 protected:
+    std::vector<std::string> _compiledShaderNames;
+    
     static GLES3Device *instance;
 
     friend class DeviceManager;

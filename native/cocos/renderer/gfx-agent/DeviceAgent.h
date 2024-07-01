@@ -108,6 +108,9 @@ public:
 
     void enableAutoBarrier(bool en) override;
     SampleCount getMaxSampleCount(Format format, TextureUsage usage, TextureFlags flags) const override;
+
+    virtual std::vector<std::string> &getCompiledShaderNames() { return _actor->getCompiledShaderNames(); }
+
 protected:
     static DeviceAgent *instance;
 

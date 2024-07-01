@@ -108,6 +108,14 @@ export class WebGL2Device extends Device {
 
     protected _textureExclusive = new Array<boolean>(Format.COUNT);
 
+    compiledShaderNames:string[] = []
+    getCompiledShaderNames() {
+        return this.compiledShaderNames;
+    }
+    addCompiledShaderNames(name) {
+        this.compiledShaderNames.push(name);
+    }
+
     public initialize (info: Readonly<DeviceInfo>): boolean {
         WebGL2DeviceManager.setInstance(this);
         this._gfxAPI = API.WEBGL2;
