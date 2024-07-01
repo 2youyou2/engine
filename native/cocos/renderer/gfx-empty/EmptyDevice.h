@@ -79,7 +79,7 @@ public:
 
     void blitFramebuffer(Framebuffer *src, Framebuffer *dst, const Rect *srcRect, const Rect *dstRect, Filter filter) override {}
 
-    virtual std::vector<std::string> &getCompiledShaderNames() { return std::vector<std::string>(); }
+    virtual std::vector<std::string> &getCompiledShaderNames() { return _compiledShaderNames; }
 protected:
     static EmptyDevice *instance;
 
@@ -89,6 +89,8 @@ protected:
 
     bool doInit(const DeviceInfo &info) override;
     void doDestroy() override;
+
+    std::vector<std::string> _compiledShaderNames;
 };
 
 } // namespace gfx

@@ -78,7 +78,7 @@ GLES3PipelineCache::GLES3PipelineCache() {
     std::replace(internalPath.begin(), internalPath.end(), ':', '_');
     std::replace(internalPath.begin(), internalPath.end(), '/', '_');
     std::replace(internalPath.begin(), internalPath.end(), '@', '_');
-    std::replace(internalPath.begin(), internalPath.end(), '.', '_');
+    //std::replace(internalPath.begin(), internalPath.end(), '.', '_');
     CC_LOG_INFO("GLES3PipelineCache internal path : %s", internalPath.c_str());
 
     std::string findedInternalPath = FileUtils::getInstance()->fullPathForFilename(internalPath);
@@ -91,6 +91,7 @@ GLES3PipelineCache::GLES3PipelineCache() {
     if (!FileUtils::getInstance()->isFileExist(_savePath) && findedInternalPath != "") {
         auto d = FileUtils::getInstance()->getDataFromFile(internalPath);
         FileUtils::getInstance()->writeDataToFile(d, _savePath);
+        CC_LOG_INFO("GLES3PipelineCache copy %s to : %s", findedInternalPath.c_str(), _savePath.c_str());
     }
 }
 

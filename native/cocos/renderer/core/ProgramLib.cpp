@@ -472,7 +472,7 @@ gfx::Shader *ProgramLib::getGFXShader(gfx::Device *device, const ccstd::string &
 
     ccstd::vector<IMacroInfo> macroArray = render::prepareDefines(defines, tmpl.defines);
 
-    std::sort(macroArray.begin(), macroArray.end(), compareIMacroInfo);
+//    std::sort(macroArray.begin(), macroArray.end(), compareIMacroInfo);
 
     std::stringstream ss;
     ss << std::endl;
