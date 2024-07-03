@@ -115,23 +115,26 @@ void BufferAgent::doDestroy() {
 }
 
 void BufferAgent::update(const void *buffer, uint32_t size) {
-    uint8_t *actorBuffer{nullptr};
-    bool needFreeing{false};
-    auto *mq{DeviceAgent::getInstance()->getMessageQueue()};
+    getActor()->update(buffer, size);
 
-    getActorBuffer(this, mq, size, &actorBuffer, &needFreeing);
-    memcpy(actorBuffer, buffer, size);
+    //uint8_t *actorBuffer{nullptr};
+    //bool needFreeing{false};
+    //auto *mq{DeviceAgent::getInstance()->getMessageQueue()};
 
-    ENQUEUE_MESSAGE_4(
-        mq, BufferUpdate,
-        actor, getActor(),
-        buffer, actorBuffer,
-        size, size,
-        needFreeing, needFreeing,
-        {
-            actor->update(buffer, size);
-            if (needFreeing) free(buffer);
-        });
+    //getActorBuffer(this, mq, size, &actorBuffer, &needFreeing);
+    //memcpy(actorBuffer, buffer, size);
+
+
+    //ENQUEUE_MESSAGE_4(
+    //    mq, BufferUpdate,
+    //    actor, getActor(),
+    //    buffer, actorBuffer,
+    //    size, size,
+    //    needFreeing, needFreeing,
+    //    {
+    //        actor->update(buffer, size);
+    //        if (needFreeing) free(buffer);
+    //    });
 }
 
 void BufferAgent::flush(const uint8_t *buffer) {
