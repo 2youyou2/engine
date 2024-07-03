@@ -217,6 +217,7 @@ export class Pass {
         this._doInit(info);
         this.resetUBOs();
         this.resetTextures();
+        this._updatePassHash();
         // this.tryCompile();
     }
 
