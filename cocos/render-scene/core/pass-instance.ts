@@ -66,6 +66,8 @@ export class PassInstance extends Pass {
                 this._descriptorSet.bindTexture(u.binding, texture, j);
             }
         }
+
+        super._updatePassHash();
         // super.tryCompile();
     }
 

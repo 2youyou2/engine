@@ -344,12 +344,14 @@ export class SubModel {
         const passes = this._passes;
         if (!passes) { return; }
 
-        // for (let i = 0; i < passes.length; i++) {
-        //     const pass = passes[i];
-        //     pass.beginChangeStatesSilently();
-        //     pass.tryCompile(); // force update shaders
-        //     pass.endChangeStatesSilently();
-        // }
+        for (let i = 0; i < passes.length; i++) {
+            const pass = passes[i];
+            // pass.beginChangeStatesSilently();
+            // pass.tryCompile(); // force update shaders
+            // pass.endChangeStatesSilently();
+
+            pass._updatePassHash();
+        }
 
         this._flushPassInfo();
     }
@@ -373,12 +375,14 @@ export class SubModel {
         const passes = this._passes;
         if (!passes) { return; }
 
-        // for (let i = 0; i < passes.length; i++) {
-        //     const pass = passes[i];
-        //     pass.beginChangeStatesSilently();
-        //     pass.tryCompile(); // force update shaders
-        //     pass.endChangeStatesSilently();
-        // }
+        for (let i = 0; i < passes.length; i++) {
+            const pass = passes[i];
+            // pass.beginChangeStatesSilently();
+            // pass.tryCompile(); // force update shaders
+            // pass.endChangeStatesSilently();
+
+            pass._updatePassHash();
+        }
 
         this._flushPassInfo();
     }
@@ -527,6 +531,11 @@ export class SubModel {
         if (!passes) { return; }
         if (!this._shaders) { this._shaders = []; }
         this._shaders.length = 0;
+
+        for (let i = 0, len = passes.length; i < len; i++) {
+            passes[i].updateShaderVariantDefines(this.patches)!;
+            passes[i]._updatePassHash()
+        }
 
         // this._shaders.length = passes.length;
         // for (let i = 0, len = passes.length; i < len; i++) {

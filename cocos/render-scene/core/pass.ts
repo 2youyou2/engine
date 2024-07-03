@@ -517,6 +517,21 @@ export class Pass {
         return true;
     }
 
+    updateShaderVariantDefines (patches: Readonly<IMacroPatch[] | null> = null) {
+        if (!patches) {
+            return this._shader;
+        }
+
+        for (let i = 0; i < patches.length; i++) {
+            const patch = patches[i];
+            this._defines[patch.name] = patch.value;
+        }
+
+        if (this._isBlend) {
+            this._defines.CC_IS_TRANSPARENCY_PASS = 1;
+        }
+    }
+
     /**
      * @en Gets the shader variant of the current pass and given macro patches
      * @zh 结合指定的编译宏组合获取当前 Pass 的 Shader Variant
