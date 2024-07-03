@@ -522,6 +522,8 @@ export class Pass {
             return this._shader;
         }
 
+        this._syncBatchingScheme();
+
         for (let i = 0; i < patches.length; i++) {
             const patch = patches[i];
             this._defines[patch.name] = patch.value;
