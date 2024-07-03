@@ -160,7 +160,7 @@ export class RenderReflectionProbeQueue {
                 buffer.merge(subModel, passIdx);
                 this._instancedQueue.queue.add(buffer);
             } else {
-                const shader = subModel.shaders[passIdx];
+                const shader = subModel.getShader(passIdx);
                 this._subModelsArray.push(subModel);
                 if (shader) this._shaderArray.push(shader);
                 this._passArray.push(pass);

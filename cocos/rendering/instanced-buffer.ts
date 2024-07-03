@@ -81,7 +81,7 @@ export class InstancedBuffer {
         const useReflectionProbeType = subModel.useReflectionProbeType;
         let shader = shaderImplant;
         if (!shader) {
-            shader = subModel.shaders[passIdx];
+            shader = subModel.getShader(passIdx);
         }
         const descriptorSet = subModel.descriptorSet;
         for (let i = 0; i < this.instances.length; ++i) {

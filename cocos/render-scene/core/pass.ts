@@ -217,7 +217,7 @@ export class Pass {
         this._doInit(info);
         this.resetUBOs();
         this.resetTextures();
-        this.tryCompile();
+        // this.tryCompile();
     }
 
     /**
@@ -522,12 +522,11 @@ export class Pass {
      * @param patches The macro patches
      */
     public getShaderVariant (patches: Readonly<IMacroPatch[] | null> = null): Shader | null {
-        if (!this._shader && !this.tryCompile()) {
-            warnID(12105);
-            return null;
-        }
-
         if (!patches) {
+            if (!this._shader && !this.tryCompile()) {
+                warnID(12105);
+                return null;
+            }
             return this._shader;
         }
 

@@ -255,7 +255,7 @@ export class RenderAdditiveLightQueue {
         for (let i = 0; i < this._lightPasses.length; i++) {
             const { subModel, passIdx, dynamicOffsets, lights } = this._lightPasses[i];
             const pass = subModel.passes[passIdx];
-            const shader = subModel.shaders[passIdx];
+            const shader = subModel.getShader(passIdx);
             const ia = subModel.inputAssembler;
             const pso = PipelineStateManager.getOrCreatePipelineState(device, pass, shader, renderPass, ia);
             const matDS = pass.descriptorSet;

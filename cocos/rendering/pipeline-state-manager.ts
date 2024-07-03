@@ -38,6 +38,9 @@ export class PipelineStateManager {
         const newHash = hash1 ^ hash2 ^ hash3 ^ hash4;
         let pso = this._PSOHashMap.get(newHash);
         if (!pso) {
+            if (!pass.pipelineLayout) {
+                pass.tryCompile()
+            }
             const pipelineLayout = pass.pipelineLayout;
             const inputState = new InputState(ia.attributes);
             const psoInfo = new PipelineStateInfo(

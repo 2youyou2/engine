@@ -39,7 +39,7 @@ export class RenderDrawQueue {
         const pass = subModel.passes[passIdx];
         const passPriority = pass.priority;
         const modelPriority = subModel.priority;
-        const shaderId = subModel.shaders[passIdx].typedID;
+        const shaderId = subModel.getShader(passIdx).typedID;
         const hash = (0 << 30) | (passPriority as number << 16) | (modelPriority as number << 8) | passIdx;
         const priority = model.priority;
 
@@ -90,7 +90,7 @@ export class RenderDrawQueue {
             const passIdx = instance.passIndex;
             const inputAssembler = subModel.inputAssembler;
             const pass = subModel.passes[passIdx];
-            const shader = subModel.shaders[passIdx];
+            const shader = subModel.getShader(passIdx);
             const pso = PipelineStateManager.getOrCreatePipelineState(device, pass, shader, renderPass, inputAssembler);
 
             cmdBuffer.bindPipelineState(pso);

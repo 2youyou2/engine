@@ -371,14 +371,18 @@ export class Shadows {
             } else {
                 const root = cclegacy.director.root;
                 const pipeline = root.pipeline;
-                pipeline.macros.CC_SHADOW_TYPE = 2;
-                root.onGlobalPipelineStateChanged();
+                if (pipeline.macros.CC_SHADOW_TYPE !== 2) {
+                    pipeline.macros.CC_SHADOW_TYPE = 2;
+                    root.onGlobalPipelineStateChanged();
+                }
             }
         } else {
             const root = cclegacy.director.root;
             const pipeline = root.pipeline;
-            pipeline.macros.CC_SHADOW_TYPE = 0;
-            root.onGlobalPipelineStateChanged();
+            if (pipeline.macros.CC_SHADOW_TYPE !== 0) {
+                pipeline.macros.CC_SHADOW_TYPE = 0;
+                root.onGlobalPipelineStateChanged();
+            }
         }
     }
 

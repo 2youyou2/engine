@@ -344,12 +344,12 @@ export class SubModel {
         const passes = this._passes;
         if (!passes) { return; }
 
-        for (let i = 0; i < passes.length; i++) {
-            const pass = passes[i];
-            pass.beginChangeStatesSilently();
-            pass.tryCompile(); // force update shaders
-            pass.endChangeStatesSilently();
-        }
+        // for (let i = 0; i < passes.length; i++) {
+        //     const pass = passes[i];
+        //     pass.beginChangeStatesSilently();
+        //     pass.tryCompile(); // force update shaders
+        //     pass.endChangeStatesSilently();
+        // }
 
         this._flushPassInfo();
     }
@@ -373,12 +373,12 @@ export class SubModel {
         const passes = this._passes;
         if (!passes) { return; }
 
-        for (let i = 0; i < passes.length; i++) {
-            const pass = passes[i];
-            pass.beginChangeStatesSilently();
-            pass.tryCompile(); // force update shaders
-            pass.endChangeStatesSilently();
-        }
+        // for (let i = 0; i < passes.length; i++) {
+        //     const pass = passes[i];
+        //     pass.beginChangeStatesSilently();
+        //     pass.tryCompile(); // force update shaders
+        //     pass.endChangeStatesSilently();
+        // }
 
         this._flushPassInfo();
     }
@@ -514,14 +514,23 @@ export class SubModel {
         this.instancedSHIndex = this.getInstancedAttributeIndex(INST_SH);
     }
 
+    getShader(passIdx) {
+        const passes = this._passes!;
+        if (!this._shaders![passIdx]) {
+            this._shaders![passIdx] = passes[passIdx].getShaderVariant(this.patches)!;
+        }
+        return this._shaders![passIdx];
+    }
+
     protected _flushPassInfo (): void {
         const passes = this._passes;
         if (!passes) { return; }
         if (!this._shaders) { this._shaders = []; }
+        this._shaders.length = 0;
 
-        this._shaders.length = passes.length;
-        for (let i = 0, len = passes.length; i < len; i++) {
-            this._shaders[i] = passes[i].getShaderVariant(this.patches)!;
-        }
+        // this._shaders.length = passes.length;
+        // for (let i = 0, len = passes.length; i < len; i++) {
+        //     this._shaders[i] = passes[i].getShaderVariant(this.patches)!;
+        // }
     }
 }

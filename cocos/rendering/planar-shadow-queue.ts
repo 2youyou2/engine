@@ -126,7 +126,7 @@ export class PlanarShadowQueue {
                     buffer.merge(subModel, shadowPassIdx);
                     this._instancedQueue.queue.add(buffer);
                 } else {
-                    const shader = subModel.shaders[shadowPassIdx];
+                    const shader = subModel.getShader[shadowPassIdx];
                     this._subModelArray.push(subModel);
                     if (shader) this._shaderArray.push(shader);
                     this._passArray.push(pass);
