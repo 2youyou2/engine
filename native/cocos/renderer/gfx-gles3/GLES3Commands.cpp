@@ -999,9 +999,9 @@ bool cmdFuncGLES3CreateProgramByBinary(GLES3Device *device, GLES3GPUShader *gpuS
     }
 
     ccstd::hash_t hash = gpuShader->hash;
-    if (pipelineLayout != nullptr) {
-        ccstd::hash_combine(hash, pipelineLayout->hash);
-    }
+    //if (pipelineLayout != nullptr) {
+    //    ccstd::hash_combine(hash, pipelineLayout->hash);
+    //}
 
     auto *item = pipelineCache->fetchBinary(gpuShader->name, hash);
     if (item != nullptr) {
@@ -1117,9 +1117,9 @@ bool cmdFuncGLES3CreateProgramBySource(GLES3Device *device, GLES3GPUShader *gpuS
         IntrusivePtr<GLES3GPUProgramBinary> binary = ccnew GLES3GPUProgramBinary();
         binary->name = gpuShader->name;
         binary->hash = gpuShader->hash;
-        if (pipelineLayout != nullptr) {
-            ccstd::hash_combine(binary->hash, pipelineLayout->hash);
-        }
+        //if (pipelineLayout != nullptr) {
+        //    ccstd::hash_combine(binary->hash, pipelineLayout->hash);
+        //}
         binary->data.resize(binaryLength);
         GL_CHECK(glGetProgramBinary(gpuShader->glProgram, binaryLength, &length, &binary->format, binary->data.data()));
         cache->addBinary(binary);
