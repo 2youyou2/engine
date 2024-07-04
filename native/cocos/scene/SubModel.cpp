@@ -111,9 +111,14 @@ void SubModel::setPasses(const SharedPassArray &pPasses) {
     }
 }
 
-gfx::Shader *SubModel::getShader(uint32_t index) const {
-    if (index >= _shaders.size()) {
+gfx::Shader *SubModel::getShader(uint32_t index) {
+    /*if (index >= _shaders.size()) {
         return nullptr;
+    }*/
+
+    auto &passes = *_passes;
+    if (!_shaders[index]) {
+        _shaders[index] = passes[index]->getShaderVariant(_patches);
     }
 
     return _shaders[index];
@@ -227,9 +232,11 @@ void SubModel::onPipelineStateChanged() {
     if (passes.empty()) return;
 
     for (Pass *pass : passes) {
-        pass->beginChangeStatesSilently();
-        pass->tryCompile(); // force update shaders
-        pass->endChangeStatesSilently();
+        //pass->beginChangeStatesSilently();
+        //pass->tryCompile(); // force update shaders
+        //pass->endChangeStatesSilently();
+
+        pass->updatePassHash();
     }
     flushPassInfo();
 }
@@ -248,12 +255,15 @@ void SubModel::onMacroPatchesStateChanged(const ccstd::vector<IMacroPatch> &patc
     const auto &passes = *_passes;
     if (passes.empty()) return;
     for (Pass *pass : passes) {
-        pass->beginChangeStatesSilently();
-        pass->tryCompile(); // force update shaders
-        pass->endChangeStatesSilently();
+        //pass->beginChangeStatesSilently();
+        //pass->tryCompile(); // force update shaders
+        //pass->endChangeStatesSilently();
+
+        pass->updatePassHash();
     }
     flushPassInfo();
 }
+
 
 void SubModel::onGeometryChanged() {
     if (!_subMesh) {
@@ -351,7 +361,10 @@ void SubModel::flushPassInfo() {
     }
     _shaders.resize(passes.size());
     for (size_t i = 0; i < passes.size(); ++i) {
-        _shaders[i] = passes[i]->getShaderVariant(_patches);
+        passes[i]->updateShaderVariantDefines(_patches);
+        passes[i]->updatePassHash();
+
+        //_shaders[i] = passes[i]->getShaderVariant(_patches);
     }
 }
 

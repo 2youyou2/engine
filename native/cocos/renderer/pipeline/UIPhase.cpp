@@ -48,7 +48,7 @@ void UIPhase::render(scene::Camera *camera, gfx::RenderPass *renderPass) {
         if (!(camera->getVisibility() & (batch->getVisFlags()))) continue;
         const auto &passes = batch->getPasses();
         for (size_t i = 0; i < batch->getShaders().size(); ++i) {
-            const scene::Pass *pass = passes[i];
+            scene::Pass *pass = passes[i];
             if (pass->getPhase() != _phaseID) continue;
             auto *shader = batch->getShaders()[i];
             auto *inputAssembler = batch->getInputAssembler();

@@ -32,7 +32,7 @@ namespace pipeline {
 
 ccstd::unordered_map<ccstd::hash_t, IntrusivePtr<gfx::PipelineState>> PipelineStateManager::psoHashMap;
 
-gfx::PipelineState *PipelineStateManager::getOrCreatePipelineState(const scene::Pass *pass,
+gfx::PipelineState *PipelineStateManager::getOrCreatePipelineState(scene::Pass *pass,
                                                                    gfx::Shader *shader,
                                                                    gfx::InputAssembler *inputAssembler,
                                                                    gfx::RenderPass *renderPass,
@@ -49,6 +49,10 @@ gfx::PipelineState *PipelineStateManager::getOrCreatePipelineState(const scene::
     auto *pso = psoHashMap[static_cast<ccstd::hash_t>(hash)].get();
     if (!pso) {
         auto *pipelineLayout = pass->getPipelineLayout();
+        if (!pipelineLayout) {
+            pass->tryCompile();
+            pipelineLayout = pass->getPipelineLayout();
+        }
 
         pso = gfx::Device::getInstance()->createPipelineState({shader,
                                                                pipelineLayout,

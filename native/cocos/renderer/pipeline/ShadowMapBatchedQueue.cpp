@@ -119,7 +119,7 @@ void ShadowMapBatchedQueue::add(const scene::Model *model) {
             continue;
         }
 
-        const auto *pass = subModel->getPass(shadowPassIdx);
+        auto *pass = subModel->getPass(shadowPassIdx);
         const auto batchingScheme = pass->getBatchingScheme();
 
         if (batchingScheme == scene::BatchingSchemes::INSTANCING) {
@@ -140,7 +140,7 @@ void ShadowMapBatchedQueue::recordCommandBuffer(gfx::Device *device, gfx::Render
     for (size_t i = 0; i < _subModels.size(); i++) {
         const auto *const subModel = _subModels[i];
         auto *const shader = _shaders[i];
-        const auto *pass = _passes[i];
+        auto *pass = _passes[i];
         auto *const ia = subModel->getInputAssembler();
         auto *const pso = PipelineStateManager::getOrCreatePipelineState(pass, shader, ia, renderPass);
 

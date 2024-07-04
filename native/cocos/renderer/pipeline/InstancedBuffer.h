@@ -60,7 +60,7 @@ public:
     static constexpr uint32_t INITIAL_CAPACITY = 32;
     static constexpr uint32_t MAX_CAPACITY = 1024;
 
-    explicit InstancedBuffer(const scene::Pass *pass);
+    explicit InstancedBuffer(scene::Pass *pass);
     ~InstancedBuffer() override;
 
     void destroy();
@@ -71,15 +71,15 @@ public:
     void setDynamicOffset(uint32_t idx, uint32_t value);
 
     inline const InstancedItemList &getInstances() const { return _instances; }
-    inline const scene::Pass *getPass() const { return _pass; }
-    inline void setPass(const scene::Pass *pass) noexcept { _pass = pass; }
+    inline scene::Pass *getPass() const { return _pass; }
+    inline void setPass(scene::Pass *pass) noexcept { _pass = pass; }
     inline bool hasPendingModels() const { return _hasPendingModels; }
     inline const DynamicOffsetList &dynamicOffsets() const { return _dynamicOffsets; }
 
 private:
     InstancedItemList _instances;
     // weak reference
-    const scene::Pass *_pass{nullptr};
+    scene::Pass *_pass{nullptr};
     bool _hasPendingModels{false};
     DynamicOffsetList _dynamicOffsets;
     // weak reference

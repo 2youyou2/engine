@@ -155,7 +155,7 @@ void ReflectionProbeBatchedQueue::recordCommandBuffer(gfx::Device *device, gfx::
     for (size_t i = 0; i < _subModels.size(); i++) {
         const auto *const subModel = _subModels[i];
         auto *const shader = _shaders[i];
-        const auto *pass = _passes[i];
+        auto *pass = _passes[i];
         auto *const ia = subModel->getInputAssembler();
         auto *const pso = PipelineStateManager::getOrCreatePipelineState(pass, shader, ia, renderPass);
 

@@ -733,7 +733,7 @@ void submitUICommands(
         }
         const auto& passes = batch->getPasses();
         for (size_t i = 0; i < batch->getShaders().size(); ++i) {
-            const scene::Pass* pass = passes[i];
+            scene::Pass* pass = passes[i];
             if (pass->getSubpassOrPassID() != subpassOrPassLayoutID) {
                 continue;
             }

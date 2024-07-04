@@ -66,7 +66,8 @@ PassInstance::PassInstance(scene::Pass *parent, MaterialInstance *owner)
         }
     }
 
-    Super::tryCompile();
+    Super::updatePassHash();
+    //Super::tryCompile();
 }
 
 PassInstance::~PassInstance() = default;

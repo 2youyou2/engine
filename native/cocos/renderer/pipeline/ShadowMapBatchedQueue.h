@@ -57,7 +57,7 @@ private:
     // weak reference
     ccstd::vector<const scene::SubModel *> _subModels;
     // weak reference
-    ccstd::vector<const scene::Pass *> _passes;
+    ccstd::vector<scene::Pass *> _passes;
     // weak reference
     ccstd::vector<gfx::Shader *> _shaders;
     // manage memory manually

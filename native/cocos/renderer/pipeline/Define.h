@@ -74,7 +74,7 @@ struct CC_DLL RenderPass {
     float depth = 0.0F;
     uint32_t shaderID = 0;
     uint32_t passIndex = 0;
-    const scene::SubModel *subModel = nullptr;
+    scene::SubModel *subModel = nullptr;
 };
 using RenderPassList = ccstd::vector<RenderPass>;
 

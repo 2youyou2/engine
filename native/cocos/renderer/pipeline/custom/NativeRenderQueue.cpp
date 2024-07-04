@@ -35,7 +35,7 @@ namespace render {
 
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 void RenderDrawQueue::add(const scene::Model &model, float depth, uint32_t subModelIdx, uint32_t passIdx) {
-    const auto *subModel = model.getSubModels()[subModelIdx].get();
+    auto *subModel = model.getSubModels()[subModelIdx].get();
     const auto *const pass = subModel->getPass(passIdx);
 
     auto passPriority = static_cast<uint32_t>(pass->getPriority());
@@ -66,11 +66,11 @@ void RenderDrawQueue::recordCommandBuffer(
     gfx::RenderPass *renderPass, gfx::CommandBuffer *cmdBuff,
     uint32_t subpassIndex) const {
     for (const auto &instance : instances) {
-        const auto *subModel = instance.subModel;
+        auto *subModel = instance.subModel;
 
         const auto passIdx = instance.passIndex;
         auto *inputAssembler = subModel->getInputAssembler();
-        const auto *pass = subModel->getPass(passIdx);
+        auto *pass = subModel->getPass(passIdx);
         auto *shader = subModel->getShader(passIdx);
         auto *pso = pipeline::PipelineStateManager::getOrCreatePipelineState(pass, shader, inputAssembler, renderPass, subpassIndex);
 
@@ -96,7 +96,7 @@ void RenderInstancingQueue::clear() {
 }
 
 void RenderInstancingQueue::add(
-    const scene::Pass &pass,
+    scene::Pass &pass,
     scene::SubModel &submodel, uint32_t passID) {
     auto iter = passInstances.find(&pass);
     if (iter == passInstances.end()) {
@@ -146,7 +146,7 @@ void RenderInstancingQueue::recordCommandBuffer(
             continue;
         }
         const auto &instances = instanceBuffer->getInstances();
-        const auto *drawPass = instanceBuffer->getPass();
+        auto *drawPass = instanceBuffer->getPass();
         cmdBuffer->bindDescriptorSet(pipeline::materialSet, drawPass->getDescriptorSet());
         gfx::PipelineState *lastPSO = nullptr;
         for (const auto &instance : instances) {

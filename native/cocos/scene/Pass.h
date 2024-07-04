@@ -295,6 +295,7 @@ public:
     // Only for UI
     void initPassFromTarget(Pass *target, const gfx::DepthStencilState &dss, ccstd::hash_t hashFactor);
     void updatePassHash();
+    void updateShaderVariantDefines(const ccstd::vector<IMacroPatch> &patches);
 
     //  internal use
     /**

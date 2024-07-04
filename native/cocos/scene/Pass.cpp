@@ -169,8 +169,11 @@ void Pass::initialize(const IPassInfoFull &info) {
     doInit(info);
     resetUBOs();
     resetTextures();
-    tryCompile();
+
+    //tryCompile();
+    updatePassHash();
 }
+
 
 uint32_t Pass::getHandle(const ccstd::string &name, uint32_t offset /* = 0 */, gfx::Type targetType /* = gfx::Type::UNKNOWN */) const {
     uint32_t handle = 0;
@@ -474,15 +477,33 @@ gfx::Shader *Pass::getShaderVariant() {
     return getShaderVariant({});
 }
 
-gfx::Shader *Pass::getShaderVariant(const ccstd::vector<IMacroPatch> &patches) {
-    if (!_shader && !tryCompile()) {
-        CC_LOG_WARNING("pass resources incomplete");
-        return nullptr;
+void Pass::updateShaderVariantDefines(const ccstd::vector<IMacroPatch> &patches) {
+    if (patches.empty()) {
+        return;
     }
 
+    syncBatchingScheme();
+
+    auto *pipeline = _root->getPipeline();
+    for (const auto &patch : patches) {
+        _defines[patch.name] = patch.value;
+    }
+
+    if (isBlend()) {
+        _defines["CC_IS_TRANSPARENCY_PASS"] = MacroValue(true);
+    }
+}
+
+gfx::Shader *Pass::getShaderVariant(const ccstd::vector<IMacroPatch> &patches) {
     if (patches.empty()) {
+        if (!_shader && !tryCompile()) {
+            CC_LOG_WARNING("pass resources incomplete");
+            return nullptr;
+        }
+
         return _shader;
     }
+
 #if CC_EDITOR
     for (const auto &patch : patches) {
         std::size_t pos = patch.name.find_first_of("CC_");

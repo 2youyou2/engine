@@ -35,7 +35,7 @@ namespace pipeline {
 
 class CC_DLL PipelineStateManager {
 public:
-    static gfx::PipelineState *getOrCreatePipelineState(const scene::Pass *pass,
+    static gfx::PipelineState *getOrCreatePipelineState(scene::Pass *pass,
                                                         gfx::Shader *shader,
                                                         gfx::InputAssembler *inputAssembler,
                                                         gfx::RenderPass *renderPass,

@@ -33,7 +33,7 @@
 namespace cc {
 namespace pipeline {
 
-InstancedBuffer::InstancedBuffer(const scene::Pass *pass)
+InstancedBuffer::InstancedBuffer(scene::Pass *pass)
 : _pass(pass),
   _device(gfx::Device::getInstance()) {
 }

@@ -132,7 +132,7 @@ void PlanarShadowQueue::recordCommandBuffer(gfx::Device *device, gfx::RenderPass
     for (size_t i = 0; i < _subModelArray.size(); ++i) {
         const auto *const subModel = _subModelArray[i];
         auto *const shader = _shaderArray[i];
-        const auto *pass = _passArray[i];
+        auto *pass = _passArray[i];
         auto *const ia = subModel->getInputAssembler();
         auto *const pso = PipelineStateManager::getOrCreatePipelineState(pass, shader, ia, renderPass, subpassID);
 

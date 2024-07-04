@@ -908,7 +908,7 @@ struct RenderInstancingQueue {
 
     bool empty() const noexcept;
     void clear();
-    void add(const scene::Pass& pass, scene::SubModel& submodel, uint32_t passID);
+    void add(scene::Pass& pass, scene::SubModel& submodel, uint32_t passID);
     void sort();
     void uploadBuffers(gfx::CommandBuffer *cmdBuffer) const;
     void recordCommandBuffer(
@@ -922,7 +922,7 @@ struct RenderInstancingQueue {
 };
 
 struct DrawInstance {
-    const scene::SubModel* subModel{nullptr};
+    scene::SubModel* subModel{nullptr};
     uint32_t priority{0};
     uint32_t hash{0};
     float depth{0};

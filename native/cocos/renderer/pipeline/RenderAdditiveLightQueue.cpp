@@ -82,7 +82,7 @@ void RenderAdditiveLightQueue::recordCommandBuffer(gfx::Device *device, scene::C
         const auto *const subModel = lightPass.subModel;
 
         if (!enableOcclusionQuery || !_pipeline->isOccluded(camera, subModel)) {
-            const auto *pass = lightPass.pass;
+            auto *pass = lightPass.pass;
             const auto &dynamicOffsets = lightPass.dynamicOffsets;
             auto *shader = lightPass.shader;
             const auto lights = lightPass.lights;

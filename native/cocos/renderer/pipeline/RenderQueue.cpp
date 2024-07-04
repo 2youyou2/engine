@@ -47,7 +47,7 @@ void RenderQueue::clear() {
 }
 
 bool RenderQueue::insertRenderPass(const RenderObject &renderObj, uint32_t subModelIdx, uint32_t passIdx) {
-    const auto *subModel = renderObj.model->getSubModels()[subModelIdx].get();
+    auto *subModel = renderObj.model->getSubModels()[subModelIdx].get();
     const auto *const pass = subModel->getPass(passIdx);
     const bool isTransparent = pass->getBlendState()->targets[0].blend;
 
@@ -82,14 +82,14 @@ void RenderQueue::recordCommandBuffer(gfx::Device * /*device*/, scene::Camera *c
     bool enableOcclusionQuery = _pipeline->isOcclusionQueryEnabled() && _useOcclusionQuery;
     auto *queryPool = _pipeline->getQueryPools()[0];
     for (auto &i : _queue) {
-        const auto *subModel = i.subModel;
+        auto *subModel = i.subModel;
         if (enableOcclusionQuery) {
             cmdBuff->beginQuery(queryPool, subModel->getId());
         }
 
         if (enableOcclusionQuery && _pipeline->isOccluded(camera, subModel)) {
             gfx::InputAssembler *inputAssembler = sceneData->getOcclusionQueryInputAssembler();
-            const scene::Pass *pass = sceneData->getOcclusionQueryPass();
+            scene::Pass *pass = sceneData->getOcclusionQueryPass();
             gfx::Shader *shader = sceneData->getOcclusionQueryShader();
             auto *pso = PipelineStateManager::getOrCreatePipelineState(pass, shader, inputAssembler, renderPass, subpassIndex);
 
@@ -101,7 +101,7 @@ void RenderQueue::recordCommandBuffer(gfx::Device * /*device*/, scene::Camera *c
         } else {
             const auto passIdx = i.passIndex;
             auto *inputAssembler = subModel->getInputAssembler();
-            const auto *pass = subModel->getPass(passIdx);
+            auto *pass = subModel->getPass(passIdx);
             auto *shader = subModel->getShader(passIdx);
             auto *pso = PipelineStateManager::getOrCreatePipelineState(pass, shader, inputAssembler, renderPass, subpassIndex);
 
