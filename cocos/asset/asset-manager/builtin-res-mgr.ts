@@ -344,12 +344,12 @@ export class BuiltinResMgr {
 
     public compileBuiltinMaterial (): void {
         // NOTE: Builtin material should be compiled again after the render pipeline setup
-        for (let i = 0; i < this._materialsToBeCompiled.length; ++i) {
-            const mat = this._materialsToBeCompiled[i];
-            for (let j = 0; j < mat.passes.length; ++j) {
-                mat.passes[j].tryCompile();
-            }
-        }
+        // for (let i = 0; i < this._materialsToBeCompiled.length; ++i) {
+        //     const mat = this._materialsToBeCompiled[i];
+        //     for (let j = 0; j < mat.passes.length; ++j) {
+        //         mat.passes[j].tryCompile();
+        //     }
+        // }
         this._materialsToBeCompiled.length = 0;
     }
 }
