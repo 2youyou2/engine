@@ -94,9 +94,14 @@ export class PassInstance extends Pass {
                 return false;
             }
         }
-        const res = super.tryCompile();
-        this._onStateChange();
-        return res;
+
+        this._updatePassHash();
+
+        return true;
+
+        // const res = super.tryCompile();
+        // this._onStateChange();
+        // return res;
     }
 
     /**
