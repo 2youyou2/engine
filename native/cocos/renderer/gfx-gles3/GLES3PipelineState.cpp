@@ -82,16 +82,17 @@ void updateGPUShaderSourceByRenderPass(GLES3GPUShader *gpuShader, GLES3GPURender
         std::stringstream ss2;
         ss2 << layoutPrefix << i << ") inout";
 
-        auto &source = iter->source;
+        auto source = iter->source;
         auto sIter = source.find(ss1.str(), offset);
         if (sIter == std::string::npos) {
             sIter = source.find(ss2.str(), offset);
         }
 
+        // todo: fixed
         if (sIter != std::string::npos) {
-            auto loc = sIter + strlen(layoutPrefix);
-            source[loc] = drawBuffers[i] + '0';
-            offset = loc;
+           auto loc = sIter + strlen(layoutPrefix);
+           source[loc] = drawBuffers[i] + '0';
+           offset = loc;
         }
     }
 }

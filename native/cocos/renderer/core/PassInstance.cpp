@@ -90,9 +90,13 @@ bool PassInstance::tryCompile(const ccstd::optional<MacroRecord> &defineOverride
     if (defineOverrides.has_value()) {
         if (!overrideMacros(_defines, defineOverrides.value())) return false;
     }
-    bool ret = Super::tryCompile();
-    onStateChange();
-    return ret;
+
+    updatePassHash();
+    return true;
+
+    //bool ret = Super::tryCompile();
+    //onStateChange();
+    //return ret;
 }
 
 void PassInstance::beginChangeStatesSilently() {

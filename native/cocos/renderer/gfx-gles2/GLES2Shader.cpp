@@ -64,19 +64,19 @@ GLES2GPUShader *GLES2Shader::gpuShader() const {
 void GLES2Shader::doInit(const ShaderInfo & /*info*/) {
     _gpuShader = ccnew GLES2GPUShader;
     CC_ASSERT(!_gpuShader->glProgram);
-    _gpuShader->name = _name;
-    _gpuShader->blocks = _blocks;
-    _gpuShader->samplerTextures = _samplerTextures;
-    _gpuShader->subpassInputs = _subpassInputs;
+    _gpuShader->name = getName();
+    _gpuShader->blocks = getBlocks();
+    _gpuShader->samplerTextures = getSamplerTextures();
+    _gpuShader->subpassInputs = getSubpassInputs();
 
-    for (const auto &stage : _stages) {
+    for (const auto &stage : getStages()) {
         _gpuShader->gpuStages.push_back({stage.stage, stage.source});
     }
 
-    for (auto &stage : _stages) {
-        stage.source.clear();
-        stage.source.shrink_to_fit();
-    }
+    //for (auto &stage : _stages) {
+    //    stage.source.clear();
+    //    stage.source.shrink_to_fit();
+    //}
 }
 
 void GLES2Shader::doDestroy() {

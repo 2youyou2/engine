@@ -495,6 +495,8 @@ gfx::Shader *ProgramLib::getGFXShader(gfx::Device *device, const ccstd::string &
     tmplInfo.shaderInfo.attributes = render::getActiveAttributes(tmpl, tmplInfo.gfxAttributes, defines);
 
     tmplInfo.shaderInfo.name = render::getShaderInstanceName(name, macroArray);
+    CC_LOG_INFO("ProgramLib::getGFXShader : %s", tmplInfo.shaderInfo.name.c_str());
+
     tmplInfo.shaderInfo.hash = tmpl.hash;
     auto *shader = device->createShader(tmplInfo.shaderInfo);
     _cache[key] = shader;

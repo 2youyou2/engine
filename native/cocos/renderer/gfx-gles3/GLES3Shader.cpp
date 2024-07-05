@@ -47,23 +47,23 @@ GLES3GPUShader *GLES3Shader::gpuShader() const {
 void GLES3Shader::doInit(const ShaderInfo & /*info*/) {
     _gpuShader = ccnew GLES3GPUShader;
     CC_ASSERT(!_gpuShader->glProgram);
-    _gpuShader->name = _name;
-    _gpuShader->blocks = _blocks;
-    _gpuShader->buffers = _buffers;
-    _gpuShader->samplerTextures = _samplerTextures;
-    _gpuShader->samplers = _samplers;
-    _gpuShader->textures = _textures;
-    _gpuShader->images = _images;
-    _gpuShader->subpassInputs = _subpassInputs;
-    _gpuShader->hash = _hash;
-    for (const auto &stage : _stages) {
+    _gpuShader->name = getName();
+    _gpuShader->blocks = getBlocks();
+    _gpuShader->buffers = getBuffers();
+    _gpuShader->samplerTextures = getSamplerTextures();
+    _gpuShader->samplers = getSamplers();
+    _gpuShader->textures = getTextures();
+    _gpuShader->images = getImages();
+    _gpuShader->subpassInputs = getSubpassInputs();
+    _gpuShader->hash = getHash();
+    for (const auto &stage : getStages()) {
         GLES3GPUShaderStage gpuShaderStage = {stage.stage, stage.source};
         _gpuShader->gpuStages.emplace_back(std::move(gpuShaderStage));
     }
-    for (auto &stage : _stages) {
-        stage.source.clear();
-        stage.source.shrink_to_fit();
-    }
+    //for (auto &stage : _stages) {
+    //    stage.source.clear();
+    //    stage.source.shrink_to_fit();
+    //}
 }
 
 void GLES3Shader::doCompileGpuShader() {
@@ -72,7 +72,7 @@ void GLES3Shader::doCompileGpuShader() {
         cmdFuncGLES3CreateShader(GLES3Device::getInstance(), _gpuShader, nullptr);
         CC_ASSERT(_gpuShader->glProgram);
 
-        // Clear shader source after they're uploaded to GPU
+        //// Clear shader source after they're uploaded to GPU
         for (auto &stage : _gpuShader->gpuStages) {
             stage.source.clear();
             stage.source.shrink_to_fit();

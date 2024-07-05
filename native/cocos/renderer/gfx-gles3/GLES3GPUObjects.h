@@ -268,7 +268,7 @@ using GLES3GPUUniformStorageImageList = ccstd::vector<GLES3GPUUniformStorageImag
 struct GLES3GPUShaderStage {
     GLES3GPUShaderStage(ShaderStageFlagBit t, ccstd::string s, GLuint shader = 0)
     : type(t),
-      source(std::move(std::move(s))),
+      source(s),
       glShader(shader) {}
     ShaderStageFlagBit type;
     ccstd::string source;
