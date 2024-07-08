@@ -23,6 +23,7 @@
 */
 
 import { Shader, RenderPass, InputAssembler, Device, PipelineState, InputState, PipelineStateInfo } from '../gfx';
+import { PassInstance } from '../render-scene/core/pass-instance';
 import { Pass } from '../render-scene/core/pass';
 
 export class PipelineStateManager {
@@ -39,7 +40,12 @@ export class PipelineStateManager {
         let pso = this._PSOHashMap.get(newHash);
         if (!pso) {
             if (!pass.pipelineLayout) {
-                pass.tryCompile()
+                if (pass instanceof PassInstance) {
+                    pass.tryCompile(undefined, true);
+                }
+                else {
+                    pass.tryCompile();
+                }
             }
             const pipelineLayout = pass.pipelineLayout;
             const inputState = new InputState(ia.attributes);

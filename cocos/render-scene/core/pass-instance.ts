@@ -88,7 +88,7 @@ export class PassInstance extends Pass {
         this._onStateChange();
     }
 
-    public tryCompile (defineOverrides?: MacroRecord): boolean {
+    public tryCompile (defineOverrides?: MacroRecord, force = false): boolean {
         if (defineOverrides) {
             if (!overrideMacros(this._defines, defineOverrides)) {
                 return false;
@@ -96,6 +96,11 @@ export class PassInstance extends Pass {
         }
 
         this._updatePassHash();
+
+        if (force) {
+            super.tryCompile();
+            this._onStateChange();
+        }
 
         return true;
 
