@@ -99,7 +99,9 @@ export function renderProfiler (device: Device, renderPass: RenderPass, cmdBuff:
     const { inputAssembler, passes, shaders, descriptorSet } = profiler.subModels[0];
     profilerViewport.width = profilerScissor.width = camera.window.width;
     profilerViewport.height = profilerScissor.height = camera.window.height;
-    const pso = PipelineStateManager.getOrCreatePipelineState(device, passes[0], shaders[0], renderPass, inputAssembler);
+    
+    let shader = profiler.subModels[0].getShader(0);
+    const pso = PipelineStateManager.getOrCreatePipelineState(device, passes[0], shader, renderPass, inputAssembler);
 
     cmdBuff.setViewport(profilerViewport);
     cmdBuff.setScissor(profilerScissor);
