@@ -1213,6 +1213,10 @@ export class Model {
         const attributes: Attribute[] = [];
         const attributeSet = new Set<string>();
         for (const pass of subModel.passes) {
+            if (this._device.enabledPhasees.indexOf(pass.phase) === -1) {
+                continue;
+            }
+            
             const shader = pass.getShaderVariant(subModel.patches)!;
             for (const attr of shader.attributes) {
                 if (!attributeSet.has(attr.name)) {

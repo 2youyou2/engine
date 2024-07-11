@@ -68,6 +68,7 @@ import { IWebGL2Extensions, WebGL2DeviceManager } from './webgl2-define';
 import { IWebGL2BindingMapping, IWebGL2BlitManager } from './webgl2-gpu-objects';
 import { BrowserType, OS } from '../../../pal/system-info/enum-type';
 import type { WebGL2StateCache } from './webgl2-state-cache';
+import { getPhaseID } from '../../rendering/pass-phase';
 
 export class WebGL2Device extends Device {
     get gl (): WebGL2RenderingContext {
@@ -119,6 +120,11 @@ export class WebGL2Device extends Device {
     public initialize (info: Readonly<DeviceInfo>): boolean {
         WebGL2DeviceManager.setInstance(this);
         this._gfxAPI = API.WEBGL2;
+        
+        this._enabledPhasees = [
+            getPhaseID('default'),
+            getPhaseID('forward-add'),
+        ]
 
         const mapping = this._bindingMappingInfo = info.bindingMappingInfo;
         const blockOffsets: number[] = [];

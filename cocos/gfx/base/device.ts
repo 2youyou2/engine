@@ -141,6 +141,15 @@ export abstract class Device {
         return this._bindingMappingInfo;
     }
 
+    
+    protected _enabledPhasees: number[] = []
+    get enabledPhasees() {
+        return this._enabledPhasees;
+    }
+    set enabledPhasees (v) {
+        this._enabledPhasees = v;
+    }
+
     protected _gfxAPI = API.UNKNOWN;
     protected _renderer = '';
     protected _vendor = '';

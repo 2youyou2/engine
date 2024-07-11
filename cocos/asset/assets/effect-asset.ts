@@ -336,7 +336,7 @@ export class EffectAsset extends Asset {
             programLib.register(this);
         }
         EffectAsset.register(this);
-        if (!EDITOR_NOT_IN_PREVIEW) { cclegacy.game.once(cclegacy.Game.EVENT_RENDERER_INITED, this._precompile, this); }
+        // if (!EDITOR_NOT_IN_PREVIEW) { cclegacy.game.once(cclegacy.Game.EVENT_RENDERER_INITED, this._precompile, this); }
     }
 
     /**

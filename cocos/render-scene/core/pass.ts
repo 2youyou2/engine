@@ -896,7 +896,12 @@ export class Pass {
     get batchingScheme (): BatchingSchemes { return this._batchingScheme; }
     get descriptorSet (): DescriptorSet { return this._descriptorSet; }
     get hash (): number { return this._hash; }
-    get pipelineLayout (): PipelineLayout { return this._pipelineLayout; }
+    get pipelineLayout (): PipelineLayout {
+        if (!this._pipelineLayout) {
+            this._pipelineLayout = programLib.getTemplateInfo(this._programName).pipelineLayout;
+        } 
+        return this._pipelineLayout; 
+    }
 }
 
 function serializeBlendState (bs: BlendState): string {

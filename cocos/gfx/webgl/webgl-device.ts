@@ -66,6 +66,7 @@ import { Swapchain } from '../base/swapchain';
 import { IWebGLExtensions, WebGLDeviceManager } from './webgl-define';
 import { IWebGLBindingMapping, IWebGLBlitManager } from './webgl-gpu-objects';
 import type { WebGLStateCache } from './webgl-state-cache';
+import { getPhaseID } from '../../rendering/pass-phase';
 
 export class WebGLDevice extends Device {
     get gl (): WebGLRenderingContext {
@@ -109,6 +110,11 @@ export class WebGLDevice extends Device {
     public initialize (info: Readonly<DeviceInfo>): boolean {
         WebGLDeviceManager.setInstance(this);
         this._gfxAPI = API.WEBGL;
+
+        this._enabledPhasees = [
+            getPhaseID('default'),
+            getPhaseID('forward-add'),
+        ]
 
         const mapping = this._bindingMappingInfo = info.bindingMappingInfo;
         const blockOffsets: number[] = [];

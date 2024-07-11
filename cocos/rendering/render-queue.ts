@@ -97,11 +97,11 @@ export class RenderQueue {
     public insertRenderPass (renderObj: IRenderObject, subModelIdx: number, passIdx: number): boolean {
         const subModel = renderObj.model.subModels[subModelIdx];
         const pass = subModel.passes[passIdx];
-        const shader = subModel.getShader(passIdx);
         const isTransparent = pass.blendState.targets[0].blend;
         if (isTransparent !== this._passDesc.isTransparent || !(pass.phase & this._passDesc.phases)) {
             return false;
         }
+        const shader = subModel.getShader(passIdx);
         const hash = (0 << 30) | pass.priority << 16 | subModel.priority << 8 | passIdx;
         const rp = this._passPool.add();
         rp.priority = renderObj.model.priority;

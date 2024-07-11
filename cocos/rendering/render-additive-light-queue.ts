@@ -241,6 +241,11 @@ export class RenderAdditiveLightQueue {
     }
 
     public recordCommandBuffer (device: Device, renderPass: RenderPass, cmdBuff: CommandBuffer): void {
+        const validPunctualLights = this._pipeline.pipelineSceneData.validPunctualLights;
+        if (!validPunctualLights.length) {
+            return;
+        }
+
         const globalDSManager: GlobalDSManager = this._pipeline.globalDSManager;
         for (let j = 0; j < this._instancedQueues.length; ++j) {
             const light = this._instancedLightPassPool.lights[j];
