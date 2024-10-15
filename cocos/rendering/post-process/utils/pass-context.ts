@@ -1,8 +1,8 @@
 import { EDITOR } from 'internal:constants';
 
-import { QueueHint, ResourceResidency, SceneFlags } from '../../custom/types';
+import { QueueHint, ResourceDimension, ResourceFlags, ResourceResidency, SceneFlags } from '../../custom/types';
 import { ClearFlagBit, Color, Format, LoadOp, Rect, StoreOp, Viewport } from '../../../gfx';
-import { Pipeline, RenderPassBuilder } from '../../custom/pipeline';
+import { MultisampleRenderPassBuilder, Pipeline, RenderPassBuilder } from '../../custom/pipeline';
 import { Camera } from '../../../render-scene/scene';
 import { Material } from '../../../asset/assets';
 import { PostProcess } from '../components';
@@ -37,6 +37,8 @@ export class PassContext {
     forwardPass: any = undefined;
     postProcess: PostProcess | undefined;
 
+    sampleCount = 1;
+
     setClearFlag (clearFlag: ClearFlagBit): PassContext {
         this.clearFlag = clearFlag;
         return this;
@@ -65,10 +67,20 @@ export class PassContext {
         Vec4.set(passContext.clearColor, 0, 0, 0, 1);
     }
 
-    addRenderPass (layoutName: string, passName: string): PassContext {
+    addRenderPass (layoutName: string, passName: string, sampleCount = 1): PassContext {
         const passViewport = this.passViewport;
+        let pass;
 
-        const pass = this.ppl!.addRenderPass(passViewport.width, passViewport.height, layoutName);
+        if (sampleCount > 1) {
+            pass = this.ppl!.addMultisampleRenderPass(passViewport.width, passViewport.height, sampleCount, 1, layoutName);
+
+        }
+        else {
+            pass = this.ppl!.addRenderPass(passViewport.width, passViewport.height, layoutName);
+        }
+
+        this.sampleCount = sampleCount;
+
         pass.name = passName;
         this.pass = pass;
         this.layoutName = layoutName;
@@ -119,6 +131,9 @@ export class PassContext {
             return this;
         }
 
+        let isMultiSample = this.sampleCount > 1;
+        let multiSampleName = name + '_ms';
+
         if (!ppl.containsResource(name)) {
             if (format === Format.DEPTH_STENCIL) {
                 ppl.addDepthStencil(name, format, this.rasterWidth, this.rasterHeight, ResourceResidency.MANAGED);
@@ -126,6 +141,21 @@ export class PassContext {
                 ppl.addRenderTarget(name, format, this.rasterWidth, this.rasterHeight, residency || ResourceResidency.MANAGED);
             } else {
                 ppl.addRenderWindow(name, format, this.rasterWidth, this.rasterHeight, camera.window);
+            }
+
+            if (isMultiSample) {
+                let resourceFlag = ResourceFlags.COLOR_ATTACHMENT;
+                if (format === Format.DEPTH_STENCIL) {
+                    resourceFlag = ResourceFlags.DEPTH_STENCIL_ATTACHMENT;
+                }
+
+                ppl.addResource(multiSampleName, ResourceDimension.TEXTURE2D,
+                    format,
+                    this.rasterWidth, this.rasterHeight,
+                    1, 1, 1,
+                    this.sampleCount,
+                    resourceFlag,
+                    ResourceResidency.MEMORYLESS);
             }
         }
 
@@ -139,6 +169,14 @@ export class PassContext {
             ppl.updateDepthStencil(name, this.rasterWidth, this.rasterHeight);
         }
 
+        if (isMultiSample){
+            ppl.updateResource(multiSampleName, format, this.rasterWidth, this.rasterHeight, 1, 1, 1, this.sampleCount);
+        }
+
+        let resPassName = name;
+        if (isMultiSample) {
+            resPassName = multiSampleName;
+        } 
         // let view: RasterView;
         if (format === Format.DEPTH_STENCIL) {
             const clearFlag = this.clearFlag & ClearFlagBit.DEPTH_STENCIL;
@@ -147,7 +185,11 @@ export class PassContext {
                 loadOp = LoadOp.LOAD;
             }
 
-            pass.addDepthStencil(name, loadOp, StoreOp.STORE, this.clearDepthColor.x, this.clearDepthColor.y, clearFlag);
+            pass.addDepthStencil(resPassName, loadOp, StoreOp.STORE, this.clearDepthColor.x, this.clearDepthColor.y, clearFlag);
+
+            if (isMultiSample) {
+                (pass as any as MultisampleRenderPassBuilder).resolveDepthStencil(multiSampleName, name);
+            }
         } else {
             const clearColor = new Color();
             clearColor.copy(this.clearColor);
@@ -158,8 +200,13 @@ export class PassContext {
                 loadOp = LoadOp.LOAD;
             }
 
-            pass.addRenderTarget(name, loadOp, StoreOp.STORE, clearColor);
+            pass.addRenderTarget(resPassName, loadOp, StoreOp.STORE, clearColor);
+
+            if (isMultiSample) {
+                (pass as any as MultisampleRenderPassBuilder).resolveRenderTarget(multiSampleName, name);
+            }
         }
+
         return this;
     }
     setPassInput (inputName: string, shaderName: string): PassContext {

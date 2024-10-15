@@ -8,6 +8,7 @@ import { Pipeline } from '../../custom/pipeline';
 import { passContext } from '../utils/pass-context';
 import { BasePass, getRTFormatBeforeToneMapping, getShadowMapSampler } from './base-pass';
 import { ShadowPass } from './shadow-pass';
+import { NATIVE } from 'internal:constants';
 
 export class ForwardPass extends BasePass {
     name = 'ForwardPass';
@@ -47,11 +48,16 @@ export class ForwardPass extends BasePass {
         const slot0 = this.slotName(camera, 0);
         const slot1 = this.slotName(camera, 1);
 
+        let sampleCount = 1;
+        if (NATIVE) {
+            sampleCount = 4;
+        }
+
         const cameraID = getCameraUniqueID(camera);
         const isOffScreen = true;
         passContext
             .updatePassViewPort()
-            .addRenderPass('default', `${this.name}_${cameraID}`)
+            .addRenderPass('default', `${this.name}_${cameraID}`, sampleCount)
             .addRasterView(slot0, getRTFormatBeforeToneMapping(ppl), isOffScreen)
             .addRasterView(slot1, Format.DEPTH_STENCIL, isOffScreen)
             .version();
