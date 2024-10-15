@@ -9,6 +9,8 @@ import { passContext } from '../utils/pass-context';
 import { BasePass, getRTFormatBeforeToneMapping, getShadowMapSampler } from './base-pass';
 import { ShadowPass } from './shadow-pass';
 import { NATIVE } from 'internal:constants';
+import { isUICamera } from '../../custom/utils';
+import { Layers } from '../../../scene-graph';
 
 export class ForwardPass extends BasePass {
     name = 'ForwardPass';
@@ -49,7 +51,7 @@ export class ForwardPass extends BasePass {
         const slot1 = this.slotName(camera, 1);
 
         let sampleCount = 1;
-        if (NATIVE) {
+        if (NATIVE && !(camera.visibility & Layers.Enum['UI_2D'])) {
             sampleCount = 4;
         }
 
