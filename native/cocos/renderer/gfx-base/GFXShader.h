@@ -40,7 +40,7 @@ public:
 
     //inline const ccstd::string &getName() const { return _name; }
     //inline const ShaderStageList &getStages() const { return _stages; }
-    //inline const AttributeList &getAttributes() const { return _attributes; }
+    inline const AttributeList &getAttributes() const { return _attributes; }
     //inline const UniformBlockList &getBlocks() const { return _blocks; }
     //inline const UniformStorageBufferList &getBuffers() const { return _buffers; }
     //inline const UniformSamplerTextureList &getSamplerTextures() const { return _samplerTextures; }
@@ -51,7 +51,7 @@ public:
 
     inline const ccstd::string &getName() const { return _shaderInfo->name; }
     inline const ShaderStageList &getStages() const { return _shaderInfo->stages; }
-    inline const AttributeList &getAttributes() const { return _shaderInfo->attributes; }
+    // inline const AttributeList &getAttributes() const { return _shaderInfo->attributes; }
     inline const UniformBlockList &getBlocks() const { return _shaderInfo->blocks; }
     inline const UniformStorageBufferList &getBuffers() const { return _shaderInfo->buffers; }
     inline const UniformSamplerTextureList &getSamplerTextures() const { return _shaderInfo->samplerTextures; }
@@ -75,7 +75,7 @@ protected:
 
     //ccstd::string _name;
     //ShaderStageList _stages;
-    //AttributeList _attributes;
+    AttributeList _attributes;
     //UniformBlockList _blocks;
     //UniformStorageBufferList _buffers;
     //UniformSamplerTextureList _samplerTextures;

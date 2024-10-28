@@ -40,7 +40,7 @@ void Shader::initialize(const ShaderInfo &info) {
 
     //_name = info.name;
     //_stages = info.stages;
-    //_attributes = info.attributes;
+    _attributes = info.attributes;
     //_blocks = info.blocks;
     //_buffers = info.buffers;
     //_samplerTextures = info.samplerTextures;
@@ -56,7 +56,7 @@ void Shader::destroy() {
     doDestroy();
 
     //_stages.clear();
-    //_attributes.clear();
+    _attributes.clear();
     //_blocks.clear();
     //_buffers.clear();
     //_samplerTextures.clear();
