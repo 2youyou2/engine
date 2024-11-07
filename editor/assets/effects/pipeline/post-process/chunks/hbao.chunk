@@ -34,7 +34,7 @@ uniform hbaoUBO {
 #define g_Strength miscParam.w
 
 #pragma rate DepthTex pass
-uniform sampler2D DepthTex; //Sample_Point_Clamp
+uniform highp sampler2D DepthTex; //Sample_Point_Clamp
 #pragma rate RandomTex
 uniform sampler2D RandomTex; //Sample_Point_Wrap
 

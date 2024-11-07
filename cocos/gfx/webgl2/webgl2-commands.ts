@@ -120,7 +120,7 @@ export function GFXFormatToWebGLType (format: Format, gl: WebGL2RenderingContext
     case Format.RGB9E5: return gl.FLOAT;
 
     case Format.DEPTH: return gl.FLOAT;
-    case Format.DEPTH_STENCIL: return gl.UNSIGNED_INT_24_8;
+    case Format.DEPTH_STENCIL: return gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
 
     case Format.BC1: return gl.UNSIGNED_BYTE;
     case Format.BC1_SRGB: return gl.UNSIGNED_BYTE;
