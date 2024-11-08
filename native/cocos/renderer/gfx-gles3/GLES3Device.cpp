@@ -161,12 +161,12 @@ bool GLES3Device::doInit(const DeviceInfo & /*info*/) {
 #if CC_PLATFORM != CC_PLATFORM_WINDOWS || ALLOW_MULTISAMPLED_RENDER_TO_TEXTURE_ON_DESKTOP
     if (checkExtension("multisampled_render_to_texture")) {
         msaaLevelStr = "MSRT1";
-        if (checkExtension("multisampled_render_to_texture2")) {
-            _gpuConstantRegistry->mMSRT = MSRTSupportLevel::LEVEL2;
-            msaaLevelStr = "MSRT2";
-        } else {
+        // if (checkExtension("multisampled_render_to_texture2")) {
+        //     _gpuConstantRegistry->mMSRT = MSRTSupportLevel::LEVEL2;
+        //     msaaLevelStr = "MSRT2";
+        // } else {
             _gpuConstantRegistry->mMSRT = MSRTSupportLevel::LEVEL1;
-        }
+        // }
     }
 #endif
     _features[toNumber(Feature::MULTI_SAMPLE_RESOLVE_DEPTH_STENCIL)] = true;
