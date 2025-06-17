@@ -109,8 +109,8 @@ bool GLES3GPUContext::initialize(GLES3GPUStateCache *stateCache, GLES3GPUConstan
 
     EGL_CHECK(eglBindAPI(EGL_OPENGL_ES_API));
 
-    bool msaaEnabled{false};
-    bool qualityPreferred{false};
+    bool msaaEnabled{true};
+    bool qualityPreferred{true};
 
     EGLint redSize{8};
     EGLint greenSize{8};

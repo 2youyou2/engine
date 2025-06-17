@@ -824,7 +824,7 @@ int32_t AndroidPlatform::loop() {
         struct android_poll_source *source;
 
         // suspend thread while _loopTimeOut set to -1
-        while ((ALooper_pollAll(_loopTimeOut, nullptr, &events,
+        while ((ALooper_pollOnce(_loopTimeOut, nullptr, &events,
                                 reinterpret_cast<void **>(&source))) >= 0) {
             // process event
             if (source != nullptr) {
