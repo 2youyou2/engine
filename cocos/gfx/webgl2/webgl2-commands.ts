@@ -344,7 +344,7 @@ export function GFXFormatToWebGLFormat (format: Format, gl: WebGL2RenderingConte
     case Format.RGBA16UI:
     case Format.RGBA16I:
     case Format.RGBA16F: return gl.RGBA;
-    case Format.R32UI:
+    case Format.R32UI: return gl.RED_INTEGER;
     case Format.R32I:
     case Format.R32F: return gl.RED;
     case Format.RG32UI:
@@ -353,7 +353,7 @@ export function GFXFormatToWebGLFormat (format: Format, gl: WebGL2RenderingConte
     case Format.RGB32UI:
     case Format.RGB32I:
     case Format.RGB32F: return gl.RGB;
-    case Format.RGBA32UI:
+    case Format.RGBA32UI: return gl.RGBA_INTEGER;
     case Format.RGBA32I:
     case Format.RGBA32F: return gl.RGBA;
     case Format.RGB10A2: return gl.RGBA;
