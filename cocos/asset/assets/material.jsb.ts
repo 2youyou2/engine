@@ -150,7 +150,7 @@ matProto.setProperty = function (name: string, val: MaterialPropertyFull | Mater
         wrapSetProperty(this.setPropertyQuat, this, name, val, passIdx);
     } else if (val instanceof TextureBase) {
         wrapSetProperty(this.setPropertyTextureBase, this, name, val, passIdx);
-    } else if (val instanceof Texture) {
+    } else if ((val instanceof Texture) || (globalThis.gfx && val instanceof globalThis.gfx.Texture)) {
         wrapSetProperty(this.setPropertyGFXTexture, this, name, val, passIdx);
     } else if (val === null) {
         if (passIdx) {
