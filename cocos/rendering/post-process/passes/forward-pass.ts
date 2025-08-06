@@ -40,6 +40,14 @@ export class ForwardPass extends BasePass {
         return super.slotName(camera, index);
     }
 
+    getSamples(camera) {
+        let sampleCount = 1;
+        if (NATIVE && !(camera.visibility & Layers.Enum['UI_2D'])) {
+            sampleCount = 4;
+        }
+        return sampleCount
+    }
+
     public render (camera: Camera, ppl: Pipeline): void {
         passContext.clearFlag = ClearFlagBit.COLOR | (camera.clearFlag & ClearFlagBit.DEPTH_STENCIL);
         Vec4.set(passContext.clearColor, 0, 0, 0, 0);
@@ -50,10 +58,7 @@ export class ForwardPass extends BasePass {
         const slot0 = this.slotName(camera, 0);
         const slot1 = this.slotName(camera, 1);
 
-        let sampleCount = 1;
-        if (NATIVE && !(camera.visibility & Layers.Enum['UI_2D'])) {
-            sampleCount = 4;
-        }
+        let sampleCount = this.getSamples(camera)
 
         const cameraID = getCameraUniqueID(camera);
         const isOffScreen = true;
