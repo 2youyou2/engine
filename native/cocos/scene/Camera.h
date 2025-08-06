@@ -400,6 +400,10 @@ public:
     const ccstd::vector<BlitTexture>& getBlitTextures() const { return _blitTextures; }
     ccstd::vector<BlitTexture> &getBlitTextures() { return _blitTextures; }
 
+    void setBlitOpaqueSceneColor(BlitTexture blits) { _blitOpaqueSceneColor = blits; }
+    const BlitTexture &getBlitOpaqueSceneColor() const { return _blitOpaqueSceneColor; }
+    BlitTexture &getBlitOpaqueSceneColor() { return _blitOpaqueSceneColor; }
+
     void setRenderPass(gfx::RenderPass *renderPass) { _renderPass = renderPass; }
     const gfx::RenderPass *getRenderPass() const { return _renderPass; }
     gfx::RenderPass *getRenderPass(){ return _renderPass; }
@@ -472,6 +476,8 @@ private:
     uint32_t _systemWindowId{0};
 
     ccstd::vector<BlitTexture> _blitTextures;
+    BlitTexture _blitOpaqueSceneColor;
+
     gfx::RenderPass *_renderPass = nullptr;
 
     CC_DISALLOW_COPY_MOVE_ASSIGN(Camera);

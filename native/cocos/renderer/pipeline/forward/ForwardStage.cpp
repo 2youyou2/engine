@@ -223,8 +223,16 @@ void ForwardStage::render(scene::Camera *camera) {
     cmdBuff->bindDescriptorSet(globalSet, _pipeline->getDescriptorSet(), 1, &offset);
     if (!_pipeline->getPipelineSceneData()->getRenderObjects().empty()) {
         _renderQueues[0]->recordCommandBuffer(_device, camera, renderPass, cmdBuff);
+
+        auto &blitOpaque = camera->getBlitOpaqueSceneColor();
+        if (blitOpaque.getSrc() && blitOpaque.getDst()) {
+            cmdBuff->blitTexture(blitOpaque.getSrc(), blitOpaque.getDst(), blitOpaque.getRegions(), blitOpaque.getFilter());
+        }
+
+
         _instancedQueue->recordCommandBuffer(_device, renderPass, cmdBuff);
         _additiveLightQueue->recordCommandBuffer(_device, camera, renderPass, cmdBuff);
+
 
         cmdBuff->bindDescriptorSet(globalSet, _pipeline->getDescriptorSet(), 1, &offset);
         _planarShadowQueue->recordCommandBuffer(_device, renderPass, cmdBuff);

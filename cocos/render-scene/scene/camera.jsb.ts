@@ -210,6 +210,17 @@ Object.defineProperty(cameraProto, 'blitTextures', {
     }
 });
 
+Object.defineProperty(cameraProto, 'blitOpaqueSceneColor', {
+    configurable: true,
+    enumerable: true,
+    get () {
+        return this.getBlitOpaqueSceneColor();
+    },
+    set (v) {
+        this.setBlitOpaqueSceneColor(v)
+    }
+});
+
 const oldInitialize = cameraProto.initialize;
 
 cameraProto.initialize = function initialize() {

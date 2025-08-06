@@ -2962,6 +2962,9 @@ void cmdFuncGLES3BlitTexture(GLES3Device *device, GLES3GPUTextureView *gpuTextur
     const auto *gpuTextureSrc = gpuTextureSrcView->gpuTexture;
     const auto *gpuTextureDst = gpuTextureDstView->gpuTexture;
 
+    const auto origReadFBO = cache->glReadFramebuffer;
+    const auto origDrawFBO = cache->glDrawFramebuffer;
+
     GLbitfield mask = getColorBufferMask(gpuTextureSrc->format);
     for (uint32_t i = 0U; i < count; ++i) {
         const TextureBlit &region = regions[i];
@@ -3001,6 +3004,15 @@ void cmdFuncGLES3BlitTexture(GLES3Device *device, GLES3GPUTextureView *gpuTextur
             region.dstOffset.x + region.dstExtent.width,
             region.dstOffset.y + region.dstExtent.height,
             mask, GLES3_FILTERS[(uint32_t)filter]));
+    }
+
+    if (cache->glReadFramebuffer != origReadFBO) {
+        GL_CHECK(glBindFramebuffer(GL_READ_FRAMEBUFFER, origReadFBO));
+        cache->glReadFramebuffer = origReadFBO;
+    }
+    if (cache->glDrawFramebuffer != origDrawFBO) {
+        GL_CHECK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, origDrawFBO));
+        cache->glDrawFramebuffer = origDrawFBO;
     }
 }
 

@@ -36,7 +36,7 @@
     #undef Status
 #endif
 
-#define CC_USE_PIPELINE_CACHE 1
+#define CC_USE_PIPELINE_CACHE 0
 
 /**
  * Some general guide lines:

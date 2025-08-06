@@ -184,6 +184,11 @@ export class ForwardStage extends RenderStage {
         cmdBuff.bindDescriptorSet(SetIndex.GLOBAL, pipeline.descriptorSet);
         this._renderQueues[0].recordCommandBuffer(device, renderPass, cmdBuff);
 
+        let blitOpaqueSceneColor = (camera as any).blitOpaqueSceneColor
+        if (blitOpaqueSceneColor) {
+            cmdBuff.blitTexture(blitOpaqueSceneColor.src, blitOpaqueSceneColor.dst, blitOpaqueSceneColor.regions, blitOpaqueSceneColor.filter);
+        }
+
         for (let i = 0; i < this.additiveInstanceQueues.length; i++) {
             this.additiveInstanceQueues[i].recordCommandBuffer(device, renderPass, cmdBuff);
         }
