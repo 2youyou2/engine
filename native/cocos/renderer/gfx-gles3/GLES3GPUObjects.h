@@ -190,6 +190,8 @@ public:
     GLenum glWrapT = 0;
     GLenum glWrapR = 0;
 
+    float maxAnisotropy = 0;
+
     ~GLES3GPUSampler() {
         ccstd::vector<GLuint> glSampelrs;
         for (const auto &pair : _cache) {

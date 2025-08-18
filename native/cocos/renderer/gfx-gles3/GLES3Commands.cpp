@@ -987,6 +987,10 @@ GLuint GLES3GPUSampler::getGLSampler(uint16_t minLod, uint16_t maxLod) {
         GL_CHECK(glSamplerParameteri(glSampler, GL_TEXTURE_WRAP_R, glWrapR));
         GL_CHECK(glSamplerParameterf(glSampler, GL_TEXTURE_MIN_LOD, static_cast<GLfloat>(minLod)));
         GL_CHECK(glSamplerParameterf(glSampler, GL_TEXTURE_MAX_LOD, static_cast<GLfloat>(maxLod)));
+
+        if (maxAnisotropy > 1) {
+            GL_CHECK(glSamplerParameterf(glSampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, static_cast<GLfloat>(maxAnisotropy)));
+        }
         _cache[hash] = glSampler;
     }
     return _cache[hash];

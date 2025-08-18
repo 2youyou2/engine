@@ -36,6 +36,8 @@ export class WebGL2Sampler extends Sampler {
 
     private _gpuSampler: IWebGL2GPUSampler | null = null;
 
+    static MAX_TEXTURE_MAX_ANISOTROPY_EXT = 0
+
     constructor (info: Readonly<SamplerInfo>, hash: number) {
         super(info, hash);
 
@@ -47,6 +49,8 @@ export class WebGL2Sampler extends Sampler {
             addressU: this._info.addressU,
             addressV: this._info.addressV,
             addressW: this._info.addressW,
+
+            maxAnisotropy: this._info.maxAnisotropy,
 
             glMinFilter: 0,
             glMagFilter: 0,
@@ -68,6 +72,17 @@ export class WebGL2Sampler extends Sampler {
                         gl.samplerParameteri(glSampler, gl.TEXTURE_WRAP_R, this.glWrapR);
                         gl.samplerParameterf(glSampler, gl.TEXTURE_MIN_LOD, minLod);
                         gl.samplerParameterf(glSampler, gl.TEXTURE_MAX_LOD, maxLod);
+
+                        if (this.maxAnisotropy > 1) {
+                            let EXT_texture_filter_anisotropic = device.extensions.EXT_texture_filter_anisotropic
+                            if (EXT_texture_filter_anisotropic) {
+                                if (!WebGL2Sampler.MAX_TEXTURE_MAX_ANISOTROPY_EXT) {
+                                    WebGL2Sampler.MAX_TEXTURE_MAX_ANISOTROPY_EXT = gl.getParameter(EXT_texture_filter_anisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT)
+                                }
+                                gl.samplerParameterf(glSampler, EXT_texture_filter_anisotropic.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(this.maxAnisotropy, WebGL2Sampler.MAX_TEXTURE_MAX_ANISOTROPY_EXT));
+                            }
+                        }
+
                     }
                 }
                 const sampler = this.glSamplers.get(samplerHash)!;

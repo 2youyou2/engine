@@ -136,6 +136,8 @@ export interface IWebGL2GPUTexture {
     flags: TextureFlags;
     isPowerOf2: boolean;
 
+    anisotropy: number;
+
     glTarget: GLenum;
     glInternalFmt: GLenum;
     glFormat: GLenum;
@@ -189,6 +191,8 @@ export interface IWebGL2GPUSampler {
     glWrapS: GLenum;
     glWrapT: GLenum;
     glWrapR: GLenum;
+
+    maxAnisotropy: number;
 
     getGLSampler (device: WebGL2Device, minLod: number, maxLod: number): WebGLSampler;
 }
