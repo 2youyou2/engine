@@ -1612,7 +1612,7 @@ void cmdFuncGLES3CreateFramebuffer(GLES3Device *device, GLES3GPUFramebuffer *gpu
             const auto &resolveDesc = renderPass->colorAttachments[resolveIndex];
             const auto *resolveView = gpuFBO->gpuColorViews[resolveIndex];
             CC_ASSERT(resolveView != nullptr);
-            bool lazilyAllocated = hasFlag(view->gpuTexture->flags, TextureFlagBit::LAZILY_ALLOCATED);
+            bool lazilyAllocated = true;//hasFlag(view->gpuTexture->flags, TextureFlagBit::LAZILY_ALLOCATED);
 
             if (lazilyAllocated &&                               // MS attachment should be memoryless
                 resolveView->gpuTexture->swapchain == nullptr && // not back buffer
