@@ -47,13 +47,14 @@ class HTMLCanvasElement extends HTMLElement {
     //REFINE: implement opts.
     getContext (name, opts) {
         const self = this;
+
         if (name === '2d') {
             if (!this._context2D) {
                 this._context2D = new CanvasRenderingContext2D(this._width, this._height);
                 this._context2D._canvas = this;
                 this._context2D._setCanvasBufferUpdatedCallback((data) => {
                     // FIXME: Canvas's data will take 2x memory size, one in C++, another is obtained by Uint8Array here.
-                    self._dataInner = new ImageData(data, self._width, self._height);
+                    self._dataInner = new ImageData(data.slice(), self._width, self._height);
                 });
             }
             return this._context2D;
