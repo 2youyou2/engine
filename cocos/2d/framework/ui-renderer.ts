@@ -545,11 +545,18 @@ export class UIRenderer extends Renderer {
      */
     public _updateBlendFunc (): void {
         // todo: Not only Pass[0].target[0]
-        let target = this.getRenderMaterial(0)!.passes[0].blendState.targets[0];
+        let targets
+        if (JSB) {
+            targets = this.getRenderMaterial(0).passes[0].blendState.getTargets()
+        }
+        else {
+            targets = this.getRenderMaterial(0)!.passes[0].blendState.targets
+        }
+        let target = targets[0];
         this._dstBlendFactorCache = target.blendDst;
         this._srcBlendFactorCache = target.blendSrc;
         if (this._dstBlendFactorCache !== this._dstBlendFactor || this._srcBlendFactorCache !== this._srcBlendFactor) {
-            target = this.getMaterialInstance(0)!.passes[0].blendState.targets[0];
+            target = targets[0];
             target.blend = true;
             target.blendDstAlpha = BlendFactor.ONE_MINUS_SRC_ALPHA;
             target.blendDst = this._dstBlendFactor;

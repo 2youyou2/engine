@@ -1526,6 +1526,14 @@ struct BlendState {
     Color blendColor;
     BlendTargetList targets{1};
 
+    std::vector<BlendTarget*> getTargets() {
+        std::vector<BlendTarget *> res;
+        for (auto &target : targets) {
+            res.push_back(&target);
+        }
+        return res;
+    }
+
     void setTarget(index_t index, const BlendTarget &target) {
         if (index >= targets.size()) {
             targets.resize(static_cast<size_t>(index) + 1);
