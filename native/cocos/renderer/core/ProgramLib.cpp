@@ -407,6 +407,22 @@ ccstd::string ProgramLib::getKey(const ccstd::string &name, const MacroRecord &d
     return render::getVariantKey(tmpl, defines);
 }
 
+void ProgramLib::clearCache() {
+    std::vector<std::string> keys;
+    for (const auto &i : _cache) {
+        auto isFor2D = i.second.get()->getName().compare("for2d");
+        if (isFor2D >= 0) {
+            continue;
+        }
+        keys.push_back(i.first);
+    }
+
+    for (const auto &key : keys) {
+        _cache[key]->destroy();
+        _cache.erase(key);
+    }
+}
+
 void ProgramLib::destroyShaderByDefines(const MacroRecord &defines) {
     if (defines.empty()) return;
     ccstd::vector<ccstd::string> defineValues;

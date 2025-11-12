@@ -156,6 +156,8 @@ public:
     gfx::Shader *getGFXShader(gfx::Device *device, const ccstd::string &name, MacroRecord &defines,
                               render::PipelineRuntime *pipeline, ccstd::string *key = nullptr);
 
+    void clearCache();
+
 private:
     CC_DISALLOW_COPY_MOVE_ASSIGN(ProgramLib);
 
