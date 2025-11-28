@@ -171,6 +171,14 @@ EffectAsset *EffectAsset::get(const ccstd::string &name) {
 }
 
 void EffectAsset::onLoaded() {
+    // hack : 降低内存
+    for (auto &s : _shaders) {
+        s.glsl1.vert = "";
+        s.glsl1.frag = "";
+        s.glsl4.vert = "";
+        s.glsl4.frag = "";
+    }
+
     auto *programLib = render::getProgramLibrary();
     if (programLib) {
         render::addEffectDefaultProperties(*this);
@@ -178,6 +186,7 @@ void EffectAsset::onLoaded() {
     } else {
         ProgramLib::getInstance()->registerEffect(this);
     }
+
     EffectAsset::registerAsset(this);
 #if !CC_EDITOR
     if (CC_CURRENT_ENGINE()->isInited()) {

@@ -514,6 +514,11 @@ gfx::Shader *ProgramLib::getGFXShader(gfx::Device *device, const ccstd::string &
     tmplInfo.shaderInfo.hash = tmpl.hash;
     auto *shader = device->createShader(tmplInfo.shaderInfo);
     _cache[key] = shader;
+
+    // hack: 降低内存
+    tmplInfo.shaderInfo.stages[0].source = "";
+    tmplInfo.shaderInfo.stages[1].source = "";
+
     //    CC_LOG_DEBUG("ProgramLib::_cache[%s]=%p, defines: %d", key.c_str(), shader, defines.size());
     return shader;
 }
