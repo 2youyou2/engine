@@ -713,6 +713,8 @@ export class Game extends EventTarget {
      * @param config - Pass configuration object
      */
     public init (config: IGameConfig): Promise<void> {
+        let time = performance.now()
+        let startTime = time
         this._compatibleWithOldParams(config);
         // DONT change the order unless you know what's you doing
         return Promise.resolve()
@@ -724,7 +726,8 @@ export class Game extends EventTarget {
             .then((): void => {
                 if (DEBUG) {
                     // eslint-disable-next-line no-console
-                    console.time('Init Base');
+                    // console.time('Init Base');
+                    time = performance.now()
                 }
                 const debugMode = config.debugMode || DebugMode.NONE;
                 _resetDebugSetting(debugMode);
@@ -737,7 +740,12 @@ export class Game extends EventTarget {
             .then((): Promise<void[]> => {
                 if (DEBUG) {
                     // eslint-disable-next-line no-console
-                    console.timeEnd('Init Base');
+                    // console.timeEnd('Init Base');
+
+                    let last = time
+                    time = performance.now()
+                    log(`------ Init Base : ${(time - last) / 1000} s`)
+
                 }
                 this.emit(Game.EVENT_POST_BASE_INIT);
                 return this.onPostBaseInitDelegate.dispatch();
@@ -751,7 +759,7 @@ export class Game extends EventTarget {
             .then((): void => {
                 if (DEBUG) {
                     // eslint-disable-next-line no-console
-                    console.time('Init Infrastructure');
+                    // console.time('Init Infrastructure');
                 }
                 macro.init();
                 this._initXR();
@@ -773,7 +781,11 @@ export class Game extends EventTarget {
                 this.initPacer();
                 if (DEBUG) {
                     // eslint-disable-next-line no-console
-                    console.timeEnd('Init Infrastructure');
+                    // console.timeEnd('Init Infrastructure');
+
+                    let last = time
+                    time = performance.now()
+                    log(`------ Init Infrastructure : ${(time - last) / 1000} s`)
                 }
             })
             .then((): Promise<void[]> => {
@@ -814,7 +826,7 @@ export class Game extends EventTarget {
             .then((): Promise<void> => {
                 if (DEBUG) {
                     // eslint-disable-next-line no-console
-                    console.time('Init SubSystem');
+                    // console.time('Init SubSystem');
                 }
                 director.init();
                 return builtinResMgr.loadBuiltinAssets();
@@ -822,13 +834,17 @@ export class Game extends EventTarget {
             .then((): Promise<void[]> => {
                 if (DEBUG) {
                     // eslint-disable-next-line no-console
-                    console.timeEnd('Init SubSystem');
+                    // console.timeEnd('Init SubSystem');
+
+                    let last = time
+                    time = performance.now()
+                    log(`------ Init SubSystem : ${(time - last) / 1000} s`)
                 }
                 this.emit(Game.EVENT_POST_SUBSYSTEM_INIT);
                 return this.onPostSubsystemInitDelegate.dispatch();
             })
             .then((): void => {
-                log(`Cocos Creator v${VERSION}`);
+                log(`------ Cocos Creator v${VERSION}`);
                 this.emit(Game.EVENT_ENGINE_INITED);
                 this._engineInited = true;
             })
@@ -841,7 +857,7 @@ export class Game extends EventTarget {
             .then((): Promise<void> => {
                 if (DEBUG) {
                     // eslint-disable-next-line no-console
-                    console.time('Init Project');
+                    // console.time('Init Project');
                 }
                 const jsList = settings.querySettings<string[]>(Settings.Category.PLUGINS, 'jsList');
                 let promise = Promise.resolve();
@@ -863,7 +879,11 @@ export class Game extends EventTarget {
             .then((): Promise<void[]> => {
                 if (DEBUG) {
                     // eslint-disable-next-line no-console
-                    console.timeEnd('Init Project');
+                    let last = time
+                    time = performance.now()
+                    log(`------ Init Project : ${(time - last) / 1000} s`)
+                    
+                    // console.timeEnd('Init Project');
                 }
                 this.emit(Game.EVENT_POST_PROJECT_INIT);
                 return this.onPostProjectInitDelegate.dispatch();
@@ -872,6 +892,8 @@ export class Game extends EventTarget {
             .then((): void => {
                 this._inited = true;
                 this._safeEmit(Game.EVENT_GAME_INITED);
+
+                log(`------ game.init : ${(performance.now() - startTime) / 1000} s`)
             });
     }
 

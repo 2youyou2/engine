@@ -32,9 +32,21 @@ extern "C" void cc_load_all_plugins(); // NOLINT
 
 namespace cc {
 int BaseGame::init() {
+    CC_LOG_DEBUG("Game::init");
+
+    auto _time = std::chrono::steady_clock::now();
+    auto _startTime = _time;
+
     cc::pipeline::GlobalDSManager::setDescriptorSetLayout();
 
     cc_load_all_plugins();
+
+
+    auto _lastTime = _time;
+    _time = std::chrono::steady_clock::now();
+    float dt = std::chrono::duration_cast<std::chrono::nanoseconds>(_time - _lastTime).count() / 1e9;
+    CC_LOG_DEBUG("------ cc_load_all_plugins : %f s", dt);
+
 
 #if CC_PLATFORM == CC_PLATFORM_WINDOWS || CC_PLATFORM == CC_PLATFORM_LINUX || CC_PLATFORM == CC_PLATFORM_QNX || CC_PLATFORM == CC_PLATFORM_MACOS
     // override default value
@@ -64,7 +76,14 @@ int BaseGame::init() {
         windowMgr->createWindow(info);
     });
 
+    _lastTime = _time;
+    _time = std::chrono::steady_clock::now();
+    dt = std::chrono::duration_cast<std::chrono::nanoseconds>(_time - _lastTime).count() / 1e9;
+    CC_LOG_DEBUG("------ createWindow : %f s", dt);
+
 #endif
+
+
 
     if (_debuggerInfo.enabled) {
         setDebugIpAndPort(_debuggerInfo.address, _debuggerInfo.port, _debuggerInfo.pauseOnStart);
@@ -75,9 +94,30 @@ int BaseGame::init() {
         return ret;
     }
 
+    _lastTime = _time;
+    _time = std::chrono::steady_clock::now();
+    dt = std::chrono::duration_cast<std::chrono::nanoseconds>(_time - _lastTime).count() / 1e9;
+    CC_LOG_DEBUG("------ CocosApplication::init : %f s", dt);
+
     setXXTeaKey(_xxteaKey);
     runScript("jsb-adapter/web-adapter.js");
+
+    _lastTime = _time;
+    _time = std::chrono::steady_clock::now();
+    dt = std::chrono::duration_cast<std::chrono::nanoseconds>(_time - _lastTime).count() / 1e9;
+    CC_LOG_DEBUG("------ runScript web-adapter.js : %f s", dt);
+
     runScript("main.js");
+
+    _lastTime = _time;
+    _time = std::chrono::steady_clock::now();
+    dt = (_time - _lastTime).count() / 1e9;
+    CC_LOG_DEBUG("------ runScript main.js : %f s", dt);
+
+
+    dt = (_time - _startTime).count() / 1e9;
+    CC_LOG_DEBUG("------ Game Init: %f s", dt);
+
     return 0;
 }
 } // namespace cc
