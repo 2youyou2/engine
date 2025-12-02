@@ -1024,6 +1024,8 @@ bool cmdFuncGLES3CreateProgramBySource(GLES3Device *device, GLES3GPUShader *gpuS
     ccstd::string shaderStageStr;
     GLint status;
 
+    auto _startTime = std::chrono::steady_clock::now();
+
     for (size_t i = 0; i < gpuShader->gpuStages.size(); ++i) {
         GLES3GPUShaderStage &gpuStage = gpuShader->gpuStages[i];
 
@@ -1056,7 +1058,9 @@ bool cmdFuncGLES3CreateProgramBySource(GLES3Device *device, GLES3GPUShader *gpuS
         GL_CHECK(glCompileShader(gpuStage.glShader));
 
         if (glShaderStage == GL_FRAGMENT_SHADER) {
-            CC_LOG_INFO("Shader '%s' compilation succeeded.", gpuShader->name.c_str());
+            auto _time = std::chrono::steady_clock::now();
+            float dt = std::chrono::duration_cast<std::chrono::nanoseconds>(_time - _startTime).count() / 1e9;
+            CC_LOG_INFO("[%f s] Shader '%s' compilation succeeded.", dt, gpuShader->name.c_str());
         }
 
         GL_CHECK(glGetShaderiv(gpuStage.glShader, GL_COMPILE_STATUS, &status));

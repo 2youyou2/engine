@@ -779,6 +779,9 @@ export class Game extends EventTarget {
                 builtinResMgr.init();
                 Layers.init();
                 this.initPacer();
+            })
+            .then((): Promise<void[]> => {
+                
                 if (DEBUG) {
                     // eslint-disable-next-line no-console
                     // console.timeEnd('Init Infrastructure');
@@ -787,8 +790,7 @@ export class Game extends EventTarget {
                     time = performance.now()
                     log(`------ Init Infrastructure : ${(time - last) / 1000} s`)
                 }
-            })
-            .then((): Promise<void[]> => {
+                
                 this.emit(Game.EVENT_POST_INFRASTRUCTURE_INIT);
                 return this.onPostInfrastructureInitDelegate.dispatch();
             })

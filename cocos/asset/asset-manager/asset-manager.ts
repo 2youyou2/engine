@@ -25,7 +25,7 @@
 
 import { BUILD, EDITOR, PREVIEW } from 'internal:constants';
 import { Asset } from '../assets/asset';
-import { error, sys, Settings, settings, path, cclegacy, EventTarget } from '../../core';
+import { error, sys, Settings, settings, path, cclegacy, EventTarget, log } from '../../core';
 import Bundle from './bundle';
 import Cache, { ICache } from './cache';
 import CacheManager from './cache-manager';
@@ -532,10 +532,20 @@ export class AssetManager {
         onProgress?: ((finished: number, total: number, item: RequestItem) => void) | ((err: Error | null, data: any) => void) | null,
         onComplete?: ((err: Error | null, data: any) => void) | null,
     ): void {
+        let _startTime = performance.now()
+
+
         const { options: opts, onProgress: onProg, onComplete: onComp } = parseParameters(options, onProgress, onComplete);
+
+        const _onComplete = (...args) => {
+            log(`------ assetManager.loadAny ${requests}: ${(performance.now() - _startTime) / 1000} s`)
+
+            onComp && onComp(...args)
+        }
+
         opts.preset = opts.preset || 'default';
         requests = Array.isArray(requests) ? requests.slice() : requests;
-        const task = Task.create({ input: requests, onProgress: onProg, onComplete: asyncify(onComp), options: opts });
+        const task = Task.create({ input: requests, onProgress: onProg, onComplete: asyncify(_onComplete), options: opts });
         pipeline.async(task);
     }
 
@@ -779,6 +789,9 @@ export class AssetManager {
     ): void {
         if (BUILD) { throw new Error('Only valid in Editor'); }
 
+        let _startTime = performance.now()
+
+
         const { options: opts, onProgress: onProg, onComplete: onComp } = parseParameters<((err: Error | null, data: T) => void)>(options, onProgress, onComplete);
 
         const item = RequestItem.create();
@@ -797,7 +810,11 @@ export class AssetManager {
                         data._uuid = '';
                     }
                 }
+
+                log(`------ assetManager.loadWithJson ${data}: ${(performance.now() - _startTime) / 1000} s`)
+
                 if (onComp) { onComp(err, data); }
+                
             }),
         });
         this._parsePipeline!.async(task);

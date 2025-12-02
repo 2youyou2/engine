@@ -29,7 +29,7 @@
 
 import { DEBUG, EDITOR, BUILD, TEST, EDITOR_NOT_IN_PREVIEW } from 'internal:constants';
 import { SceneAsset } from '../asset/assets/scene-asset';
-import { System, EventTarget, Scheduler, js, errorID, error, assertID, warnID, macro, CCObject, cclegacy, isValid } from '../core';
+import { System, EventTarget, Scheduler, js, errorID, error, assertID, warnID, macro, CCObject, cclegacy, isValid, log } from '../core';
 import { input } from '../input';
 import { Root } from '../root';
 import { Node, Scene } from '../scene-graph';
@@ -307,20 +307,26 @@ export class Director extends EventTarget {
      * @param onLaunched - The function invoked at the scene after launch.
      */
     public runSceneImmediate (scene: Scene | SceneAsset, onBeforeLoadScene?: Director.OnBeforeLoadScene, onLaunched?: Director.OnSceneLaunched): void {
+        let _startTime = performance.now()
+
         if (scene instanceof SceneAsset) scene = scene.scene!;
         assertID(scene instanceof Scene, 1216);
 
-        if (BUILD && DEBUG) {
-            console.time('InitScene');
-        }
+        // if (BUILD && DEBUG) {
+        //     console.time('InitScene');
+        // }
         scene._load();  // ensure scene initialized
-        if (BUILD && DEBUG) {
-            console.timeEnd('InitScene');
-        }
+        // if (BUILD && DEBUG) {
+        //     console.timeEnd('InitScene');
+        // }
+        log(`------ InitScene ${scene.name} : ${(performance.now() - _startTime) / 1000} s`)
+
         // Re-attach or replace persist nodes
-        if (BUILD && DEBUG) {
-            console.time('AttachPersist');
-        }
+        // if (BUILD && DEBUG) {
+        //     console.time('AttachPersist');
+        // }
+        let _AttachPersistTime = performance.now()
+
         const persistNodeList = Object.keys(this._persistRootNodes).map((x): Node => this._persistRootNodes[x] as Node);
         for (let i = 0; i < persistNodeList.length; i++) {
             const node = persistNodeList[i];
@@ -339,34 +345,44 @@ export class Director extends EventTarget {
                 node.parent = scene;
             }
         }
-        if (BUILD && DEBUG) {
-            console.timeEnd('AttachPersist');
-        }
+        // if (BUILD && DEBUG) {
+        //     console.timeEnd('AttachPersist');
+        // }
+
+        log(`------ AttachPersistTime : ${(performance.now() - _AttachPersistTime) / 1000} s`)
+
         const oldScene = this._scene;
 
         // unload scene
-        if (BUILD && DEBUG) {
-            console.time('Destroy');
-        }
+        // if (BUILD && DEBUG) {
+        //     console.time('Destroy');
+        // }
+        let _DestroyTime = performance.now()
+
         if (isValid(oldScene)) {
             oldScene!.destroy();
         }
         if (!EDITOR) {
             // auto release assets
-            if (BUILD && DEBUG) {
-                console.time('AutoRelease');
-            }
+            // if (BUILD && DEBUG) {
+            //     console.time('AutoRelease');
+            // }
+
             releaseManager._autoRelease(oldScene!, scene, this._persistRootNodes);
-            if (BUILD && DEBUG) {
-                console.timeEnd('AutoRelease');
-            }
+
+            log(`------ AutoReleaseTime : ${(performance.now() - _DestroyTime) / 1000} s`)
+
+            // if (BUILD && DEBUG) {
+            //     console.timeEnd('AutoRelease');
+            // }
         }
 
         this._scene = null;
 
         // purge destroyed nodes belongs to old scene
         CCObject._deferredDestroy();
-        if (BUILD && DEBUG) { console.timeEnd('Destroy'); }
+        // if (BUILD && DEBUG) { console.timeEnd('Destroy'); }
+        log(`------ DestroyTime : ${(performance.now() - _DestroyTime) / 1000} s`)
 
         if (onBeforeLoadScene) {
             onBeforeLoadScene();
@@ -376,13 +392,19 @@ export class Director extends EventTarget {
         // Run an Entity Scene
         this._scene = scene;
 
-        if (BUILD && DEBUG) {
-            console.time('Activate');
-        }
+
+        let _ActivateTime = performance.now()
+
+        // if (BUILD && DEBUG) {
+        //     console.time('Activate');
+        // }
         scene._activate();
-        if (BUILD && DEBUG) {
-            console.timeEnd('Activate');
-        }
+
+        log(`------ _ActivateTime : ${(performance.now() - _ActivateTime) / 1000} s`)
+
+        // if (BUILD && DEBUG) {
+        //     console.timeEnd('Activate');
+        // }
         // start scene
         if (this._root) {
             this._root.resetCumulativeTime();
@@ -392,6 +414,8 @@ export class Director extends EventTarget {
             onLaunched(null, scene);
         }
         this.emit(Director.EVENT_AFTER_SCENE_LAUNCH, scene);
+
+        log(`------ runSceneImmediate ${scene.name} : ${(performance.now() - _startTime) / 1000} s`)
     }
 
     /**
@@ -424,6 +448,8 @@ export class Director extends EventTarget {
      * @return if error, return false
      */
     public loadScene (sceneName: string, onLaunched?: Director.OnSceneLaunched, onUnloaded?: Director.OnUnload): boolean {
+        let _startTime = performance.now()
+
         if (this._loadingScene) {
             warnID(1208, sceneName, this._loadingScene);
             return false;
@@ -444,6 +470,8 @@ export class Director extends EventTarget {
                 } else {
                     this.runSceneImmediate(scene, onUnloaded, onLaunched);
                 }
+
+                log(`------ loadScene : ${sceneName} ${(performance.now() - _startTime) / 1000} s`)
             });
             return true;
         } else {
