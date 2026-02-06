@@ -22,7 +22,6 @@
  THE SOFTWARE.
 */
 
-import { JSB } from 'internal:constants';
 import { cclegacy } from '../core';
 import { Root } from '../root';
 
@@ -162,6 +161,10 @@ export class DebugView {
         this._updatePipeline();
     }
 
+    get debugViewType (): RenderingDebugViewType {
+        return this._getType();
+    }
+
     protected _singleMode = DebugViewSingleType.NONE;
     protected _compositeModeValue = 0;
     protected _lightingWithAlbedo = true;
@@ -185,7 +188,7 @@ export class DebugView {
      * @zh 开关指定的渲染组合调试模式。
      * @param Specified composite type, enable or disable.
      */
-    public enableCompositeMode (val: DebugViewCompositeType, enable: boolean) {
+    public enableCompositeMode (val: DebugViewCompositeType, enable: boolean): void {
         this._enableCompositeMode(val, enable);
         this._updatePipeline();
     }
@@ -194,7 +197,7 @@ export class DebugView {
      * @en Toggle all rendering composite debug mode.
      * @zh 开关所有的渲染组合调试模式。
      */
-    public enableAllCompositeMode (enable: boolean) {
+    public enableAllCompositeMode (enable: boolean): void {
         this._enableAllCompositeMode(enable);
         this._updatePipeline();
     }
@@ -203,7 +206,7 @@ export class DebugView {
      * @en Get rendering debug view on / off state.
      * @zh 查询当前是否开启了渲染调试模式。
      */
-    public isEnabled () {
+    public isEnabled (): boolean {
         return this._getType() !== RenderingDebugViewType.NONE;
     }
 
@@ -211,7 +214,7 @@ export class DebugView {
      * @en Disable all debug view modes, reset to standard rendering mode.
      * @zh 关闭所有的渲染调试模式，恢复到正常渲染。
      */
-    public reset () {
+    public reset (): void {
         this._activate();
         this._updatePipeline();
     }
@@ -219,14 +222,14 @@ export class DebugView {
     /**
      * @internal
      */
-    protected _activate () {
+    protected _activate (): void {
         this._singleMode = DebugViewSingleType.NONE;
         this._enableAllCompositeMode(true);
         this._lightingWithAlbedo = true;
         this._csmLayerColoration = false;
     }
 
-    protected _updatePipeline () {
+    protected _updatePipeline (): void {
         const root = cclegacy.director.root as Root;
         const pipeline = root.pipeline;
 
@@ -238,15 +241,18 @@ export class DebugView {
         }
     }
 
-    private _enableCompositeMode (val: DebugViewCompositeType, enable: boolean) {
+    private _enableCompositeMode (val: DebugViewCompositeType, enable: boolean): void {
         if (enable) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
             this._compositeModeValue |= (1 << val);
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
             this._compositeModeValue &= (~(1 << val));
         }
     }
 
-    private _enableAllCompositeMode (enable: boolean) {
+    private _enableAllCompositeMode (enable: boolean): void {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
         for (let i = 0; i < DebugViewCompositeType.MAX_BIT_COUNT; i++) {
             if (enable) {
                 this._compositeModeValue |= (1 << i);
@@ -262,6 +268,7 @@ export class DebugView {
         } else if (this._lightingWithAlbedo !== true || this._csmLayerColoration !== false) {
             return RenderingDebugViewType.COMPOSITE_AND_MISC;
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
             for (let i = 0; i < DebugViewCompositeType.MAX_BIT_COUNT; i++) {
                 if (!this.isCompositeModeEnabled(i)) {
                     return RenderingDebugViewType.COMPOSITE_AND_MISC;

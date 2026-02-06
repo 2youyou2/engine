@@ -25,6 +25,7 @@
 import { Enum, Color, Vec4, cclegacy } from '../../core';
 import { FogInfo } from '../../scene-graph/scene-globals';
 import { SRGBToLinear } from '../../rendering/pipeline-funcs';
+import { Root } from '../../root';
 
 const _v4 = new Vec4();
 
@@ -71,7 +72,7 @@ export const FogType = Enum({
     LAYERED: 3,
 });
 
-const FOG_TYPE_NONE = FogType.LAYERED + 1;
+export const FOG_TYPE_NONE = FogType.LAYERED + 1;
 
 /**
  * @en The fog representation in the render scene.
@@ -120,7 +121,7 @@ export class Fog {
         SRGBToLinear(this._colorArray, _v4);
     }
 
-    get fogColor () {
+    get fogColor (): Color {
         return this._fogColor;
     }
 
@@ -229,7 +230,7 @@ export class Fog {
     protected _fogRange = 1.2;
     protected _activated = false;
 
-    public initialize (fogInfo : FogInfo) {
+    public initialize (fogInfo: FogInfo): void {
         this._activated = false;
         this.fogColor = fogInfo.fogColor;
         this._enabled = fogInfo.enabled;
@@ -243,13 +244,13 @@ export class Fog {
         this.fogRange = fogInfo.fogRange;
     }
 
-    public activate () {
+    public activate (): void {
         this._updatePipeline();
         this._activated = true;
     }
 
-    protected _updatePipeline () {
-        const root = cclegacy.director.root;
+    protected _updatePipeline (): void {
+        const root = cclegacy.director.root as Root;
         const value = this.enabled ? this.type : FOG_TYPE_NONE;
         const accurateValue = this.accurate ? 1 : 0;
         const pipeline = root.pipeline;

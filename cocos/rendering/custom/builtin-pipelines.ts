@@ -68,11 +68,11 @@ export class ForwardPipelineBuilder implements PipelineBuilder {
             }
         }
     }
-    private initResource (ppl: BasicPipeline, cameraInfo: CameraInfo) {
+    private initResource (ppl: BasicPipeline, cameraInfo: CameraInfo): void {
         setupForwardRes(ppl, cameraInfo);
         if (EDITOR) setupReflectionProbeRes(ppl, cameraInfo);
     }
-    private updateResource (ppl: BasicPipeline, cameraInfo: CameraInfo) {
+    private updateResource (ppl: BasicPipeline, cameraInfo: CameraInfo): void {
         updateForwardRes(ppl, cameraInfo);
         if (EDITOR) updateReflectionProbeRes(ppl, cameraInfo);
     }
@@ -116,11 +116,12 @@ export class DeferredPipelineBuilder implements PipelineBuilder {
             setupUIPass(ppl, info);
         }
     }
-    private initResource (ppl: BasicPipeline, cameraInfo: CameraInfo) {
+    private initResource (ppl: BasicPipeline, cameraInfo: CameraInfo): void {
         if (EDITOR) {
             setupForwardRes(ppl, cameraInfo);
             return;
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         if (!isUICamera(cameraInfo.camera)) {
             setupGBufferRes(ppl, cameraInfo);
             setupLightingRes(ppl, cameraInfo);
@@ -129,11 +130,12 @@ export class DeferredPipelineBuilder implements PipelineBuilder {
             setupUIRes(ppl, cameraInfo);
         }
     }
-    private updateResource (ppl: BasicPipeline, cameraInfo: CameraInfo) {
+    private updateResource (ppl: BasicPipeline, cameraInfo: CameraInfo): void {
         if (EDITOR) {
             updateForwardRes(ppl, cameraInfo);
             return;
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         if (!isUICamera(cameraInfo.camera)) {
             updateGBufferRes(ppl, cameraInfo);
             updateLightingRes(ppl, cameraInfo);
