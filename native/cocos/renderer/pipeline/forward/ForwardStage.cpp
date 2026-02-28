@@ -212,7 +212,7 @@ void ForwardStage::render(scene::Camera *camera) {
     };
 
     auto offset      = _pipeline->getPipelineUBO()->getCurrentCameraUBOOffset();
-    auto forwardExec = [this, camera, offset](const RenderData & /*data*/, const framegraph::DevicePassResourceTable &table) {
+    auto forwardExec = [this, camera, offset](const RenderData & , const framegraph::DevicePassResourceTable &table) {
         auto *renderPass = table.getRenderPass();
         auto *cmdBuff    = _pipeline->getCommandBuffers()[0];
         cmdBuff->bindDescriptorSet(globalSet, _pipeline->getDescriptorSet(), 1, &offset);
