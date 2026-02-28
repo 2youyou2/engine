@@ -105,9 +105,9 @@ void ForwardPipeline::render(const vector<scene::Camera *> &cameras) {
         for (auto *const flow : _flows) {
             flow->render(camera);
         }
-        _fg.compile();
-        _fg.execute();
-        _fg.reset();
+        //_fg.compile();
+        //_fg.execute();
+        //_fg.reset();
         _pipelineUBO->incCameraUBOOffset();
     }
 

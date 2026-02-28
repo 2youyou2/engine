@@ -144,6 +144,10 @@ export class RenderWindow {
                     info.renderPassInfo.colorAttachments[i].format,
                     this._width,
                     this._height,
+                    undefined,
+                    undefined,
+                    undefined,
+                    info.renderPassInfo.colorAttachments[i].sampleCount,
                 )));
             }
             if (info.renderPassInfo.depthStencilAttachment.format !== Format.UNKNOWN) {
@@ -153,6 +157,10 @@ export class RenderWindow {
                     info.renderPassInfo.depthStencilAttachment.format,
                     this._width,
                     this._height,
+                    undefined,
+                    undefined,
+                    undefined,
+                    info.renderPassInfo.depthStencilAttachment.sampleCount,
                 ));
             }
         }

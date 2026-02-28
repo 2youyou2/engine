@@ -133,11 +133,12 @@ void ForwardStage::dispenseRenderObject2Queues() {
 }
 
 void ForwardStage::render(scene::Camera *camera) {
+    /*
     struct RenderData {
         framegraph::TextureHandle outputTex;
         framegraph::TextureHandle depth;
     };
-    auto *      pipeline   = static_cast<ForwardPipeline *>(_pipeline);
+    auto       *pipeline   = static_cast<ForwardPipeline *>(_pipeline);
     auto *const sceneData  = _pipeline->getPipelineSceneData();
     auto *const sharedData = sceneData->getSharedData();
 
@@ -234,6 +235,88 @@ void ForwardStage::render(scene::Camera *camera) {
     // add pass
     pipeline->getFrameGraph().addPass<RenderData>(static_cast<uint>(ForwardInsertPoint::IP_FORWARD), ForwardPipeline::fgStrHandleForwardPass, forwardSetup, forwardExec);
     pipeline->getFrameGraph().presentFromBlackboard(RenderPipeline::fgStrHandleOutColorTexture, camera->window->frameBuffer->getColorTextures()[0], true);
+
+    */
+
+    struct RenderData {
+        framegraph::TextureHandle outputTex;
+        framegraph::TextureHandle depth;
+    };
+    auto *      pipeline   = static_cast<ForwardPipeline *>(_pipeline);
+    auto *const sceneData  = _pipeline->getPipelineSceneData();
+    auto *const sharedData = sceneData->getSharedData();
+
+    float shadingScale{_pipeline->getPipelineSceneData()->getSharedData()->shadingScale};
+    _renderArea = RenderPipeline::getRenderArea(camera);
+    // Command 'updateBuffer' must be recorded outside render passes, cannot put them in execute lambda
+    dispenseRenderObject2Queues();
+    auto *cmdBuff{pipeline->getCommandBuffers()[0]};
+    pipeline->getPipelineUBO()->updateShadowUBO(camera);
+
+    _instancedQueue->uploadBuffers(cmdBuff);
+    _batchedQueue->uploadBuffers(cmdBuff);
+    _additiveLightQueue->gatherLightPasses(camera, cmdBuff);
+    _planarShadowQueue->gatherShadowPasses(camera, cmdBuff);
+
+    auto framebuffer = camera->window->frameBuffer;
+
+
+    auto renderPass = framebuffer->getRenderPass();
+    //if (!renderPass) {
+    //    if (framebuffer->isCustomFrameBuffer()) {
+    //        renderPass = framebuffer->getRenderPass();
+    //    } else {
+    //        renderPass = getOrCreateRenderPass(camera->getClearFlag(), framebuffer);
+    //    }
+    //}
+
+    if (hasFlag(static_cast<gfx::ClearFlags>(camera->clearFlag), gfx::ClearFlagBit::COLOR)) {
+        _clearColors[0].x = camera->clearColor.x;
+        _clearColors[0].y = camera->clearColor.y;
+        _clearColors[0].z = camera->clearColor.z;
+    }
+    _clearColors[0].w = camera->clearColor.w;
+
+    cmdBuff->beginRenderPass(renderPass, framebuffer, _renderArea,
+                             _clearColors, camera->clearDepth, camera->clearStencil);
+
+    auto offset = _pipeline->getPipelineUBO()->getCurrentCameraUBOOffset();
+
+    cmdBuff->bindDescriptorSet(globalSet, _pipeline->getDescriptorSet(), 1, &offset);
+    if (!_pipeline->getPipelineSceneData()->getRenderObjects().empty()) {
+        _renderQueues[0]->recordCommandBuffer(_device, camera, renderPass, cmdBuff);
+
+        //auto &blitOpaque = camera->getBlitOpaqueSceneColor();
+        //if (blitOpaque.getSrc() && blitOpaque.getDst()) {
+        //    cmdBuff->blitTexture(blitOpaque.getSrc(), blitOpaque.getDst(), blitOpaque.getRegions(), blitOpaque.getFilter());
+        //}
+
+        _instancedQueue->recordCommandBuffer(_device, renderPass, cmdBuff);
+        _additiveLightQueue->recordCommandBuffer(_device, camera, renderPass, cmdBuff);
+
+        cmdBuff->bindDescriptorSet(globalSet, _pipeline->getDescriptorSet(), 1, &offset);
+        _planarShadowQueue->recordCommandBuffer(_device, renderPass, cmdBuff);
+        _renderQueues[1]->recordCommandBuffer(_device, camera, renderPass, cmdBuff);
+    }
+
+    //auto &blitTextures = camera->getBlitTextures();
+    //for (auto &blit : blitTextures) {
+    //    cmdBuff->blitTexture(blit.getSrc(), blit.getDst(), blit.getRegions(), blit.getFilter());
+    //}
+
+#if CC_USE_GEOMETRY_RENDERER
+    if (camera->getGeometryRenderer()) {
+        camera->getGeometryRenderer()->render(renderPass, cmdBuff, pipeline->getPipelineSceneData());
+    }
+#endif
+
+    _uiPhase->render(camera, renderPass);
+    renderProfiler(renderPass, cmdBuff, _pipeline->getProfiler(), camera);
+#if CC_USE_DEBUG_RENDERER
+    renderDebugRenderer(renderPass, cmdBuff, _pipeline->getPipelineSceneData(), camera);
+#endif
+
+    cmdBuff->endRenderPass();
 }
 
 } // namespace pipeline

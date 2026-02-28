@@ -571,6 +571,17 @@ void cmdFuncGLES2ResizeBuffer(GLES2Device *device, GLES2GPUBuffer *gpuBuffer) {
     }
 }
 
+const GLint GL_SAMPLE_COUNT[] = {
+    1,
+    2,
+#if CC_PLATFORM == CC_PLATFORM_ANDROID || CC_PLATFORM == CC_PLATFORM_MAC_IOS
+    4,
+#else
+    8,
+#endif
+    16,
+};
+
 void cmdFuncGLES2CreateTexture(GLES2Device *device, GLES2GPUTexture *gpuTexture) {
     gpuTexture->glFormat      = mapGLFormat(gpuTexture->format);
     gpuTexture->glType        = formatToGLType(gpuTexture->format);
@@ -581,7 +592,7 @@ void cmdFuncGLES2CreateTexture(GLES2Device *device, GLES2GPUTexture *gpuTexture)
             GLint maxSamples;
             glGetIntegerv(GL_MAX_SAMPLES_EXT, &maxSamples);
 
-            auto requestedSampleCount = static_cast<GLint>(gpuTexture->samples);
+            auto requestedSampleCount = GL_SAMPLE_COUNT[toNumber(gpuTexture->samples)];
             gpuTexture->glSamples     = std::min(maxSamples, requestedSampleCount);
 
             // skip multi-sampled attachment resources if we can use auto resolve
@@ -1341,8 +1352,8 @@ static GLES2GPUFramebuffer::GLFramebufferInfo doCreateFramebuffer(GLES2Device * 
             GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthStencil->glTarget, depthStencil->glTexture, 0));
             if (hasStencil) GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, depthStencil->glTarget, depthStencil->glTexture, 0));
         } else {
-            GL_CHECK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthStencil->glTarget, depthStencil->glTexture));
-            if (hasStencil) GL_CHECK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, depthStencil->glTarget, depthStencil->glTexture));
+            GL_CHECK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthStencil->glTarget, depthStencil->glRenderbuffer));
+            if (hasStencil) GL_CHECK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, depthStencil->glTarget, depthStencil->glRenderbuffer));
         }
 
         // fallback to blit-based manual resolve
