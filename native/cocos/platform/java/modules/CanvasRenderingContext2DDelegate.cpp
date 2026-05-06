@@ -44,6 +44,9 @@ CanvasRenderingContext2DDelegate::CanvasRenderingContext2DDelegate() {
 }
 
 CanvasRenderingContext2DDelegate::~CanvasRenderingContext2DDelegate() {
+#if (CC_PLATFORM == CC_PLATFORM_ANDROID)
+    JniHelper::callObjectVoidMethod(_obj, JCLS_CANVASIMPL, "recycleBuffer");
+#endif
     JniHelper::getEnv()->DeleteGlobalRef(_obj);
 }
 

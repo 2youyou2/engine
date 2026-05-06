@@ -135,6 +135,7 @@ public class CanvasRenderingContext2DImpl {
     }
 
     static void destroy() {
+        clearTypefaceCache();
         sContext = null;
     }
 
@@ -210,11 +211,17 @@ public class CanvasRenderingContext2DImpl {
         // Log.d(TAG, "constructor");
     }
 
-    private void recreateBuffer(float w, float h) {
-        // Log.d(TAG, "recreateBuffer:" + w + ", " + h);
+    private void recycleBuffer() {
+        mCanvas.setBitmap(null);
         if (mBitmap != null) {
             mBitmap.recycle();
+            mBitmap = null;
         }
+    }
+
+    private void recreateBuffer(float w, float h) {
+        // Log.d(TAG, "recreateBuffer:" + w + ", " + h);
+        recycleBuffer();
         mBitmap = Bitmap.createBitmap((int)Math.ceil(w), (int)Math.ceil(h), Bitmap.Config.ARGB_8888);
         // FIXME: in MIX 2S, its API level is 28, but can not find invokeInstanceMethod. It seems
         // devices may not obey the specification, so comment the codes.
@@ -482,15 +489,13 @@ public class CanvasRenderingContext2DImpl {
     }
 
     private void _fillImageData(int[] imageData, float imageWidth, float imageHeight, float offsetX, float offsetY) {
-        Log.d(TAG, "_fillImageData: ");
+        // Log.d(TAG, "_fillImageData: ");
         int fillSize = (int) (imageWidth * imageHeight);
-        int[] fillColors = new int[fillSize];
-        int r, g, b, a;
         for (int i = 0; i < fillSize; ++i) {
-            // imageData Pixel (RGBA) -> fillColors int (ARGB)
-            fillColors[i] = Integer.rotateRight(imageData[i], 8);
+            // imageData Pixel (RGBA) -> imageData int (ARGB)
+            imageData[i] = Integer.rotateRight(imageData[i], 8);
         }
-        mBitmap.setPixels(fillColors, 0, (int) imageWidth, (int) offsetX, (int) offsetY, (int) imageWidth, (int) imageHeight);
+        mBitmap.setPixels(imageData, 0, (int) imageWidth, (int) offsetX, (int) offsetY, (int) imageWidth, (int) imageHeight);
     }
 
     private Point convertDrawPoint(final Point point, String text) {
