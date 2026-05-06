@@ -201,6 +201,11 @@ public class CocosHelper {
         return sBatteryReceiver.sBatteryLevel;
     }
 
+    public static void triggerGC() {
+        System.gc();
+        System.runFinalization();
+    }
+
     public static String getObbFilePath() {
         return CocosHelper.sObbFilePath;
     }

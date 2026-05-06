@@ -42,6 +42,7 @@ int getNetworkTypeJNI();
 float *getSafeAreaEdgeJNI();
 int getDeviceRotationJNI();
 float getBatteryLevelJNI();
+void triggerGCJNI();
 void flushTasksOnGameThreadJNI();
 void flushTasksOnGameThreadAtForegroundJNI();
 void setAccelerometerEnabledJNI(bool isEnabled);

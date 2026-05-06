@@ -263,6 +263,9 @@ bool jsb_run_script_module(const ccstd::string &filePath, se::Value *rval /* = n
 
 static bool jsc_garbageCollect(se::State &s) { // NOLINT
     se::ScriptEngine::getInstance()->garbageCollect();
+#if CC_PLATFORM == CC_PLATFORM_ANDROID
+    cc::triggerGCJNI();
+#endif
     return true;
 }
 SE_BIND_FUNC(jsc_garbageCollect)

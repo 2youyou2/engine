@@ -136,6 +136,10 @@ float getBatteryLevelJNI() {
     return JniHelper::callStaticFloatMethod(JCLS_HELPER, "getBatteryLevel");
 }
 
+void triggerGCJNI() {
+    JniHelper::callStaticVoidMethod(JCLS_HELPER, "triggerGC");
+}
+
 void flushTasksOnGameThreadJNI() {
     JniHelper::callStaticVoidMethod(JCLS_HELPER,
                                         "flushTasksOnGameThread");
