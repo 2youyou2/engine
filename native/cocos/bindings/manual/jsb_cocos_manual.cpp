@@ -368,6 +368,8 @@ static bool js_CanvasRenderingContext2D_setCanvasBufferUpdatedCallback(se::State
                 se::Value jsFunc(args[0]);
                 jsThis.toObject()->attachObject(jsFunc.toObject());
                 se::Object *thisObj = s.thisObject();
+                auto cachedTypedArray = std::make_shared<se::Value>();
+                auto cachedTypedArraySize = std::make_shared<size_t>(0);
                 auto lambda = [=](const cc::Data &larg0) -> void {
                     se::ScriptEngine::getInstance()->clearException();
                     se::AutoHandleScope hs;
@@ -375,7 +377,40 @@ static bool js_CanvasRenderingContext2D_setCanvasBufferUpdatedCallback(se::State
                     CC_UNUSED bool ok = true;
                     se::ValueArray args;
                     args.resize(1);
-                    ok &= Data_to_TypedArray(larg0, &args[0]);
+
+                    if (larg0.isNull()) {
+                        cachedTypedArray->setUndefined();
+                        *cachedTypedArraySize = 0;
+                        args[0].setNull();
+                    } else {
+                        const auto byteLength = larg0.getSize();
+                        bool canReuse = cachedTypedArray->isObject()
+                                      && cachedTypedArray->toObject()->isTypedArray()
+                                      && *cachedTypedArraySize == byteLength;
+                        if (canReuse) {
+                            uint8_t *typedArrayData = nullptr;
+                            size_t typedArrayLength = 0;
+                            canReuse = cachedTypedArray->toObject()->getTypedArrayData(&typedArrayData, &typedArrayLength)
+                                      && typedArrayLength == byteLength;
+                            if (canReuse && byteLength > 0) {
+                                std::memcpy(typedArrayData, larg0.getBytes(), byteLength);
+                            }
+                        }
+
+                        if (!canReuse) {
+                            cachedTypedArray->setUndefined();
+                            ok &= Data_to_TypedArray(larg0, cachedTypedArray.get());
+                            *cachedTypedArraySize = byteLength;
+                        }
+
+                        if (ok) {
+                            args[0].setObject(cachedTypedArray->toObject());
+                        }
+                    }
+                    if (!ok) {
+                        se::ScriptEngine::getInstance()->clearException();
+                        return;
+                    }
                     se::Value rval;
                     se::Object *funcObj = jsFunc.toObject();
                     bool succeed = funcObj->call(args, thisObj, &rval);
@@ -383,7 +418,8 @@ static bool js_CanvasRenderingContext2D_setCanvasBufferUpdatedCallback(se::State
                         se::ScriptEngine::getInstance()->clearException();
                     }
 
-                    args[0].setNull();
+                    args[0].setUndefined();
+                    rval.setUndefined();
                 };
                 // Add an unroot to avoid the root of the copy constructor caused by the internal reference of Lambda.
                 if (thisObj) {

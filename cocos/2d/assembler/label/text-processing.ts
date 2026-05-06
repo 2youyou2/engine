@@ -505,11 +505,15 @@ export class TextProcessing {
             if (uploadAgain) {
                 let oldGfxTex = tex.getGFXTexture()
                 let oldGfxSampler = tex.getGFXSampler()
-                tex.reset({
-                    width: this._canvas.width,
-                    height: this._canvas.height,
-                    mipmapLevel: 1,
-                });
+
+                if (tex.width !== this._canvas.width || tex.height !== this._canvas.height) {
+                    tex.reset({
+                        width: this._canvas.width,
+                        height: this._canvas.height,
+                        mipmapLevel: 1,
+                    });
+                }
+
                 tex.uploadData(this._canvas);
                 tex.setWrapMode(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
                 if (outputRenderData.texture instanceof SpriteFrame) {

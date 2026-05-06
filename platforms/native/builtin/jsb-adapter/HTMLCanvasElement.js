@@ -52,9 +52,15 @@ class HTMLCanvasElement extends HTMLElement {
             if (!this._context2D) {
                 this._context2D = new CanvasRenderingContext2D(this._width, this._height);
                 this._context2D._canvas = this;
+                let _data;
                 this._context2D._setCanvasBufferUpdatedCallback((data) => {
                     // FIXME: Canvas's data will take 2x memory size, one in C++, another is obtained by Uint8Array here.
-                    self._dataInner = new ImageData(data.slice(), self._width, self._height);
+                    if (!_data || _data.length !== data.length) {
+                        _data = data.slice();
+                    } else {
+                        _data.set(data);
+                    }
+                    self._dataInner = new ImageData(_data, self._width, self._height);
                 });
             }
             return this._context2D;
