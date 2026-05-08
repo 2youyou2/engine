@@ -68,8 +68,6 @@ void CanvasRenderingContext2DDelegate::recreateBuffer(float w, float h) {
     }
 
     auto textureSize = static_cast<int>(_bufferWidth * _bufferHeight * 4);
-    auto *data = static_cast<uint8_t *>(malloc(sizeof(uint8_t) * textureSize));
-    memset(data, 0x00, textureSize);
 
     if (!_imageData.getBytes() || _imageData.getSize() != textureSize) {
         auto *data = static_cast<uint8_t *>(malloc(sizeof(uint8_t) * textureSize));
