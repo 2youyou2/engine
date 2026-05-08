@@ -45,6 +45,10 @@ const _BASELINE_OFFSET = getBaselineOffset();
 const _invisibleAlpha = (1 / 255).toFixed(3);
 const MAX_CALCULATION_NUM = 3;
 
+const _drawUnderlinePos = new Vec2();
+const tempPos = new Vec2();
+const letterPosition = new Vec2();
+
 export interface IRenderData {
     x: number;
     y: number;
@@ -470,7 +474,7 @@ export class TextProcessing {
         }
         this._context.fillStyle = `rgb(${style.color.r}, ${style.color.g}, ${style.color.b})`;
         // Use the value that has been amplified by fontScale
-        const tempPos = new Vec2(outputLayoutData.startPosition.x, outputLayoutData.startPosition.y);
+        tempPos.set(outputLayoutData.startPosition.x, outputLayoutData.startPosition.y);
         const drawTextPosX = tempPos.x;
         let drawTextPosY = 0;
         // draw shadow and underline
@@ -517,7 +521,7 @@ export class TextProcessing {
                 tex.uploadData(this._canvas);
                 tex.setWrapMode(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
                 if (outputRenderData.texture instanceof SpriteFrame) {
-                    outputRenderData.texture.rect = new Rect(0, 0, this._canvas.width, this._canvas.height);
+                    outputRenderData.texture.rect.set(0, 0, this._canvas.width, this._canvas.height);
                     outputRenderData.texture._calculateUV();
                 }
                 if (cclegacy.director.root && cclegacy.director.root.batcher2D) {
@@ -563,7 +567,7 @@ export class TextProcessing {
             // draw underline
             if (style.isUnderline) {
                 const _drawUnderlineWidth = measureText(outputLayoutData.parsedString[i]);
-                const _drawUnderlinePos = new Vec2();
+                _drawUnderlinePos.set(0, 0);
                 if (layout.horizontalAlign === HorizontalTextAlignment.RIGHT) {
                     _drawUnderlinePos.x = startPosition.x - _drawUnderlineWidth;
                 } else if (layout.horizontalAlign === HorizontalTextAlignment.CENTER) {
@@ -749,7 +753,7 @@ export class TextProcessing {
             let tokenRight = letterRight;
             let nextLetterX = nextTokenX;
             let newLine = false;
-            const letterPosition = new Vec2();
+            letterPosition.set(0, 0);
 
             for (let tmp = 0; tmp < tokenLen; ++tmp) {
                 const letterIndex = index + tmp;
