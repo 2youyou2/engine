@@ -507,8 +507,17 @@ export class TextProcessing {
             const uploadAgain = this._canvas.width !== 0 && this._canvas.height !== 0;
 
             if (uploadAgain) {
-                let oldGfxTex = tex.getGFXTexture()
-                let oldGfxSampler = tex.getGFXSampler()
+                const oldGfxTex = JSB ? (tex as any)._gfxTexture : tex.getGFXTexture();
+                const oldGfxSampler = JSB ? (tex as any)._gfxSampler : tex.getGFXSampler();
+                if (cclegacy.director.root && cclegacy.director.root.batcher2D) {
+                    if (JSB) {
+                        if (oldGfxTex && oldGfxSampler) {
+                            cclegacy.director.root.batcher2D._releaseDescriptorSetCache(oldGfxTex, oldGfxSampler);
+                        }
+                    } else {
+                        cclegacy.director.root.batcher2D._releaseDescriptorSetCache(tex.getHash());
+                    }
+                }
 
                 if (tex.width !== this._canvas.width || tex.height !== this._canvas.height) {
                     tex.reset({
@@ -523,13 +532,6 @@ export class TextProcessing {
                 if (outputRenderData.texture instanceof SpriteFrame) {
                     outputRenderData.texture.rect.set(0, 0, this._canvas.width, this._canvas.height);
                     outputRenderData.texture._calculateUV();
-                }
-                if (cclegacy.director.root && cclegacy.director.root.batcher2D) {
-                    if (JSB) {
-                        cclegacy.director.root.batcher2D._releaseDescriptorSetCache(oldGfxTex, oldGfxSampler);
-                    } else {
-                        cclegacy.director.root.batcher2D._releaseDescriptorSetCache(tex.getHash());
-                    }
                 }
             }
         }

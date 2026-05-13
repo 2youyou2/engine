@@ -23,9 +23,12 @@
 ****************************************************************************/
 
 #include "core/assets/SimpleTexture.h"
+#include "base/std/container/vector.h"
 #include "core/assets/ImageAsset.h"
 #include "core/platform/Debug.h"
 #include "core/platform/Macro.h"
+#include "bindings/jswrapper/MappingUtils.h"
+#include "bindings/jswrapper/Object.h"
 #include "renderer/gfx-base/GFXDevice.h"
 
 namespace cc {
@@ -48,6 +51,23 @@ bool canGenerateMipmap(uint32_t w, uint32_t h) {
     return isPOT(w) && isPOT(h);
 }
 
+void clearJSBPrivateData(gfx::Texture *texture) {
+    if (texture == nullptr || !se::NativePtrToObjectMap::isValid()) {
+        return;
+    }
+
+    ccstd::vector<se::Object *> objects;
+    se::NativePtrToObjectMap::forEach(texture, [&objects](se::Object *obj) {
+        objects.emplace_back(obj);
+    });
+
+    for (auto *obj : objects) {
+        if (obj != nullptr && obj->getPrivateData() == texture) {
+            obj->clearPrivateData(true);
+        }
+    }
+}
+
 } // namespace
 
 SimpleTexture::SimpleTexture() = default;
@@ -56,6 +76,7 @@ SimpleTexture::~SimpleTexture() = default;
 bool SimpleTexture::destroy() {
     tryDestroyTextureView();
     tryDestroyTexture();
+    notifyTextureUpdated();
     return Super::destroy();
 }
 
@@ -116,14 +137,17 @@ void SimpleTexture::tryReset() {
     tryDestroyTextureView();
     tryDestroyTexture();
     if (_mipmapLevel == 0) {
+        notifyTextureUpdated();
         return;
     }
     auto *device = getGFXDevice();
     if (!device) {
+        notifyTextureUpdated();
         return;
     }
     createTexture(device);
     _gfxTextureView = createTextureView(device);
+    notifyTextureUpdated();
 }
 
 void SimpleTexture::createTexture(gfx::Device *device) {
@@ -160,8 +184,6 @@ void SimpleTexture::createTexture(gfx::Device *device) {
     _textureHeight = textureCreateInfo.height;
 
     _gfxTexture = texture;
-
-    notifyTextureUpdated();
 }
 
 gfx::Texture *SimpleTexture::createTextureView(gfx::Device *device) {
@@ -187,13 +209,12 @@ void SimpleTexture::tryDestroyTexture() {
     if (_gfxTexture != nullptr) {
         _gfxTexture->destroy();
         _gfxTexture = nullptr;
-
-        notifyTextureUpdated();
     }
 }
 
 void SimpleTexture::tryDestroyTextureView() {
     if (_gfxTextureView != nullptr) {
+        clearJSBPrivateData(_gfxTextureView.get());
         _gfxTextureView->destroy();
         _gfxTextureView = nullptr;
 
@@ -215,6 +236,7 @@ void SimpleTexture::setMipRange(uint32_t baseLevel, uint32_t maxLevel) {
     gfx::Texture *textureView = createTextureView(device);
     tryDestroyTextureView();
     _gfxTextureView = textureView;
+    notifyTextureUpdated();
 }
 
 bool SimpleTexture::isUsingOfflineMipmaps() {
@@ -223,11 +245,11 @@ bool SimpleTexture::isUsingOfflineMipmaps() {
 
 void SimpleTexture::setMipRangeInternal(uint32_t baseLevel, uint32_t maxLevel) {
     _baseLevel = baseLevel < 1 ? 0 : baseLevel;
-    _maxLevel = _maxLevel < 1 ? 0 : maxLevel;
+    _maxLevel = maxLevel < 1 ? 0 : maxLevel;
 }
 
 void SimpleTexture::notifyTextureUpdated() {
-    emit<TextureUpdated>(_gfxTexture.get());
+    emit<TextureUpdated>(_gfxTextureView.get());
 }
 
 } // namespace cc

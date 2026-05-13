@@ -69,8 +69,8 @@ simpleTextureProto.getGFXTexture = function () {
     return this._gfxTexture;
 };
 
-simpleTextureProto._onGFXTextureUpdated = function (gfxTexture) {
-    this._gfxTexture = gfxTexture;
+simpleTextureProto._onGFXTextureUpdated = function () {
+    this._gfxTexture = null;
 };
 
 simpleTextureProto._onAfterAssignImage = function (image) {

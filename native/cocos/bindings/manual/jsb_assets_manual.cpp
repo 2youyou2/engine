@@ -72,11 +72,9 @@ static bool js_assets_SimpleTexture_registerListeners(se::State &s) // NOLINT(re
     SE_PRECONDITION2(cobj, false, "Invalid Native Object");
     auto *thisObj = s.thisObject();
 
-    cobj->on<cc::SimpleTexture::TextureUpdated>([thisObj](cc::SimpleTexture * /*emitter*/, cc::gfx::Texture *texture) {
+    cobj->on<cc::SimpleTexture::TextureUpdated>([thisObj](cc::SimpleTexture * /*emitter*/, cc::gfx::Texture * /*texture*/) {
         se::AutoHandleScope hs;
-        se::Value arg0;
-        nativevalue_to_se(texture, arg0, nullptr);
-        se::ScriptEngine::getInstance()->callFunction(thisObj, "_onGFXTextureUpdated", 1, &arg0);
+        se::ScriptEngine::getInstance()->callFunction(thisObj, "_onGFXTextureUpdated", 0, nullptr);
     });
 
     cobj->on<cc::SimpleTexture::AfterAssignImage>([thisObj](cc::SimpleTexture * /*emitter*/, cc::ImageAsset *image) {
