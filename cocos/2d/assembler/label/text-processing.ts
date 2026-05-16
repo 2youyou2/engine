@@ -456,6 +456,8 @@ export class TextProcessing {
             return;
         }
 
+        console.log(`_updateTexture`);
+
         this._context.clearRect(0, 0, this._canvas.width, this._canvas.height);
         this._context.font = style.fontDesc;
 
@@ -493,6 +495,8 @@ export class TextProcessing {
         }
 
         this._uploadTexture(outputRenderData);
+
+        console.log(`end _updateTexture`);
     }
 
     private _uploadTexture (outputRenderData: TextOutputRenderData): void {
@@ -510,6 +514,8 @@ export class TextProcessing {
                 const oldGfxTex = JSB ? (tex as any)._gfxTexture : tex.getGFXTexture();
                 const oldGfxSampler = JSB ? (tex as any)._gfxSampler : tex.getGFXSampler();
                 if (cclegacy.director.root && cclegacy.director.root.batcher2D) {
+                    console.log(`_releaseDescriptorSetCache`);
+
                     if (JSB) {
                         if (oldGfxTex && oldGfxSampler) {
                             cclegacy.director.root.batcher2D._releaseDescriptorSetCache(oldGfxTex, oldGfxSampler);
@@ -517,14 +523,19 @@ export class TextProcessing {
                     } else {
                         cclegacy.director.root.batcher2D._releaseDescriptorSetCache(tex.getHash());
                     }
+                    console.log(`end _releaseDescriptorSetCache`);
                 }
 
                 if (tex.width !== this._canvas.width || tex.height !== this._canvas.height) {
+                    console.log(`tex.reset`, tex.uuid);
+
                     tex.reset({
                         width: this._canvas.width,
                         height: this._canvas.height,
                         mipmapLevel: 1,
                     });
+
+                    console.log(`end tex.reset`, tex.uuid);
                 }
 
                 tex.uploadData(this._canvas);
