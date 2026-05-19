@@ -97,7 +97,7 @@ void GLES2PrimaryCommandBuffer::draw(const DrawInfo &info) {
     if (_isStateInvalid) {
         ccstd::vector<uint32_t> &dynamicOffsetOffsets = _curGPUPipelineState->gpuPipelineLayout->dynamicOffsetOffsets;
         ccstd::vector<uint32_t> &dynamicOffsets = _curGPUPipelineState->gpuPipelineLayout->dynamicOffsets;
-        for (size_t i = 0U; i < _curDynamicOffsets.size(); i++) {
+        for (size_t i = 0U; i < (_curDynamicOffsets.size() - 1); i++) {
             size_t count = dynamicOffsetOffsets[i + 1] - dynamicOffsetOffsets[i];
             // CC_ASSERT(_curDynamicOffsets[i].size() >= count);
             count = std::min(count, _curDynamicOffsets[i].size());

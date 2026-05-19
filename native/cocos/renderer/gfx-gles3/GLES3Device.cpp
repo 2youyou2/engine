@@ -250,10 +250,10 @@ bool GLES3Device::doInit(const DeviceInfo & /*info*/) {
     CC_LOG_INFO("FRAMEBUFFER_FETCH: %s", fbfLevelStr.c_str());
     CC_LOG_INFO("MULTI_SAMPLE_RENDER_TO_TEXTURE: %s", msaaLevelStr.c_str());
 
-    if (_xr) {
+    /*if (_xr) {
         _xr->initializeGLESData(pfnGLES3wLoadProc(), GLES3Device::getInstance()->context());
         _xr->postGFXDeviceInitialize(_api);
-    }
+    }*/
     return true;
 }
 
@@ -280,23 +280,23 @@ void GLES3Device::acquire(Swapchain *const *swapchains, uint32_t count) {
     if (_onAcquire) _onAcquire->execute();
 
     _swapchains.clear();
-    if (_xr) {
-        GLuint xrFramebuffer = 0;
-#if XR_OEM_HUAWEIVR
-        stateCache()->glTextures[stateCache()->texUint] = 0;
-        glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, reinterpret_cast<GLint *>(&xrFramebuffer));
-        stateCache()->glDrawFramebuffer = xrFramebuffer;
-#else
-        xr::XRSwapchain xrSwapchain = _xr->doGFXDeviceAcquire(_api);
-        xrFramebuffer = xrSwapchain.glDrawFramebuffer;
-#endif
-        for (uint32_t i = 0; i < count; ++i) {
-            GL_CHECK(_xr->attachGLESFramebufferTexture2D(););
-            static_cast<GLES3Swapchain *>(swapchains[i])->gpuSwapchain()->glFramebuffer = xrFramebuffer;
-            _swapchains.push_back(static_cast<GLES3Swapchain *>(swapchains[i])->gpuSwapchain());
-        }
-        return;
-    }
+//    if (_xr) {
+//        GLuint xrFramebuffer = 0;
+//#if XR_OEM_HUAWEIVR
+//        stateCache()->glTextures[stateCache()->texUint] = 0;
+//        glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, reinterpret_cast<GLint *>(&xrFramebuffer));
+//        stateCache()->glDrawFramebuffer = xrFramebuffer;
+//#else
+//        xr::XRSwapchain xrSwapchain = _xr->doGFXDeviceAcquire(_api);
+//        xrFramebuffer = xrSwapchain.glDrawFramebuffer;
+//#endif
+//        for (uint32_t i = 0; i < count; ++i) {
+//            GL_CHECK(_xr->attachGLESFramebufferTexture2D(););
+//            static_cast<GLES3Swapchain *>(swapchains[i])->gpuSwapchain()->glFramebuffer = xrFramebuffer;
+//            _swapchains.push_back(static_cast<GLES3Swapchain *>(swapchains[i])->gpuSwapchain());
+//        }
+//        return;
+//    }
 
     for (uint32_t i = 0; i < count; ++i) {
         _swapchains.push_back(static_cast<GLES3Swapchain *>(swapchains[i])->gpuSwapchain());

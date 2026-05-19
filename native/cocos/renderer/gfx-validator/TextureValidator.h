@@ -32,6 +32,8 @@ namespace gfx {
 
 class CC_DLL TextureValidator final : public Agent<Texture> {
 public:
+    static uint32_t instanceCount;
+
     explicit TextureValidator(Texture *actor);
     ~TextureValidator() override;
 

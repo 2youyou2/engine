@@ -32,6 +32,8 @@ namespace gfx {
 
 class CC_DLL DescriptorSet : public GFXObject, public RefCounted {
 public:
+    static uint32_t instanceCount;
+
     DescriptorSet();
     ~DescriptorSet() override;
 

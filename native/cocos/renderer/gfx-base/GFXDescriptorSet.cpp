@@ -32,11 +32,16 @@
 namespace cc {
 namespace gfx {
 
+uint32_t DescriptorSet::instanceCount = 0;
+
 DescriptorSet::DescriptorSet()
 : GFXObject(ObjectType::DESCRIPTOR_SET) {
+    ++instanceCount;
 }
 
-DescriptorSet::~DescriptorSet() = default;
+DescriptorSet::~DescriptorSet() {
+    --instanceCount;
+}
 
 void DescriptorSet::initialize(const DescriptorSetInfo &info) {
     CC_ASSERT(info.layout);

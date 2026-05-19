@@ -42,12 +42,16 @@ struct EnumHasher final {
 ccstd::unordered_map<Format, Feature, EnumHasher> featureCheckMap{};
 } // namespace
 
+uint32_t TextureValidator::instanceCount = 0;
+
 TextureValidator::TextureValidator(Texture *actor)
 : Agent<Texture>(actor) {
+    ++instanceCount;
     _typedID = actor->getTypedID();
 }
 
 TextureValidator::~TextureValidator() {
+    --instanceCount;
     DeviceResourceTracker<Texture>::erase(this);
     if (_ownTheActor) CC_SAFE_DELETE(_actor);
 }
