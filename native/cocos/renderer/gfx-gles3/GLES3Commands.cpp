@@ -871,6 +871,12 @@ static bool useRenderBuffer(const GLES3Device *device, Format format, TextureUsa
 }
 
 void cmdFuncGLES3CreateTexture(GLES3Device *device, GLES3GPUTexture *gpuTexture) {
+    CC_LOG_INFO("[GFXTex] create begin gpu=%p glTex=%u rb=%u size=%ux%u depth=%u fmt=%d usage=0x%x flags=0x%x samples=%d",
+                gpuTexture, gpuTexture->glTexture, gpuTexture->glRenderbuffer,
+                gpuTexture->width, gpuTexture->height, gpuTexture->depth,
+                static_cast<int>(gpuTexture->format), static_cast<uint32_t>(gpuTexture->usage),
+                static_cast<uint32_t>(gpuTexture->flags), gpuTexture->glSamples);
+
     gpuTexture->glInternalFmt = mapGLInternalFormat(gpuTexture->format);
     gpuTexture->glFormat = mapGLFormat(gpuTexture->format);
     gpuTexture->glType = formatToGLType(gpuTexture->format);
@@ -884,11 +890,16 @@ void cmdFuncGLES3CreateTexture(GLES3Device *device, GLES3GPUTexture *gpuTexture)
         if (gpuTexture->useRenderBuffer &&
             hasFlag(gpuTexture->flags, TextureFlagBit::LAZILY_ALLOCATED)) {
             gpuTexture->memoryAllocated = false;
+            CC_LOG_INFO("[GFXTex] create skip lazy-msaa gpu=%p glTex=%u rb=%u useRb=%d",
+                        gpuTexture, gpuTexture->glTexture, gpuTexture->glRenderbuffer,
+                        static_cast<int>(gpuTexture->useRenderBuffer));
             return;
         }
     }
 
     if (gpuTexture->glTexture || gpuTexture->size == 0) {
+        CC_LOG_INFO("[GFXTex] create skip existing-or-empty gpu=%p glTex=%u rb=%u size=%u",
+                    gpuTexture, gpuTexture->glTexture, gpuTexture->glRenderbuffer, gpuTexture->size);
         return;
     }
 
@@ -899,9 +910,23 @@ void cmdFuncGLES3CreateTexture(GLES3Device *device, GLES3GPUTexture *gpuTexture)
         GL_CHECK(glGenTextures(1, &gpuTexture->glTexture));
         textureStorage(device, gpuTexture);
     }
+
+    CC_LOG_INFO("[GFXTex] create end gpu=%p glTex=%u rb=%u size=%ux%u depth=%u fmt=%d usage=0x%x useRb=%d",
+                gpuTexture, gpuTexture->glTexture, gpuTexture->glRenderbuffer,
+                gpuTexture->width, gpuTexture->height, gpuTexture->depth,
+                static_cast<int>(gpuTexture->format), static_cast<uint32_t>(gpuTexture->usage),
+                static_cast<int>(gpuTexture->useRenderBuffer));
 }
 
 void cmdFuncGLES3DestroyTexture(GLES3Device *device, GLES3GPUTexture *gpuTexture) {
+    const GLuint oldGlTexture = gpuTexture->glTexture;
+    const GLuint oldGlRenderbuffer = gpuTexture->glRenderbuffer;
+    CC_LOG_INFO("[GFXTex] destroy begin gpu=%p glTex=%u rb=%u size=%ux%u depth=%u fmt=%d usage=0x%x flags=0x%x",
+                gpuTexture, oldGlTexture, oldGlRenderbuffer,
+                gpuTexture->width, gpuTexture->height, gpuTexture->depth,
+                static_cast<int>(gpuTexture->format), static_cast<uint32_t>(gpuTexture->usage),
+                static_cast<uint32_t>(gpuTexture->flags));
+
     device->framebufferCacheMap()->onTextureDestroy(gpuTexture);
     if (gpuTexture->glTexture) {
         for (GLuint &glTexture : device->stateCache()->glTextures) {
@@ -923,6 +948,10 @@ void cmdFuncGLES3DestroyTexture(GLES3Device *device, GLES3GPUTexture *gpuTexture
         GL_CHECK(glDeleteRenderbuffers(1, &gpuTexture->glRenderbuffer));
         gpuTexture->glRenderbuffer = 0;
     }
+
+    CC_LOG_INFO("[GFXTex] destroy end gpu=%p oldGlTex=%u oldRb=%u nowGlTex=%u nowRb=%u",
+                gpuTexture, oldGlTexture, oldGlRenderbuffer,
+                gpuTexture->glTexture, gpuTexture->glRenderbuffer);
 }
 
 void cmdFuncGLES3ResizeTexture(GLES3Device *device, GLES3GPUTexture *gpuTexture) {
