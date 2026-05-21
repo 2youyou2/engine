@@ -23,6 +23,7 @@
 ****************************************************************************/
 
 #include "jsb_cocos_manual.h"
+#include "jsb_platform.h"
 
 #include "bindings/manual/jsb_global.h"
 #include "cocos/bindings/auto/jsb_cocos_auto.h"
@@ -31,8 +32,21 @@
 #include "cocos/bindings/manual/jsb_global_init.h"
 
 #include "application/ApplicationManager.h"
+#include "base/UTF8.h"
 #include "platform/interfaces/modules/ISystemWindowManager.h"
 #include "storage/local-storage/LocalStorage.h"
+
+#if __has_include(<unicode/ubrk.h>) && __has_include(<unicode/uclean.h>)
+    #include <unicode/ubrk.h>
+    #include <unicode/uclean.h>
+    #define CC_HAS_ICU_LINE_BREAK_ITERATOR 1
+#else
+    #define CC_HAS_ICU_LINE_BREAK_ITERATOR 0
+#endif
+
+#include <cstring>
+#include <memory>
+#include <vector>
 
 extern se::Object *__jsb_cc_FileUtils_proto; // NOLINT(readability-redundant-declaration, readability-identifier-naming)
 
@@ -792,6 +806,94 @@ static bool js_cc_Quaternion_underlyingData(se::State &s) { // NOLINT
 }
 SE_BIND_FUNC(js_cc_Quaternion_underlyingData)
 
+
+
+namespace {
+
+std::vector<int32_t> findLineBreaks(const std::string &utf8Text) {
+#if CC_HAS_ICU_LINE_BREAK_ITERATOR
+    UErrorCode status = U_ZERO_ERROR;
+    u_init(&status);
+    if (U_FAILURE(status)) {
+        return {};
+    }
+
+    std::u16string utf16Text;
+    if (!cc::StringUtils::UTF8ToUTF16(utf8Text, utf16Text)) {
+        return {};
+    }
+
+    auto *rawBreakIterator = ubrk_open(
+        UBRK_LINE,
+        "root",
+        reinterpret_cast<const UChar *>(utf16Text.data()),
+        static_cast<int32_t>(utf16Text.size()),
+        &status);
+    std::unique_ptr<UBreakIterator, decltype(&ubrk_close)> breakIterator(rawBreakIterator, &ubrk_close);
+    if (U_FAILURE(status) || !breakIterator) {
+        return {};
+    }
+
+    std::vector<int32_t> breakPositions;
+    for (int32_t pos = ubrk_next(breakIterator.get()); pos != UBRK_DONE; pos = ubrk_next(breakIterator.get())) {
+        breakPositions.emplace_back(pos);
+    }
+    return breakPositions;
+#else
+    std::u16string utf16Text;
+    if (!cc::StringUtils::UTF8ToUTF16(utf8Text, utf16Text)) {
+        return {};
+    }
+
+    std::vector<int32_t> breakPositions;
+    breakPositions.reserve(utf16Text.size());
+    for (std::size_t index = 1; index <= utf16Text.size(); ++index) {
+        const auto previous = utf16Text[index - 1];
+        if (previous >= 0xD800 && previous <= 0xDBFF && index < utf16Text.size()) {
+            const auto next = utf16Text[index];
+            if (next >= 0xDC00 && next <= 0xDFFF) {
+                continue;
+            }
+        }
+
+        breakPositions.emplace_back(static_cast<int32_t>(index));
+    }
+    return breakPositions;
+#endif
+}
+
+} // namespace
+
+static bool JSB_allBreakPos(se::State &s) {
+    const auto &args = s.args();
+    const size_t argc = args.size();
+    CC_UNUSED bool ok = true;
+    if (argc == 1 && args[0].isString()) {
+        std::string srcText;
+        ok &= seval_to_std_string(args[0], &srcText);
+        SE_PRECONDITION2(ok, false, "JSB_allBreakPos: failed to convert srcText");
+
+        const auto breakPositions = findLineBreaks(srcText);
+        se::HandleObject resultArray(se::Object::createArrayObject(breakPositions.size()));
+        if (!resultArray.get()) {
+            SE_REPORT_ERROR("JSB_allBreakPos: failed to create result array");
+            return false;
+        }
+
+        for (std::size_t index = 0; index < breakPositions.size(); ++index) {
+            se::Value element;
+            element.setInt32(breakPositions[index]);
+            resultArray->setArrayElement(static_cast<uint32_t>(index), element);
+        }
+        s.rval().setObject(resultArray.get());
+        return true;
+    }
+
+    SE_REPORT_ERROR("JSB_allBreakPos: wrong number of arguments: %d, was expecting %d", static_cast<int>(argc), 1);
+    return false;
+}
+SE_BIND_FUNC(JSB_allBreakPos)
+
 bool register_all_cocos_manual(se::Object *obj) { // NOLINT(readability-identifier-naming)
 
     __jsb_cc_Vec2_proto->defineFunction("underlyingData", _SE(js_cc_Vec2_underlyingData));
@@ -801,6 +903,9 @@ bool register_all_cocos_manual(se::Object *obj) { // NOLINT(readability-identifi
     __jsb_cc_Mat4_proto->defineFunction("underlyingData", _SE(js_cc_Mat4_underlyingData));
     __jsb_cc_Quaternion_proto->defineFunction("underlyingData", _SE(js_cc_Quaternion_underlyingData));
 
+    register_platform_bindings(obj);
+    __jsbObj->defineFunction("allBreakPos", _SE(JSB_allBreakPos));
+    
     register_plist_parser(obj);
     register_sys_localStorage(obj);
     register_device(obj);
