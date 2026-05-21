@@ -14511,6 +14511,30 @@ static bool js_gfx_BlendState_get_targets(se::State& s) // NOLINT(readability-id
 }
 SE_BIND_PROP_GET(js_gfx_BlendState_get_targets)
 
+
+static bool js_cc_gfx_BlendState_getTargets(se::State& s) {
+    CC_UNUSED bool                     ok   = true;
+    const auto&                        args = s.args();
+    size_t                             argc = args.size();
+    cc::gfx::BlendState*               arg1 = (cc::gfx::BlendState*)NULL;
+    std::vector<cc::gfx::BlendTarget*> result;
+
+    if (argc != 0) {
+        SE_REPORT_ERROR("wrong number of arguments: %d, was expecting %d", (int)argc, 0);
+        return false;
+    }
+    arg1 = SE_THIS_OBJECT<cc::gfx::BlendState>(s);
+    if (nullptr == arg1) return true;
+    result = (arg1)->getTargets();
+
+    ok &= nativevalue_to_se(result, s.rval(), s.thisObject() /*ctx*/);
+    SE_PRECONDITION2(ok, false, "Error processing arguments");
+    SE_HOLD_RETURN_VALUE(result, s.thisObject(), s.rval());
+
+    return true;
+}
+SE_BIND_FUNC(js_cc_gfx_BlendState_getTargets) 
+
 static bool js_gfx_BlendState_set_targets(se::State& s) // NOLINT(readability-identifier-naming)
 {
     const auto& args = s.args();
@@ -14639,6 +14663,9 @@ bool js_register_gfx_BlendState(se::Object* obj) // NOLINT(readability-identifie
     cls->defineProperty("isIndepend", _SE(js_gfx_BlendState_get_isIndepend), _SE(js_gfx_BlendState_set_isIndepend));
     cls->defineProperty("blendColor", _SE(js_gfx_BlendState_get_blendColor), _SE(js_gfx_BlendState_set_blendColor));
     cls->defineProperty("targets", _SE(js_gfx_BlendState_get_targets), _SE(js_gfx_BlendState_set_targets));
+
+    cls->defineFunction("getTargets", _SE(js_cc_gfx_BlendState_getTargets)); 
+
     cls->defineFinalizeFunction(_SE(js_cc_gfx_BlendState_finalize));
     cls->install();
     JSBClassType::registerClass<cc::gfx::BlendState>(cls);

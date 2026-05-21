@@ -27,7 +27,7 @@
  * @packageDocumentation
  * @module ui
  */
-import { EDITOR } from 'internal:constants';
+import { EDITOR, JSB } from 'internal:constants';
 import { ccclass, executeInEditMode, requireComponent, disallowMultiple, tooltip,
     type, displayOrder, serializable, override, visible, displayName, disallowAnimation } from 'cc.decorator';
 import { Color } from '../../core/math';
@@ -425,6 +425,15 @@ export class Renderable2D extends RenderableComponent {
     public _updateBlendFunc () {
         // todo: Not only Pass[0].target[0]
         let target = this._blendState.targets[0];
+        // let targets
+        // if (JSB) {
+        //     targets = this.getRenderMaterial(0).passes[0].blendState.getTargets()
+        // }
+        // else {
+        //     targets = this.getRenderMaterial(0)!.passes[0].blendState.targets
+        // }
+        // let target = targets[0];
+
         if (!target) {
             target = new BlendTarget();
             this._blendState.setTarget(0, target);

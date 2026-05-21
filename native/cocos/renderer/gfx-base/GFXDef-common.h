@@ -1286,6 +1286,14 @@ struct BlendState {
     uint32_t        isIndepend{0}; // @ts-boolean
     Color           blendColor;
     BlendTargetList targets{1};
+
+     std::vector<BlendTarget *> getTargets() {
+        std::vector<BlendTarget *> res;
+        for (auto &target : targets) {
+            res.push_back(&target);
+        }
+        return res;
+    }
 };
 
 struct PipelineStateInfo {

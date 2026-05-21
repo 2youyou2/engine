@@ -325,15 +325,20 @@ export const ttfUtils =  {
             const uploadAgain = _canvas.width !== 0 && _canvas.height !== 0;
 
             if (uploadAgain) {
-                tex.reset({
-                    width: _canvas.width,
-                    height: _canvas.height,
-                    mipmapLevel: 1,
-                });
+
+                if (tex.width !== _canvas.width || tex.height !== _canvas.height) {
+                    tex.reset({
+                        width: _canvas.width,
+                        height: _canvas.height,
+                        mipmapLevel: 1,
+                    });
+                }
+
+
                 tex.uploadData(_canvas);
                 tex.setWrapMode(WrapMode.CLAMP_TO_EDGE, WrapMode.CLAMP_TO_EDGE);
                 if (_texture instanceof SpriteFrame) {
-                    _texture.rect = new Rect(0, 0, _canvas.width, _canvas.height);
+                    _texture.rect.set(0, 0, _canvas.width, _canvas.height);
                     _texture._calculateUV();
                 }
                 if (comp.renderData) {

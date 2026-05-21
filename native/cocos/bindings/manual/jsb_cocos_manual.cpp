@@ -24,6 +24,7 @@
 ****************************************************************************/
 
 #include "jsb_cocos_manual.h"
+#include "jsb_platform.h"
 
 #include "cocos/bindings/auto/jsb_cocos_auto.h"
 #include "cocos/bindings/jswrapper/SeApi.h"
@@ -352,11 +353,11 @@ static bool register_sys_localStorage(se::Object *obj) { // NOLINT(readability-i
     return true;
 }
 
-//IDEA:  move to auto bindings.
+// IDEA:  move to auto bindings.
 static bool js_CanvasRenderingContext2D_setCanvasBufferUpdatedCallback(se::State &s) { // NOLINT(readability-identifier-naming)
     auto *cobj = static_cast<cc::ICanvasRenderingContext2D *>(s.nativeThisObject());
-    SE_PRECONDITION2(cobj, false, "js_CanvasRenderingContext2D_setCanvasBufferUpdatedCallback : Invalid Native Object");
-    const auto &   args = s.args();
+    SE_PRECONDITION2(cobj, false, "Invalid Native Object");
+    const auto    &args = s.args();
     size_t         argc = args.size();
     CC_UNUSED bool ok   = true;
     if (argc == 1) {
@@ -366,33 +367,68 @@ static bool js_CanvasRenderingContext2D_setCanvasBufferUpdatedCallback(se::State
                 se::Value jsThis(s.thisObject());
                 se::Value jsFunc(args[0]);
                 jsThis.toObject()->attachObject(jsFunc.toObject());
-                auto lambda = [=](const cc::Data &larg0) -> void {
+                se::Object *thisObj              = s.thisObject();
+                auto        cachedTypedArray     = std::make_shared<se::Value>();
+                auto        cachedTypedArraySize = std::make_shared<size_t>(0);
+                auto        lambda               = [=](const cc::Data &larg0) -> void {
                     se::ScriptEngine::getInstance()->clearException();
                     se::AutoHandleScope hs;
 
                     CC_UNUSED bool ok = true;
                     se::ValueArray args;
                     args.resize(1);
-                    ok &= Data_to_seval(larg0, &args[0]);
+
+                    if (larg0.isNull()) {
+                        cachedTypedArray->setUndefined();
+                        *cachedTypedArraySize = 0;
+                        args[0].setNull();
+                    } else {
+                        const auto byteLength = larg0.getSize();
+                        bool       canReuse   = cachedTypedArray->isObject() && cachedTypedArray->toObject()->isTypedArray() && *cachedTypedArraySize == byteLength;
+                        if (canReuse) {
+                            uint8_t *typedArrayData   = nullptr;
+                            size_t   typedArrayLength = 0;
+                            canReuse                  = cachedTypedArray->toObject()->getTypedArrayData(&typedArrayData, &typedArrayLength) && typedArrayLength == byteLength;
+                            if (canReuse && byteLength > 0) {
+                                std::memcpy(typedArrayData, larg0.getBytes(), byteLength);
+                            }
+                        }
+
+                        if (!canReuse) {
+                            cachedTypedArray->setUndefined();
+                            ok &= Data_to_seval(larg0, cachedTypedArray.get());
+                            *cachedTypedArraySize = byteLength;
+                        }
+
+                        if (ok) {
+                            args[0].setObject(cachedTypedArray->toObject());
+                        }
+                    }
+                    if (!ok) {
+                        se::ScriptEngine::getInstance()->clearException();
+                        return;
+                    }
                     se::Value   rval;
-                    se::Object *thisObj = jsThis.isObject() ? jsThis.toObject() : nullptr;
                     se::Object *funcObj = jsFunc.toObject();
                     bool        succeed = funcObj->call(args, thisObj, &rval);
                     if (!succeed) {
                         se::ScriptEngine::getInstance()->clearException();
                     }
+
+                    args[0].setUndefined();
+                    rval.setUndefined();
                 };
                 // Add an unroot to avoid the root of the copy constructor caused by the internal reference of Lambda.
-                if (jsThis.isObject()) {
-                    jsThis.toObject()->unroot();
+                if (thisObj) {
+                    thisObj->unroot();
                 }
                 jsFunc.toObject()->unroot();
-                arg0 = lambda;
+                arg0 = std::move(lambda);
             } else {
                 arg0 = nullptr;
             }
         } while (false);
-        SE_PRECONDITION2(ok, false, "js_CanvasRenderingContext2D_setCanvasBufferUpdatedCallback : Error processing arguments");
+        SE_PRECONDITION2(ok, false, "Error processing arguments");
         cobj->setCanvasBufferUpdatedCallback(arg0);
         return true;
     }

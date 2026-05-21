@@ -31,6 +31,7 @@ import { BufferTextureCopy } from '../../../core/gfx';
 import { safeMeasureText, BASELINE_RATIO, MIDDLE_RATIO, getBaselineOffset } from '../../utils/text-utils';
 import { director, Director } from '../../../core/director';
 import { macro, warnID } from '../../../core';
+import { JSB } from 'internal:constants';
 
 export interface ISharedLabelData {
     canvas: HTMLCanvasElement;
@@ -64,6 +65,14 @@ export class CanvasPool {
 
     public put (canvas: ISharedLabelData) {
         if (this.pool.length >= macro.MAX_LABEL_CANVAS_POOL_SIZE) {
+            if (JSB) {
+                const c = canvas.canvas as any;
+                if (c && c._destroy) {
+                    c._destroy();
+                }
+                canvas.canvas = null!;
+                canvas.context = null;
+            }
             return;
         }
         this.pool.push(canvas);
