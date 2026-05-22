@@ -105,6 +105,12 @@ export class DrawBatch2D {
     }
 
     public destroy (ui: IBatcher) {
+        this._passes.forEach(pass => {
+            // 这里 pass 的 descriptSet 等不是自己创建的，不能用 destroy
+            // pass.destroy()
+
+            pass._destroy()
+        })
         this._passes = [];
         if (JSB) {
             this._nativeObj = null;
