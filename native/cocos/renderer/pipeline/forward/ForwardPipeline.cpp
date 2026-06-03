@@ -139,7 +139,7 @@ void ForwardPipeline::render(const ccstd::vector<scene::Camera *> &cameras) {
     _device->flushCommands(_commandBuffers);
     _device->getQueue()->submit(_commandBuffers);
 
-    //RenderPipeline::framegraphGC();
+    RenderPipeline::framegraphGC();
 }
 
 bool ForwardPipeline::activeRenderer(gfx::Swapchain *swapchain) {
