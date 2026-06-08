@@ -41,7 +41,8 @@ class HTMLCanvasElement extends HTMLElement {
         this._width = width ? Math.ceil(width) : 0;
         this._height = height ? Math.ceil(height) : 0;
         this._context2D = null;
-        this._dataInner = null;
+        this._dataInner = new ImageData(null, this._width, this._height);
+        this._dataInner.reset(null);
     }
 
     //REFINE: implement opts.
@@ -60,7 +61,7 @@ class HTMLCanvasElement extends HTMLElement {
                     } else {
                         _data.set(data);
                     }
-                    self._dataInner = new ImageData(_data, self._width, self._height);
+                    self._dataInner.reset(_data, self._width, self._height);
                 });
             }
             return this._context2D;
@@ -73,7 +74,7 @@ class HTMLCanvasElement extends HTMLElement {
         if (this._context2D === null) {
             return null;
         }
-        if (!this._dataInner) {
+        if (!this._dataInner.data) {
             this._context2D.fetchData();
         }
         return this._dataInner;
@@ -86,8 +87,8 @@ class HTMLCanvasElement extends HTMLElement {
     set width (width) {
         width = Math.ceil(width);
         if (this._width !== width) {
-            this._dataInner = null;
             this._width = width;
+            this._dataInner.reset(null, width);
             if (this._context2D) {
                 this._context2D.width = width;
             }
@@ -101,8 +102,8 @@ class HTMLCanvasElement extends HTMLElement {
     set height (height) {
         height = Math.ceil(height);
         if (this._height !== height) {
-            this._dataInner = null;
             this._height = height;
+            this._dataInner.reset(null, undefined, height);
             if (this._context2D) {
                 this._context2D.height = height;
             }
