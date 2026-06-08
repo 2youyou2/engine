@@ -31,6 +31,16 @@ class ImageData {
         return this._height;
     }
 
+    reset(data, width, height) {
+        this._data = data;
+        if (width !== undefined) {
+            this._width = width;
+        }
+        if (height !== undefined) {
+            this._height = height;
+        }
+    }
+
 }
 
 module.exports = ImageData;

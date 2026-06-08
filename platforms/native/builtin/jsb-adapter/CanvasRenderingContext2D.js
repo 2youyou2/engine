@@ -65,35 +65,35 @@ class CanvasRenderingContext2D {
     lineTo (x, y) { this._nativeObj.lineTo(x, y); }
     setTransform (a, b, c, d, e, f) { this._nativeObj.setTransform(a, b, c, d, e, f); }
     stroke () {
-        this._canvas._dataInner = null;
+        this._canvas._dataInner.reset(null);
         this._nativeObj.stroke();
     }
     measureText (text) { return this._nativeObj.measureText(text, this._attris); }
     fill () {
-        this._canvas._dataInner = null;
+        this._canvas._dataInner.reset(null);
         this._nativeObj.fill();
     }
     _fillImageData (data, width, height, offsetX, offsetY) {
-        this._canvas._dataInner = null;
+        this._canvas._dataInner.reset(null);
         this._nativeObj._fillImageData(data, width, height, offsetX, offsetY);
     }
     scale (x, y) { this._nativeObj.scale(x, y); }
     clearRect (x, y, width, height) {
-        this._canvas._dataInner = null;
+        this._canvas._dataInner.reset(null);
         this._nativeObj.clearRect(x, y, width, height);
     }
     transform (a, b, c, d, e, f) { this._nativeObj.transform(a, b, c, d, e, f); }
     fillText (text, x, y, maxWidth) {
-        this._canvas._dataInner = null;
+        this._canvas._dataInner.reset(null);
         this._nativeObj.fillText(text, x, y, maxWidth, this._attris);
     }
     strokeText (text, x, y, maxWidth) {
-        this._canvas._dataInner = null;
+        this._canvas._dataInner.reset(null);
         this._nativeObj.strokeText(text, x, y, maxWidth, this._attris);
     }
     save () { this._nativeObj.save(); }
     fillRect (x, y, width, height) {
-        this._canvas._dataInner = null;
+        this._canvas._dataInner.reset(null);
         this._nativeObj.fillRect(x, y, width, height, this._attris);
     }
     fetchData () {
