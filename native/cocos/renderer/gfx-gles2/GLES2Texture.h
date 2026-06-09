@@ -34,6 +34,8 @@ struct GLES2GPUTexture;
 
 class CC_GLES2_API GLES2Texture final : public Texture {
 public:
+    static uint32_t instanceCount;
+
     GLES2Texture();
     ~GLES2Texture() override;
 

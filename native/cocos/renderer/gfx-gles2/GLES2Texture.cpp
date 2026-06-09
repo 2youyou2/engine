@@ -33,12 +33,16 @@
 namespace cc {
 namespace gfx {
 
+uint32_t GLES2Texture::instanceCount = 0;
+
 GLES2Texture::GLES2Texture() {
     _typedID = generateObjectID<decltype(this)>();
+    ++instanceCount;
 }
 
 GLES2Texture::~GLES2Texture() {
     destroy();
+    --instanceCount;
 }
 
 void GLES2Texture::doInit(const TextureInfo & /*info*/) {

@@ -61,6 +61,15 @@ void clearJSBPrivateData(gfx::Texture *texture) {
         objects.emplace_back(obj);
     });
 
+    if (objects.empty()) {
+        CC_LOG_WARNING("clearJSBPrivateData failed to find JSB objects for texture %p, size: %ux%u, format: %u, (js->native map) size: %zu",
+                       texture,
+                       texture->getWidth(),
+                       texture->getHeight(),
+                       static_cast<uint32_t>(texture->getFormat()),
+                       se::NativePtrToObjectMap::size());
+    }
+
     for (auto *obj : objects) {
         if (obj != nullptr && obj->getPrivateData() == texture) {
             obj->clearPrivateData(true);

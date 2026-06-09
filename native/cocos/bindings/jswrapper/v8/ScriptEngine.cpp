@@ -37,8 +37,13 @@
     #include "base/std/container/unordered_map.h"
     #include "platform/FileUtils.h"
     #include "plugins/bus/EventBus.h"
-    #include "renderer/gfx-base/GFXDescriptorSet.h"
-    #include "renderer/gfx-validator/TextureValidator.h"
+    #include "renderer/gfx-base/GFXDevice.h"
+    #if defined(CC_USE_GLES3)
+        #include "renderer/gfx-gles3/GLES3Texture.h"
+    #endif
+    #if defined(CC_USE_GLES2)
+        #include "renderer/gfx-gles2/GLES2Texture.h"
+    #endif
 
     #include <sstream>
 
@@ -91,24 +96,44 @@ void seForceGC(const v8::FunctionCallbackInfo<v8::Value> & /*info*/) {
     ScriptEngine::getInstance()->garbageCollect();
 }
 
-void logV8HeapStatistics(v8::Isolate *isolate, const char *tag) {
-    v8::HeapStatistics stats;
-    isolate->GetHeapStatistics(&stats);
+const char *getGFXTextureCounterName() {
+    const auto *device = cc::gfx::Device::getInstance();
+    if (device == nullptr) {
+        return "GFXTexture";
+    }
 
-    constexpr size_t KB = 1024;
-    CC_LOG_INFO(
-        "[MemDiag][%s] v8Total=%lluKB v8Used=%lluKB v8Physical=%lluKB v8External=%lluKB v8Malloced=%lluKB v8PeakMalloced=%lluKB v8Limit=%lluKB nativeMap=%llu textureValidators=%u descriptorSets=%u",
-        tag,
-        static_cast<unsigned long long>(stats.total_heap_size() / KB),
-        static_cast<unsigned long long>(stats.used_heap_size() / KB),
-        static_cast<unsigned long long>(stats.total_physical_size() / KB),
-        static_cast<unsigned long long>(stats.external_memory() / KB),
-        static_cast<unsigned long long>(stats.malloced_memory() / KB),
-        static_cast<unsigned long long>(stats.peak_malloced_memory() / KB),
-        static_cast<unsigned long long>(stats.heap_size_limit() / KB),
-        static_cast<unsigned long long>(se::NativePtrToObjectMap::size()),
-        cc::gfx::TextureValidator::instanceCount,
-        cc::gfx::DescriptorSet::instanceCount);
+    switch (device->getGfxAPI()) {
+        #if defined(CC_USE_GLES3)
+        case cc::gfx::API::GLES3:
+            return "GLES3Texture";
+        #endif
+        #if defined(CC_USE_GLES2)
+        case cc::gfx::API::GLES2:
+            return "GLES2Texture";
+        #endif
+        default:
+            return "GFXTexture";
+    }
+}
+
+uint32_t getGFXTextureInstanceCount() {
+    const auto *device = cc::gfx::Device::getInstance();
+    if (device == nullptr) {
+        return 0;
+    }
+
+    switch (device->getGfxAPI()) {
+        #if defined(CC_USE_GLES3)
+        case cc::gfx::API::GLES3:
+            return cc::gfx::GLES3Texture::instanceCount;
+        #endif
+        #if defined(CC_USE_GLES2)
+        case cc::gfx::API::GLES2:
+            return cc::gfx::GLES2Texture::instanceCount;
+        #endif
+        default:
+            return 0;
+    }
 }
 
 ccstd::string stackTraceToString(v8::Local<v8::StackTrace> stack) {
@@ -249,7 +274,7 @@ public:
         // for bytecode support
         flags.append(" --no-flush-bytecode --no-lazy");
         // v8 trace gc
-        flags.append(" --trace-gc");
+        // flags.append(" --trace-gc");
 
         // NOTICE: should be remove flag --no-turbo-escape after upgrade v8 to 10.x
         // https://github.com/cocos/cocos-engine/issues/13342
@@ -830,11 +855,11 @@ bool ScriptEngine::start(v8::Isolate *isolate) {
 }
 
 void ScriptEngine::garbageCollect() {
-    SE_LOGD("GC begin ..., (js->native map) size: %d\n", (int)NativePtrToObjectMap::size());
-    logV8HeapStatistics(_isolate, "before-gc");
+    SE_LOGE("GC begin ..., (js->native map) size: %d, %s %u\n", (int)NativePtrToObjectMap::size(), getGFXTextureCounterName(), getGFXTextureInstanceCount());
+
     _gcFunc->call({}, nullptr);
-    logV8HeapStatistics(_isolate, "after-gc");
-    SE_LOGD("GC end ..., (js->native map) size: %d\n", (int)NativePtrToObjectMap::size());
+
+    SE_LOGE("GC end ..., (js->native map) size: %d, %s %u\n", (int)NativePtrToObjectMap::size(), getGFXTextureCounterName(), getGFXTextureInstanceCount());
 }
 
 bool ScriptEngine::isGarbageCollecting() const {
