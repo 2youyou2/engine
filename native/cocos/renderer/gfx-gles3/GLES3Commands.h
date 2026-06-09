@@ -247,6 +247,7 @@ void cmdFuncGLES3CreateTexture(GLES3Device *device, GLES3GPUTexture *gpuTexture)
 void cmdFuncGLES3DestroyTexture(GLES3Device *device, GLES3GPUTexture *gpuTexture);
 void cmdFuncGLES3ResizeTexture(GLES3Device *device, GLES3GPUTexture *gpuTexture);
 void cmdFuncGLES3CreateTextureView(GLES3Device *device, GLES3GPUTextureView *gpuTextureView);
+uint32_t cmdFuncGLES3GetTextureCount();
 void cmdFuncGLES3CreateShader(GLES3Device *device, GLES3GPUShader *gpuShader, GLES3GPUPipelineLayout *pipelineLayout);
 void cmdFuncGLES3DestroyShader(GLES3Device *device, GLES3GPUShader *gpuShader);
 void cmdFuncGLES3CreateRenderPass(GLES3Device *device, GLES3GPURenderPass *gpuRenderPass);

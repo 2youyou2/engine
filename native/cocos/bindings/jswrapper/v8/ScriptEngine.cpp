@@ -35,10 +35,13 @@
     #include "Utils.h"
     #include "base/Log.h"
     #include "base/std/container/unordered_map.h"
+    #include "core/assets/SimpleTexture.h"
     #include "platform/FileUtils.h"
     #include "plugins/bus/EventBus.h"
     #include "renderer/gfx-base/GFXDevice.h"
+    #include "renderer/gfx-base/GFXDescriptorSet.h"
     #if defined(CC_USE_GLES3)
+        #include "renderer/gfx-gles3/GLES3Commands.h"
         #include "renderer/gfx-gles3/GLES3Texture.h"
     #endif
     #if defined(CC_USE_GLES2)
@@ -134,6 +137,16 @@ uint32_t getGFXTextureInstanceCount() {
         default:
             return 0;
     }
+}
+
+uint32_t getGLES3CmdTextureCount() {
+    #if defined(CC_USE_GLES3)
+    const auto *device = cc::gfx::Device::getInstance();
+    if (device != nullptr && device->getGfxAPI() == cc::gfx::API::GLES3) {
+        return cc::gfx::cmdFuncGLES3GetTextureCount();
+    }
+    #endif
+    return 0;
 }
 
 ccstd::string stackTraceToString(v8::Local<v8::StackTrace> stack) {
@@ -855,11 +868,39 @@ bool ScriptEngine::start(v8::Isolate *isolate) {
 }
 
 void ScriptEngine::garbageCollect() {
-    SE_LOGE("GC begin ..., (js->native map) size: %d, %s %u\n", (int)NativePtrToObjectMap::size(), getGFXTextureCounterName(), getGFXTextureInstanceCount());
+    SE_LOGE("GC begin ..., (js->native map) size: %d, %s %u, GLES3CmdTexture %u, DescriptorSet %u, SimpleTexture reset %u(noMip %u, noDevice %u), gfxTex c/d/alive %u/%u/%u, gfxView c/d/alive %u/%u/%u\n",
+            (int)NativePtrToObjectMap::size(),
+            getGFXTextureCounterName(),
+            getGFXTextureInstanceCount(),
+            getGLES3CmdTextureCount(),
+            cc::gfx::DescriptorSet::instanceCount,
+            cc::SimpleTexture::tryResetCount,
+            cc::SimpleTexture::tryResetNoMipCount,
+            cc::SimpleTexture::tryResetNoDeviceCount,
+            cc::SimpleTexture::createTextureCount,
+            cc::SimpleTexture::destroyTextureCount,
+            cc::SimpleTexture::gfxTextureAliveCount,
+            cc::SimpleTexture::createTextureViewCount,
+            cc::SimpleTexture::destroyTextureViewCount,
+            cc::SimpleTexture::gfxTextureViewAliveCount);
 
     _gcFunc->call({}, nullptr);
 
-    SE_LOGE("GC end ..., (js->native map) size: %d, %s %u\n", (int)NativePtrToObjectMap::size(), getGFXTextureCounterName(), getGFXTextureInstanceCount());
+    SE_LOGE("GC end ..., (js->native map) size: %d, %s %u, GLES3CmdTexture %u, DescriptorSet %u, SimpleTexture reset %u(noMip %u, noDevice %u), gfxTex c/d/alive %u/%u/%u, gfxView c/d/alive %u/%u/%u\n",
+            (int)NativePtrToObjectMap::size(),
+            getGFXTextureCounterName(),
+            getGFXTextureInstanceCount(),
+            getGLES3CmdTextureCount(),
+            cc::gfx::DescriptorSet::instanceCount,
+            cc::SimpleTexture::tryResetCount,
+            cc::SimpleTexture::tryResetNoMipCount,
+            cc::SimpleTexture::tryResetNoDeviceCount,
+            cc::SimpleTexture::createTextureCount,
+            cc::SimpleTexture::destroyTextureCount,
+            cc::SimpleTexture::gfxTextureAliveCount,
+            cc::SimpleTexture::createTextureViewCount,
+            cc::SimpleTexture::destroyTextureViewCount,
+            cc::SimpleTexture::gfxTextureViewAliveCount);
 }
 
 bool ScriptEngine::isGarbageCollecting() const {

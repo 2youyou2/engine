@@ -79,6 +79,16 @@ void clearJSBPrivateData(gfx::Texture *texture) {
 
 } // namespace
 
+uint32_t SimpleTexture::tryResetCount = 0;
+uint32_t SimpleTexture::tryResetNoMipCount = 0;
+uint32_t SimpleTexture::tryResetNoDeviceCount = 0;
+uint32_t SimpleTexture::createTextureCount = 0;
+uint32_t SimpleTexture::destroyTextureCount = 0;
+uint32_t SimpleTexture::createTextureViewCount = 0;
+uint32_t SimpleTexture::destroyTextureViewCount = 0;
+uint32_t SimpleTexture::gfxTextureAliveCount = 0;
+uint32_t SimpleTexture::gfxTextureViewAliveCount = 0;
+
 SimpleTexture::SimpleTexture() = default;
 SimpleTexture::~SimpleTexture() = default;
 
@@ -143,14 +153,17 @@ void SimpleTexture::setMipmapLevel(uint32_t value) {
 }
 
 void SimpleTexture::tryReset() {
+    ++tryResetCount;
     tryDestroyTextureView();
     tryDestroyTexture();
     if (_mipmapLevel == 0) {
+        ++tryResetNoMipCount;
         notifyTextureUpdated();
         return;
     }
     auto *device = getGFXDevice();
     if (!device) {
+        ++tryResetNoDeviceCount;
         notifyTextureUpdated();
         return;
     }
@@ -193,6 +206,8 @@ void SimpleTexture::createTexture(gfx::Device *device) {
     _textureHeight = textureCreateInfo.height;
 
     _gfxTexture = texture;
+    ++createTextureCount;
+    ++gfxTextureAliveCount;
 }
 
 gfx::Texture *SimpleTexture::createTextureView(gfx::Device *device) {
@@ -211,13 +226,20 @@ gfx::Texture *SimpleTexture::createTextureView(gfx::Device *device) {
     //        return;
     //    }
 
-    return device->createTexture(textureViewCreateInfo);
+    auto *textureView = device->createTexture(textureViewCreateInfo);
+    ++createTextureViewCount;
+    ++gfxTextureViewAliveCount;
+    return textureView;
 }
 
 void SimpleTexture::tryDestroyTexture() {
     if (_gfxTexture != nullptr) {
         _gfxTexture->destroy();
         _gfxTexture = nullptr;
+        ++destroyTextureCount;
+        if (gfxTextureAliveCount > 0) {
+            --gfxTextureAliveCount;
+        }
     }
 }
 
@@ -226,6 +248,10 @@ void SimpleTexture::tryDestroyTextureView() {
         clearJSBPrivateData(_gfxTextureView.get());
         _gfxTextureView->destroy();
         _gfxTextureView = nullptr;
+        ++destroyTextureViewCount;
+        if (gfxTextureViewAliveCount > 0) {
+            --gfxTextureViewAliveCount;
+        }
 
         //TODO(minggo): should notify JS if the performance is low.
     }

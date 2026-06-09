@@ -41,6 +41,10 @@ namespace cc {
 namespace gfx {
 
 namespace {
+uint32_t gGLES3CmdTextureCount = 0;
+} // namespace
+
+namespace {
 GLenum mapGLInternalFormat(Format format) {
     switch (format) {
         case Format::A8: return GL_ALPHA;
@@ -871,11 +875,11 @@ static bool useRenderBuffer(const GLES3Device *device, Format format, TextureUsa
 }
 
 void cmdFuncGLES3CreateTexture(GLES3Device *device, GLES3GPUTexture *gpuTexture) {
-    CC_LOG_INFO("[GFXTex] create begin gpu=%p glTex=%u rb=%u size=%ux%u depth=%u fmt=%d usage=0x%x flags=0x%x samples=%d",
-                gpuTexture, gpuTexture->glTexture, gpuTexture->glRenderbuffer,
-                gpuTexture->width, gpuTexture->height, gpuTexture->depth,
-                static_cast<int>(gpuTexture->format), static_cast<uint32_t>(gpuTexture->usage),
-                static_cast<uint32_t>(gpuTexture->flags), gpuTexture->glSamples);
+    //CC_LOG_INFO("[GFXTex] create begin gpu=%p glTex=%u rb=%u size=%ux%u depth=%u fmt=%d usage=0x%x flags=0x%x samples=%d",
+    //            gpuTexture, gpuTexture->glTexture, gpuTexture->glRenderbuffer,
+    //            gpuTexture->width, gpuTexture->height, gpuTexture->depth,
+    //            static_cast<int>(gpuTexture->format), static_cast<uint32_t>(gpuTexture->usage),
+    //            static_cast<uint32_t>(gpuTexture->flags), gpuTexture->glSamples);
 
     gpuTexture->glInternalFmt = mapGLInternalFormat(gpuTexture->format);
     gpuTexture->glFormat = mapGLFormat(gpuTexture->format);
@@ -910,22 +914,23 @@ void cmdFuncGLES3CreateTexture(GLES3Device *device, GLES3GPUTexture *gpuTexture)
         GL_CHECK(glGenTextures(1, &gpuTexture->glTexture));
         textureStorage(device, gpuTexture);
     }
+    ++gGLES3CmdTextureCount;
 
-    CC_LOG_INFO("[GFXTex] create end gpu=%p glTex=%u rb=%u size=%ux%u depth=%u fmt=%d usage=0x%x useRb=%d",
-                gpuTexture, gpuTexture->glTexture, gpuTexture->glRenderbuffer,
-                gpuTexture->width, gpuTexture->height, gpuTexture->depth,
-                static_cast<int>(gpuTexture->format), static_cast<uint32_t>(gpuTexture->usage),
-                static_cast<int>(gpuTexture->useRenderBuffer));
+    //CC_LOG_INFO("[GFXTex] create end gpu=%p glTex=%u rb=%u size=%ux%u depth=%u fmt=%d usage=0x%x useRb=%d",
+    //            gpuTexture, gpuTexture->glTexture, gpuTexture->glRenderbuffer,
+    //            gpuTexture->width, gpuTexture->height, gpuTexture->depth,
+    //            static_cast<int>(gpuTexture->format), static_cast<uint32_t>(gpuTexture->usage),
+    //            static_cast<int>(gpuTexture->useRenderBuffer));
 }
 
 void cmdFuncGLES3DestroyTexture(GLES3Device *device, GLES3GPUTexture *gpuTexture) {
     const GLuint oldGlTexture = gpuTexture->glTexture;
     const GLuint oldGlRenderbuffer = gpuTexture->glRenderbuffer;
-    CC_LOG_INFO("[GFXTex] destroy begin gpu=%p glTex=%u rb=%u size=%ux%u depth=%u fmt=%d usage=0x%x flags=0x%x",
-                gpuTexture, oldGlTexture, oldGlRenderbuffer,
-                gpuTexture->width, gpuTexture->height, gpuTexture->depth,
-                static_cast<int>(gpuTexture->format), static_cast<uint32_t>(gpuTexture->usage),
-                static_cast<uint32_t>(gpuTexture->flags));
+    //CC_LOG_INFO("[GFXTex] destroy begin gpu=%p glTex=%u rb=%u size=%ux%u depth=%u fmt=%d usage=0x%x flags=0x%x",
+    //            gpuTexture, oldGlTexture, oldGlRenderbuffer,
+    //            gpuTexture->width, gpuTexture->height, gpuTexture->depth,
+    //            static_cast<int>(gpuTexture->format), static_cast<uint32_t>(gpuTexture->usage),
+    //            static_cast<uint32_t>(gpuTexture->flags));
 
     device->framebufferCacheMap()->onTextureDestroy(gpuTexture);
     if (gpuTexture->glTexture) {
@@ -936,6 +941,7 @@ void cmdFuncGLES3DestroyTexture(GLES3Device *device, GLES3GPUTexture *gpuTexture
         }
         if (!hasFlag(gpuTexture->flags, TextureFlagBit::EXTERNAL_OES) && !hasFlag(gpuTexture->flags, TextureFlagBit::EXTERNAL_NORMAL)) {
             GL_CHECK(glDeleteTextures(1, &gpuTexture->glTexture));
+            --gGLES3CmdTextureCount;
         }
         gpuTexture->glTexture = 0;
 
@@ -946,12 +952,17 @@ void cmdFuncGLES3DestroyTexture(GLES3Device *device, GLES3GPUTexture *gpuTexture
             glRenderbuffer = 0;
         }
         GL_CHECK(glDeleteRenderbuffers(1, &gpuTexture->glRenderbuffer));
+        --gGLES3CmdTextureCount;
         gpuTexture->glRenderbuffer = 0;
     }
 
-    CC_LOG_INFO("[GFXTex] destroy end gpu=%p oldGlTex=%u oldRb=%u nowGlTex=%u nowRb=%u",
-                gpuTexture, oldGlTexture, oldGlRenderbuffer,
-                gpuTexture->glTexture, gpuTexture->glRenderbuffer);
+    //CC_LOG_INFO("[GFXTex] destroy end gpu=%p oldGlTex=%u oldRb=%u nowGlTex=%u nowRb=%u",
+    //            gpuTexture, oldGlTexture, oldGlRenderbuffer,
+    //            gpuTexture->glTexture, gpuTexture->glRenderbuffer);
+}
+
+uint32_t cmdFuncGLES3GetTextureCount() {
+    return gGLES3CmdTextureCount;
 }
 
 void cmdFuncGLES3ResizeTexture(GLES3Device *device, GLES3GPUTexture *gpuTexture) {

@@ -45,6 +45,16 @@ class SimpleTexture : public TextureBase {
     TARGET_EVENT_ARG1(AfterAssignImage, cc::ImageAsset *)
     DECLARE_TARGET_EVENT_END()
 public:
+    static uint32_t tryResetCount;
+    static uint32_t tryResetNoMipCount;
+    static uint32_t tryResetNoDeviceCount;
+    static uint32_t createTextureCount;
+    static uint32_t destroyTextureCount;
+    static uint32_t createTextureViewCount;
+    static uint32_t destroyTextureViewCount;
+    static uint32_t gfxTextureAliveCount;
+    static uint32_t gfxTextureViewAliveCount;
+
     ~SimpleTexture() override;
 
     using Super = TextureBase;
