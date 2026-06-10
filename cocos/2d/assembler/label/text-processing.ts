@@ -24,7 +24,7 @@
 import { ANDROID, JSB } from 'internal:constants';
 import { Texture2D } from '../../../asset/assets';
 import { WrapMode } from '../../../asset/assets/asset-enum';
-import { cclegacy, Color, Pool, Rect, Vec2 } from '../../../core';
+import { cclegacy, Rect, Vec2 } from '../../../core';
 import { log, logID, warn } from '../../../core/platform';
 import { SpriteFrame } from '../../assets';
 import { FontLetterDefinition } from '../../assets/bitmap-font';
@@ -48,15 +48,6 @@ const MAX_CALCULATION_NUM = 3;
 const _drawUnderlinePos = new Vec2();
 const tempPos = new Vec2();
 const letterPosition = new Vec2();
-
-export interface IRenderData {
-    x: number;
-    y: number;
-    z: number;
-    u: number;
-    v: number;
-    color: Color;
-}
 
 class LetterInfo {
     public char = '';
@@ -613,22 +604,7 @@ export class TextProcessing {
     }
 
     private updateQuatCount (outputRenderData: TextOutputRenderData): void {
-        const data: IRenderData[] = outputRenderData.vertexBuffer;
-        const count = outputRenderData.quadCount;
-        if (data.length !== count) {
-            for (let i = data.length; i < count; i++) {
-                data.push({
-                    x: 0,
-                    y: 0,
-                    z: 0,
-                    u: 0,
-                    v: 0,
-                    color: Color.WHITE.clone(),
-                });
-            }
-
-            data.length = count;
-        }
+        outputRenderData.ensureVertexBuffer(outputRenderData.quadCount);
     }
 
     // -------------------- Canvas Mode Part ---------------------------
@@ -1126,6 +1102,7 @@ export class TextProcessing {
                 callback(style, outputLayoutData, outputRenderData, offset, texture, this._tmpRect, isRotated, letterPositionX - appX, py - appY);
             }
         }
+        outputRenderData.resizeVertexBuffer(outputRenderData.quadCount);
         return ret;
     }
 

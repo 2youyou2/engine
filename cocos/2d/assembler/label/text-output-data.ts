@@ -23,9 +23,29 @@
 */
 
 import { Texture2D } from '../../../asset/assets';
-import { Rect, Size, Vec2 } from '../../../core';
+import { Color, Pool, Rect, Size, Vec2 } from '../../../core';
 import { SpriteFrame } from '../../assets';
-import { IRenderData } from './text-processing';
+import { IRenderData } from '../../renderer/render-data';
+
+const createRenderData = (): IRenderData => ({
+    x: 0,
+    y: 0,
+    z: 0,
+    u: 0,
+    v: 0,
+    color: Color.WHITE.clone(),
+});
+
+const resetRenderData = (data: IRenderData): void => {
+    data.x = 0;
+    data.y = 0;
+    data.z = 0;
+    data.u = 0;
+    data.v = 0;
+    data.color.set(Color.WHITE);
+};
+
+const renderDataPool = new Pool<IRenderData>(createRenderData, 64);
 
 export class TextOutputLayoutData {
     // public parsedStringStyle; // Prepare for merging richtext
@@ -63,9 +83,31 @@ export class TextOutputRenderData {
     public uiTransAnchorX = 0.5; // both
     public uiTransAnchorY = 0.5; // both
 
+    public resizeVertexBuffer (count: number): void {
+        this.ensureVertexBuffer(count);
+        const data = this.vertexBuffer;
+        const length = data.length;
+        if (length > count) {
+            for (let i = count; i < length; i++) {
+                resetRenderData(data[i]);
+                renderDataPool.free(data[i]);
+            }
+            data.length = count;
+        }
+    }
+
+    public ensureVertexBuffer (count: number): void {
+        const data = this.vertexBuffer;
+        for (let i = data.length; i < count; i++) {
+            const renderData = renderDataPool.alloc();
+            resetRenderData(renderData);
+            data.push(renderData);
+        }
+    }
+
     public reset (): void {
         this.quadCount = 0;
-        this.vertexBuffer.length = 0;
+        this.resizeVertexBuffer(0);
         this.texture = null;
         this.uiTransAnchorX = 0.5;
         this.uiTransAnchorY = 0.5;

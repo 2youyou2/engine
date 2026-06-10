@@ -790,6 +790,7 @@ export class Label extends UIRenderer {
         // this._textLayout = null;
         // this._textRenderData = null;
         // this._textLayoutData = null;
+        this._textRenderData!.reset();
 
         // texture cannot be destroyed in here, lettertexture image source is public.
         this._letterTexture = null;
