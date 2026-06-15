@@ -91,6 +91,7 @@ public class CanvasRenderingContext2DImpl {
     private boolean mIsSmallCapsFontVariant = false;
     private String mLineCap = "butt";
     private String mLineJoin = "miter";
+    private final Point mDrawPoint = new Point();
 
     private class Size {
         Size(float w, float h) {
@@ -114,11 +115,6 @@ public class CanvasRenderingContext2DImpl {
 
         Point() {
             this.x = this.y = 0.0f;
-        }
-
-        Point(Point pt) {
-            this.x = pt.x;
-            this.y = pt.y;
         }
 
         void set(float x, float y) {
@@ -411,8 +407,8 @@ public class CanvasRenderingContext2DImpl {
         mTextPaint.setARGB(mFillStyleA, mFillStyleR, mFillStyleG, mFillStyleB);
         mTextPaint.setStyle(Paint.Style.FILL);
         scaleX(mTextPaint, text, maxWidth);
-        Point pt = convertDrawPoint(new Point(x, y), text);
-        mCanvas.drawText(text, pt.x, pt.y, mTextPaint);
+        convertDrawPoint(mDrawPoint, x, y, text);
+        mCanvas.drawText(text, mDrawPoint.x, mDrawPoint.y, mTextPaint);
     }
 
     private void strokeText(String text, float x, float y, float maxWidth) {
@@ -423,8 +419,8 @@ public class CanvasRenderingContext2DImpl {
         mTextPaint.setStyle(Paint.Style.STROKE);
         mTextPaint.setStrokeWidth(mLineWidth);
         scaleX(mTextPaint, text, maxWidth);
-        Point pt = convertDrawPoint(new Point(x, y), text);
-        mCanvas.drawText(text, pt.x, pt.y, mTextPaint);
+        convertDrawPoint(mDrawPoint, x, y, text);
+        mCanvas.drawText(text, mDrawPoint.x, mDrawPoint.y, mTextPaint);
     }
 
     private void configShadow(Paint paint) {
@@ -498,38 +494,36 @@ public class CanvasRenderingContext2DImpl {
         mBitmap.setPixels(imageData, 0, (int) imageWidth, (int) offsetX, (int) offsetY, (int) imageWidth, (int) imageHeight);
     }
 
-    private Point convertDrawPoint(final Point point, String text) {
+    private void convertDrawPoint(final Point point, float x, float y, String text) {
         // The parameter 'point' is located at left-bottom position.
         // Need to adjust 'point' according 'text align' & 'text base line'.
-        Point ret = new Point(point);
+        point.set(x, y);
         createTextPaintIfNeeded();
         Paint.FontMetrics fm = mTextPaint.getFontMetrics();
         float width = measureText(text);
 
         if (mTextAlign == TEXT_ALIGN_CENTER)
         {
-            ret.x -= width / 2;
+            point.x -= width / 2;
         }
         else if (mTextAlign == TEXT_ALIGN_RIGHT)
         {
-            ret.x -= width;
+            point.x -= width;
         }
 
         // Canvas.drawText accepts the y parameter as the baseline position, not the most bottom
         if (mTextBaseline == TEXT_BASELINE_TOP)
         {
-            ret.y += -fm.ascent;
+            point.y += -fm.ascent;
         }
         else if (mTextBaseline == TEXT_BASELINE_MIDDLE)
         {
-            ret.y += (fm.descent - fm.ascent) / 2 - fm.descent;
+            point.y += (fm.descent - fm.ascent) / 2 - fm.descent;
         }
         else if (mTextBaseline == TEXT_BASELINE_BOTTOM)
         {
-            ret.y += -fm.descent;
+            point.y += -fm.descent;
         }
-
-        return ret;
     }
 
     @SuppressWarnings("unused")
