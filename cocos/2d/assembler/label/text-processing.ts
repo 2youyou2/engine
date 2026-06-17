@@ -514,12 +514,12 @@ export class TextProcessing {
                     }
                 }
 
-                const targetWidth = getUploadTextureSize(this._canvas.width);
-                const targetHeight = getUploadTextureSize(this._canvas.height);
-
                 // Only grow the texture when the canvas no longer fits.
                 // If the texture is already larger, reuse it to avoid unnecessary reset churn.
-                if (tex.width < targetWidth || tex.height < targetHeight) {
+                if (tex.width < this._canvas.width || tex.height < this._canvas.height) {
+                    const targetWidth = getUploadTextureSize(this._canvas.width);
+                    const targetHeight = getUploadTextureSize(this._canvas.height);
+
                     tex.reset({
                         width: targetWidth,
                         height: targetHeight,

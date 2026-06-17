@@ -124,8 +124,6 @@ export const ttfUtils =  {
             style.fontFamily = this._updateFontFamily(comp);
             this._resetDynamicAtlas(comp);
 
-            processing.comp = comp;
-
             // TextProcessing
             processing.processingString(false, style, layout, outputLayoutData, comp.string);
             processing.generateRenderInfo(false, style, layout, outputLayoutData, outputRenderData,
