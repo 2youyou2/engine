@@ -24,7 +24,7 @@
 import { ANDROID, JSB } from 'internal:constants';
 import { Texture2D } from '../../../asset/assets';
 import { WrapMode } from '../../../asset/assets/asset-enum';
-import { cclegacy, Rect, Vec2 } from '../../../core';
+import { cclegacy, nextPow2, Rect, Vec2 } from '../../../core';
 import { log, logID, warn } from '../../../core/platform';
 import { SpriteFrame } from '../../assets';
 import { FontLetterDefinition } from '../../assets/bitmap-font';
@@ -48,6 +48,10 @@ const MAX_CALCULATION_NUM = 3;
 const _drawUnderlinePos = new Vec2();
 const tempPos = new Vec2();
 const letterPosition = new Vec2();
+
+function getUploadTextureSize (canvasSize: number): number {
+    return canvasSize < 1024 ? nextPow2(canvasSize) : canvasSize;
+}
 
 class LetterInfo {
     public char = '';
@@ -510,10 +514,15 @@ export class TextProcessing {
                     }
                 }
 
-                if (tex.width !== this._canvas.width || tex.height !== this._canvas.height) {
+                const targetWidth = getUploadTextureSize(this._canvas.width);
+                const targetHeight = getUploadTextureSize(this._canvas.height);
+
+                // Only grow the texture when the canvas no longer fits.
+                // If the texture is already larger, reuse it to avoid unnecessary reset churn.
+                if (tex.width < targetWidth || tex.height < targetHeight) {
                     tex.reset({
-                        width: this._canvas.width,
-                        height: this._canvas.height,
+                        width: targetWidth,
+                        height: targetHeight,
                         mipmapLevel: 1,
                     });
                 }

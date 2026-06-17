@@ -24,6 +24,7 @@
 import { Filter, PixelFormat, WrapMode } from './asset-enum';
 import dependUtil from '../asset-manager/depend-util';
 import { js, macro, cclegacy } from '../../core';
+import { BufferTextureCopy } from '../../gfx';
 import './texture-base';
 import { patch_cc_SimpleTexture } from '../../native-binding/decorators';
 import type { SimpleTexture as JsbSimpleTexture } from './simple-texture';
@@ -34,6 +35,7 @@ export type SimpleTexture = JsbSimpleTexture;
 export const SimpleTexture: typeof JsbSimpleTexture = jsb.SimpleTexture;
 
 const jsbWindow = jsb.window;
+const _jsbUploadRegions: BufferTextureCopy[] = [new BufferTextureCopy()];
 
 SimpleTexture.Filter = Filter;
 SimpleTexture.PixelFormat = PixelFormat;
@@ -43,14 +45,37 @@ const simpleTextureProto = jsb.SimpleTexture.prototype;
 const oldUpdateDataFunc = simpleTextureProto.uploadData;
 simpleTextureProto.uploadData = function (source, level = 0, arrayIndex = 0) {
     let data;
+    let uploadWidth = 0;
+    let uploadHeight = 0;
     if (source instanceof jsbWindow.HTMLCanvasElement) {
         // @ts-ignore
         data = source.data;
+        uploadWidth = source.width;
+        uploadHeight = source.height;
     } else if (source instanceof jsbWindow.HTMLImageElement) {
         // @ts-ignore
         data = source._data;
+        uploadWidth = source.width;
+        uploadHeight = source.height;
     } else if (ArrayBuffer.isView(source)) {
         data = source.buffer;
+    }
+    if (uploadWidth > 0 && uploadHeight > 0) {
+        const region = _jsbUploadRegions[0];
+        region.buffOffset = 0;
+        region.buffStride = uploadWidth;
+        region.buffTexHeight = uploadHeight;
+        region.texOffset.x = 0;
+        region.texOffset.y = 0;
+        region.texOffset.z = 0;
+        region.texExtent.width = uploadWidth;
+        region.texExtent.height = uploadHeight;
+        region.texExtent.depth = 1;
+        region.texSubres.mipLevel = level;
+        region.texSubres.baseArrayLayer = arrayIndex;
+        region.texSubres.layerCount = 1;
+        this.uploadDataWithRegion(data, region);
+        return;
     }
     oldUpdateDataFunc.call(this, data, level, arrayIndex);
 };

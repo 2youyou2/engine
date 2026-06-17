@@ -108,6 +108,20 @@ void SimpleTexture::uploadData(const uint8_t *source, uint32_t level /* = 0 */, 
     gfxDevice->copyBuffersToTexture(buffers, _gfxTexture, &region, 1);
 }
 
+void SimpleTexture::uploadDataWithRegion(const uint8_t *source, const gfx::BufferTextureCopy &region) {
+    if (!_gfxTexture || !source) {
+        return;
+    }
+
+    auto *gfxDevice = getGFXDevice();
+    if (!gfxDevice) {
+        return;
+    }
+
+    const uint8_t *buffers[1]{source};
+    gfxDevice->copyBuffersToTexture(buffers, _gfxTexture, &region, 1);
+}
+
 void SimpleTexture::assignImage(ImageAsset *image, uint32_t level, uint32_t arrayIndex /* = 0 */) {
     const uint8_t *data = image->getData();
     if (!data) {
