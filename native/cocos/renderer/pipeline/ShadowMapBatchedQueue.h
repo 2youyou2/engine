@@ -43,7 +43,7 @@ class RenderPipeline;
 class CC_DLL ShadowMapBatchedQueue : public Object {
 public:
     explicit ShadowMapBatchedQueue(RenderPipeline *);
-    ~ShadowMapBatchedQueue() override = default;
+    ~ShadowMapBatchedQueue() override;
     void destroy();
 
     void clear();

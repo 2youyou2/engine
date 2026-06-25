@@ -55,7 +55,9 @@ ForwardStage::ForwardStage() {
     _uiPhase        = CC_NEW(UIPhase);
 }
 
-ForwardStage::~ForwardStage() = default;
+ForwardStage::~ForwardStage() {
+    destroy();
+}
 
 bool ForwardStage::initialize(const RenderStageInfo &info) {
     RenderStage::initialize(info);

@@ -57,6 +57,10 @@ PostProcessStage::PostProcessStage() {
     _uiPhase = CC_NEW(UIPhase);
 }
 
+PostProcessStage::~PostProcessStage() {
+    destroy();
+}
+
 bool PostProcessStage::initialize(const RenderStageInfo &info) {
     RenderStage::initialize(info);
     _renderQueueDescriptors = info.renderQueues;
@@ -93,6 +97,7 @@ void PostProcessStage::activate(RenderPipeline *pipeline, RenderFlow *flow) {
 
 void PostProcessStage::destroy() {
     CC_SAFE_DELETE(_uiPhase);
+    RenderStage::destroy();
 }
 
 void PostProcessStage::render(scene::Camera *camera) {

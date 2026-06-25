@@ -63,6 +63,9 @@ RenderPipeline::RenderPipeline()
 }
 
 RenderPipeline::~RenderPipeline() {
+    CC_SAFE_DESTROY(_globalDSManager);
+    CC_SAFE_DESTROY(_pipelineUBO);
+    CC_SAFE_DESTROY(_pipelineSceneData);
     RenderPipeline::instance = nullptr;
 }
 

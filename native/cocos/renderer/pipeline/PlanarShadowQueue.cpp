@@ -46,6 +46,10 @@ PlanarShadowQueue::PlanarShadowQueue(RenderPipeline *pipeline)
     _instancedQueue = CC_NEW(RenderInstancedQueue);
 }
 
+PlanarShadowQueue::~PlanarShadowQueue() {
+    destroy();
+}
+
 void PlanarShadowQueue::gatherShadowPasses(scene::Camera *camera, gfx::CommandBuffer *cmdBuffer) {
     clear();
 
@@ -138,6 +142,8 @@ void PlanarShadowQueue::recordCommandBuffer(gfx::Device *device, gfx::RenderPass
 
 void PlanarShadowQueue::destroy() {
     CC_SAFE_DELETE(_instancedQueue);
+    _castModels.clear();
+    _pendingModels.clear();
 }
 
 } // namespace pipeline

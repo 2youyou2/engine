@@ -55,7 +55,9 @@ GbufferStage::GbufferStage() {
     _instancedQueue = CC_NEW(RenderInstancedQueue);
 }
 
-GbufferStage::~GbufferStage() = default;
+GbufferStage::~GbufferStage() {
+    destroy();
+}
 
 bool GbufferStage::initialize(const RenderStageInfo &info) {
     RenderStage::initialize(info);

@@ -48,6 +48,10 @@ ShadowMapBatchedQueue::ShadowMapBatchedQueue(RenderPipeline *pipeline)
     _batchedQueue   = CC_NEW(RenderBatchedQueue);
 }
 
+ShadowMapBatchedQueue::~ShadowMapBatchedQueue() {
+    destroy();
+}
+
 void ShadowMapBatchedQueue::gatherLightPasses(const scene::Camera *camera, const scene::Light *light, gfx::CommandBuffer *cmdBuffer) {
     clear();
 
@@ -157,10 +161,11 @@ void ShadowMapBatchedQueue::recordCommandBuffer(gfx::Device *device, gfx::Render
 }
 
 void ShadowMapBatchedQueue::destroy() {
-    CC_SAFE_DELETE(_batchedQueue)
-
-    CC_SAFE_DELETE(_instancedQueue)
-
+    CC_SAFE_DELETE(_batchedQueue);
+    CC_SAFE_DELETE(_instancedQueue);
+    _subModels.clear();
+    _passes.clear();
+    _shaders.clear();
     _buffer = nullptr;
 }
 
