@@ -1,8 +1,98 @@
 'use strict';
 
 const { materialTechniquePolyfill } = require('../utils/material');
-const { setDisabled, setReadonly, setHidden, loopSetAssetDumpDataReadonly } = require('../utils/prop');
+const {
+    setDisabled,
+    setReadonly,
+    setHidden,
+    loopSetAssetDumpDataReadonly,
+    appendChildByDisplayOrder,
+    createTabGroup,
+    createGroup,
+    appendToTabGroup,
+    appendToGroup,
+    toggleGroups,
+    syncGroupDisplayOrder,
+} = require('../utils/prop');
 const { join, sep, normalize } = require('path');
+
+
+// 获取当前 dump 节点所属的 group id，用于判断子属性是否已经在同一 group 内。
+function getGroupId(group) {
+    if (!group) {
+        return '';
+    }
+    if (typeof group === 'object') {
+        return group.id || group.name || 'default';
+    }
+    return group || 'default';
+}
+
+// 材质子属性也需要支持和顶层一致的 group 渲染、折叠和排序逻辑。
+function appendChildDumpByGroup(panel, container, groups, parentDump, childName, $prop, index) {
+    const childDump = parentDump.childMap[childName];
+    $prop.displayOrder = childDump.displayOrder === undefined ? index : Number(childDump.displayOrder);
+
+    if (!childDump.group || !parentDump.groups) {
+        appendChildByDisplayOrder(container, $prop);
+        return;
+    }
+
+    // 子属性上的 group 可能只是字符串，先补齐成统一结构再走后面的容器逻辑。
+    if (typeof childDump.group !== 'object') {
+        childDump.group = {
+            id: childDump.group || 'default',
+            name: childDump.group,
+            style: 'section',
+        };
+    }
+
+    const { id = 'default' } = childDump.group;
+    const groupName = childDump.group.name || childName;
+    const parentGroupId = getGroupId(parentDump.group);
+
+    // 父依赖节点已经继承了相同 group 时，子属性直接追加，避免再套一层同名 group。
+    if (parentGroupId && parentGroupId === id) {
+        appendChildByDisplayOrder(container, $prop);
+        return;
+    }
+
+    // 子面板里的 group 容器按需创建，并复用 prop 工具里统一的 tab/section 构建方式。
+    if (!groups[id] && parentDump.groups[id]) {
+        if (parentDump.groups[id].style === 'tab') {
+            groups[id] = createTabGroup(parentDump.groups[id], {
+                $: { componentContainer: container },
+                $this: panel.$this || panel,
+            });
+        } else if (parentDump.groups[id].style === 'section') {
+            groups[id] = createGroup(parentDump.groups[id]);
+        }
+    }
+
+    const $group = groups[id];
+    if (!$group) {
+        appendChildByDisplayOrder(container, $prop);
+        return;
+    }
+
+    // 让子面板里的 group 也跟随最靠前子属性参与排序，行为与顶层 inspector 保持一致。
+    syncGroupDisplayOrder(container, $group, parentDump.groups[id], $prop.displayOrder);
+
+    if (!$group.isConnected) {
+        appendChildByDisplayOrder(container, $group);
+    }
+
+    if (parentDump.groups[id].style === 'tab') {
+        appendToTabGroup($group, groupName);
+        appendChildByDisplayOrder($group.tabs[groupName], $prop);
+    } else if (parentDump.groups[id].style === 'section') {
+        appendToGroup($group, groupName);
+        appendChildByDisplayOrder($group.names[groupName], $prop);
+    } else {
+        appendChildByDisplayOrder(container, $prop);
+    }
+}
+
 
 exports.style = `
 .invalid { display: none; }
@@ -253,6 +343,11 @@ exports.methods = {
                                 'border: 1px dashed var(--color-normal-border); padding: 10px; margin: 5px 0;',
                             );
 
+                            // 子属性面板也维护一份 props/groups 索引，方便后续按组插入和统一控制显隐。
+                            $prop.$children.$props = {};
+                            $prop.$children.$groups = {};
+
+                            let childIndex = 0;
                             for (const childName in dump.childMap) {
                                 if (dump.childMap[childName].value === undefined) {
                                     continue;
@@ -262,11 +357,15 @@ exports.methods = {
                                     loopSetAssetDumpDataReadonly(dump.childMap[childName]);
                                 }
 
-                                $prop.$children[childName] = document.createElement('ui-prop');
-                                $prop.$children[childName].setAttribute('type', 'dump');
-                                $prop.$children[childName].render(dump.childMap[childName]);
-                                $prop.$children.appendChild($prop.$children[childName]);
+                                $prop.$children.$props[childName] = document.createElement('ui-prop');
+                                $prop.$children.$props[childName].setAttribute('type', 'dump');
+                                $prop.$children.$props[childName].render(dump.childMap[childName]);
+                                appendChildDumpByGroup(this, $prop.$children, $prop.$children.$groups, dump, childName, $prop.$children.$props[childName], childIndex++);
                             }
+
+                            // 初次构建完成后立即同步一次分组显隐，避免空组标题先闪出来。
+                            toggleGroups($prop.$children.$groups);
+
 
                             if (Array.from($prop.$children.children).length) {
                                 $prop.after($prop.$children);

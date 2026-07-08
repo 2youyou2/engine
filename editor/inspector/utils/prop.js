@@ -221,8 +221,8 @@ exports.updatePropByDump = function(panel, dump) {
                 $prop.setAttribute('type', 'dump');
             }
 
-            const _displayOrder = info.group?.displayOrder ?? info.displayOrder;
-            $prop.displayOrder = _displayOrder === undefined ? index : Number(_displayOrder);
+            // 属性本身只按 property order 排序，避免把 group order 混进单个属性的 displayOrder。
+            $prop.displayOrder = info.displayOrder === undefined ? index : Number(info.displayOrder);
 
             if (element && element.displayOrder !== undefined) {
                 $prop.displayOrder = element.displayOrder;
@@ -231,24 +231,46 @@ exports.updatePropByDump = function(panel, dump) {
             if (!element || !element.isAppendToParent || element.isAppendToParent.call(panel)) {
                 if (info.group && dump.groups) {
                     const { id = 'default', name } = info.group;
-
-                    if (!panel.$groups[id] && dump.groups[id]) {
-                        if (dump.groups[id].style === 'tab') {
-                            panel.$groups[id] = exports.createTabGroup(dump.groups[id], panel);
+                    // 同一个 group 可能先前按另一种样式创建过，这里按最新定义校正容器类型。
+                    if (dump.groups[id]) {
+                        // 已经存在于 DOM 的旧容器如果样式不匹配，需要先移除再按新的 group 风格重建。
+                        const groupStyle = dump.groups[id].style;
+                        const currentGroup = panel.$groups[id];
+                        const isInvalidGroup = !currentGroup
+                            || (groupStyle === 'tab' && !currentGroup.tabs)
+                            || (groupStyle === 'section' && !currentGroup.names);
+                        if (isInvalidGroup) {
+                            if (currentGroup instanceof HTMLElement) {
+                                currentGroup.remove();
+                            }
+                            if (groupStyle === 'tab') {
+                                panel.$groups[id] = exports.createTabGroup(dump.groups[id], panel);
+                            } else if (groupStyle === 'section') {
+                                panel.$groups[id] = exports.createGroup(dump.groups[id]);
+                            }
                         }
                     }
 
                     if (panel.$groups[id]) {
+                        // 组本身没有有限 order 时，用子属性的最小顺序把组插回正确位置。
+                        exports.syncGroupDisplayOrder(panel.$.componentContainer, panel.$groups[id], dump.groups[id], $prop.displayOrder);
                         if (!panel.$groups[id].isConnected) {
                             exports.appendChildByDisplayOrder(panel.$.componentContainer, panel.$groups[id]);
                         }
 
+                        // group 容器准备好后，再把属性放进对应的 tab 或 section 子容器。
                         if (dump.groups[id].style === 'tab') {
                             exports.appendToTabGroup(panel.$groups[id], name);
+                        } else if (dump.groups[id].style === 'section') {
+                            exports.appendToGroup(panel.$groups[id], name);
                         }
                     }
 
-                    exports.appendChildByDisplayOrder(panel.$groups[id].tabs[name], $prop);
+                    if (dump.groups[id].style === 'tab') {
+                        exports.appendChildByDisplayOrder(panel.$groups[id].tabs[name], $prop);
+                    } else if (dump.groups[id].style === 'section') {
+                        exports.appendChildByDisplayOrder(panel.$groups[id].names[name], $prop);
+                    }
                 } else {
                     exports.appendChildByDisplayOrder(panel.$.componentContainer, $prop);
                 }
@@ -257,7 +279,29 @@ exports.updatePropByDump = function(panel, dump) {
             if (!element || !element.isAppendToParent || element.isAppendToParent.call(panel)) {
                 if (info.group && dump.groups) {
                     const { id = 'default', name } = info.group;
-                    exports.appendChildByDisplayOrder(panel.$groups[id].tabs[name], $prop);
+                    const groupStyle = dump.groups[id].style;
+                    const currentGroup = panel.$groups[id];
+                    const isInvalidGroup = !currentGroup
+                        || (groupStyle === 'tab' && !currentGroup.tabs)
+                        || (groupStyle === 'section' && !currentGroup.names);
+                    if (isInvalidGroup) {
+                        if (currentGroup instanceof HTMLElement) {
+                            currentGroup.remove();
+                        }
+                        if (groupStyle === 'tab') {
+                            panel.$groups[id] = exports.createTabGroup(dump.groups[id], panel);
+                            exports.appendToTabGroup(panel.$groups[id], name);
+                        } else if (groupStyle === 'section') {
+                            panel.$groups[id] = exports.createGroup(dump.groups[id]);
+                            exports.appendToGroup(panel.$groups[id], name);
+                        }
+                    }
+                    exports.syncGroupDisplayOrder(panel.$.componentContainer, panel.$groups[id], dump.groups[id], $prop.displayOrder);
+                    if (groupStyle === 'tab') {
+                        exports.appendChildByDisplayOrder(panel.$groups[id].tabs[name], $prop);
+                    } else if (groupStyle === 'section') {
+                        exports.appendChildByDisplayOrder(panel.$groups[id].names[name], $prop);
+                    }
                 } else {
                     exports.appendChildByDisplayOrder(panel.$.componentContainer, $prop);
                 }
@@ -394,15 +438,103 @@ exports.createTabGroup = function(dump, panel) {
 };
 exports.toggleGroups = function($groups) {
     for (const key in $groups) {
-        const $props = Array.from($groups[key].querySelectorAll('.tab-content > ui-prop'));
+        const $group = $groups[key];
+        // section 分组需要看每个折叠子块里是否还有可见属性，决定标题条和内容是否显示。
+        if ($group.dump.style === 'section') {
+            const $contents = $group.querySelectorAll('.ui-prop-group-content');
+            let groupShow = false;
+            $contents.forEach(($content) => {
+                const $props = Array.from($content.querySelectorAll(':scope > ui-prop'));
+                const show = $props.some(($prop) => getComputedStyle($prop).display !== 'none');
+                if (show) {
+                    $content.removeAttribute('hidden');
+                    groupShow = true;
+                } else {
+                    $content.setAttribute('hidden', '');
+                }
+            });
+            if (groupShow) {
+                $group.removeAttribute('hidden');
+            } else {
+                $group.setAttribute('hidden', '');
+            }
+            continue;
+        }
+
+        const $props = Array.from($group.querySelectorAll('.tab-content > ui-prop'));
         const show = $props.some($prop => getComputedStyle($prop).display !== 'none');
         if (show) {
-            $groups[key].removeAttribute('hidden');
+            $group.removeAttribute('hidden');
         } else {
-            $groups[key].setAttribute('hidden', '');
+            $group.setAttribute('hidden', '');
         }
     }
 },
+// section 风格的组使用独立容器，后续名字分栏和折叠状态都挂在这个节点上。
+exports.createGroup = function(dump) {
+    const $group = document.createElement('div');
+    $group.setAttribute('class', 'ui-prop-group');
+    $group.dump = dump;
+    $group.names = {};
+    $group.displayOrder = dump.displayOrder;
+    return $group;
+};
+exports.syncGroupDisplayOrder = function(parent, $group, groupDump, childDisplayOrder) {
+    // 组未显式配置有限 order 时，使用组内最靠前属性的顺序参与父级排序。
+    // 材质面板会把未配置的组 order 初始化为 Infinity，这里需要把 Infinity 当成未配置处理。
+    const groupDisplayOrder = Number(groupDump?.displayOrder);
+    if (!$group || !groupDump || Number.isFinite(groupDisplayOrder)) {
+        return;
+    }
+
+    const displayOrder = Number(childDisplayOrder);
+    if (Number.isNaN(displayOrder)) {
+        return;
+    }
+
+    const nextDisplayOrder = Number.isFinite(Number($group.displayOrder))
+        ? Math.min(Number($group.displayOrder), displayOrder)
+        : displayOrder;
+
+    if ($group.displayOrder === nextDisplayOrder) {
+        return;
+    }
+
+    $group.displayOrder = nextDisplayOrder;
+    if ($group.isConnected) {
+        $group.remove();
+        exports.appendChildByDisplayOrder(parent, $group);
+    }
+};
+// 为 section 组里的每个分栏创建一个可折叠 ui-section，并复用现有 cache-expand 规则。
+exports.appendToGroup = function($group, name) {
+    if ($group.names[name]) {
+        return;
+    }
+
+    const $content = document.createElement('ui-section');
+    $content.setAttribute('class', 'ui-prop-group-content');
+    $content.setAttribute('expand', '');
+
+    let parentCacheKey = 'ui-prop-group-content';
+    let $parent = $group;
+    while ($parent) {
+        if ($parent.hasAttribute && $parent.hasAttribute('cache-expand')) {
+            parentCacheKey = $parent.getAttribute('cache-expand');
+            break;
+        }
+        $parent = $parent.parentElement;
+    }
+    $content.setAttribute('cache-expand', parentCacheKey + '-' + name);
+
+    const $header = document.createElement('ui-label');
+    $header.setAttribute('slot', 'header');
+    $header.value = exports.getName({ name });
+    $content.appendChild($header);
+
+    $group.appendChild($content);
+    $group.names[name] = $content;
+};
 exports.appendToTabGroup = function($group, tabName) {
     if ($group.tabs[tabName]) {
         return;
